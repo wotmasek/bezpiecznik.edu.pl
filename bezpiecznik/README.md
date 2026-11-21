@@ -43,7 +43,7 @@ Ten folder to **przepis na aplikację**: jedyne źródło prawdy dla budującego
 - [Ryzyka i otwarte kwestie](06-ryzyka/ryzyka-i-otwarte-kwestie.md) · [Krytyka planu 2026-11-21](06-ryzyka/krytyka-2026-11-21.md)
 
 **7. Hackathon**
-- [Zakres MVP](07-hackathon/zakres-mvp.md) · [Ograniczenia](07-hackathon/ograniczenia.md) · [Plan budowy](07-hackathon/plan-budowy.md) · [Scenariusz pokazu](07-hackathon/scenariusz-pokazu.md) · [Scenariusz filmu (75 s)](07-hackathon/scenariusz-filmu.md)
+- [Zakres MVP](07-hackathon/zakres-mvp.md) · [Ograniczenia](07-hackathon/ograniczenia.md) · [Plan budowy](07-hackathon/plan-budowy.md) · [Scenariusz pokazu](07-hackathon/scenariusz-pokazu.md) · [Scenariusz filmu (76 s)](07-hackathon/scenariusz-filmu.md)
 
 **8. Design system**
 - [Przegląd i zasady](08-design-system/README.md) · [Mapa komponentów i odstępstwa od specyfikacji](08-design-system/komponenty.md) · [Tokeny](08-design-system/api/tokens.md) (`tokens.json`, `tokens.css`) · [Ruch](08-design-system/motion.md)

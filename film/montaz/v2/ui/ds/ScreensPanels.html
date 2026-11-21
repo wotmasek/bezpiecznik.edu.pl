@@ -1,0 +1,92 @@
+<!-- @dsCard group="Ekrany" height=920 width=1360 subtitle="P2 SOS, P1 panel boczny, generowanie odpowiedzi" -->
+<!doctype html>
+<html>
+<head><link rel="stylesheet" href="file:///home/weak/Wideo/wotmasek_video_editing_studio/design_systems/Bezpiecznik/tokens.css"><link rel="stylesheet" href="file:///home/weak/Wideo/wotmasek_video_editing_studio/design_systems/Bezpiecznik/components/bundle.css">
+<script src="file:///home/weak/Wideo/wotmasek_video_editing_studio/projects/2026-10-18-alicja-wilk-4-mp-seniorow/edit/remotion/node_modules/react/umd/react.production.min.js"></script><script src="file:///home/weak/Wideo/wotmasek_video_editing_studio/projects/2026-10-18-alicja-wilk-4-mp-seniorow/edit/remotion/node_modules/react-dom/umd/react-dom.production.min.js"></script>
+<script src="file:///home/weak/Wideo/wotmasek_video_editing_studio/design_systems/Bezpiecznik/components/bundle.js"></script><meta charset="utf-8"><title>ScreensPanels</title>
+<style>
+  body { margin: 0; background: var(--bg-000); color: var(--ink-100); font-family: var(--font-sans); }
+  .wrap { padding: 20px 24px; display: grid; gap: 20px; }
+  .row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .col { display: grid; gap: 12px; align-content: start; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; align-items: start; }
+  .lbl { font-size: 12px; line-height: 16px; color: var(--ink-300); font-family: var(--font-mono); }
+  .w360 { max-width: 360px; } .w420 { max-width: 420px; }
+
+  .phones { display: flex; gap: 28px; padding: 24px; align-items: flex-start; }
+  .phone-wrap { display: grid; gap: 10px; }
+  .phone-cap { font: 600 13px var(--font-sans); color: var(--ink-200); }
+  .phone { position: relative; width: 390px; height: 844px; border-radius: 44px; overflow: hidden; background: var(--bg-000); box-shadow: 0 0 0 10px #000, 0 0 0 11px var(--line-150); flex: none; }
+  .sb { position: absolute; top: 0; left: 0; right: 0; height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; font: 600 14px var(--font-sans); color: var(--ink-100); z-index: 30; }
+  .top { position: absolute; top: 48px; left: 16px; right: 16px; display: flex; align-items: center; justify-content: space-between; z-index: 20; }
+  .top-fade { position: absolute; top: 0; left: 0; right: 0; height: 120px; background: linear-gradient(var(--bg-000) 55%, transparent); z-index: 10; pointer-events: none; }
+  .scroll { position: absolute; top: 112px; left: 0; right: 0; bottom: 96px; overflow: hidden; padding: 0 16px; display: flex; flex-direction: column; gap: 20px; }
+  .bottom { position: absolute; left: 12px; right: 12px; bottom: 26px; z-index: 15; display: grid; gap: 8px; }
+  .homebar { position: absolute; bottom: 8px; left: 50%; width: 134px; height: 5px; margin-left: -67px; border-radius: 3px; background: var(--ink-100); opacity: .8; z-index: 40; }
+  .scrim { position: absolute; inset: 0; background: var(--scrim); z-index: 25; }
+  .empty-h { font-size: 28px; line-height: 34px; font-weight: 700; text-align: center; margin: 72px 0 8px; }
+  .note { text-align: center; font-size: 13px; color: var(--ink-300); line-height: 18px; }
+  .mapbg { position: absolute; inset: 0; }
+  .pin { position: absolute; transform: translate(-50%, -50%); }
+  .mapctl { position: absolute; right: 16px; display: grid; gap: 10px; justify-items: end; z-index: 12; }
+  .phone .bz-sheet__body { padding-bottom: 40px; }
+  .attrib { position: absolute; left: 12px; font: 500 10px var(--font-sans); color: var(--ink-300); z-index: 12; }
+
+  .phone-sheet { z-index: 40; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+  var Z = window.Bezpiecznik, h = React.createElement, I = function (n, s) { return h(Z.Icon, { name: n, size: s }); };
+  var noop = function () {};
+
+  function Phone(p) {
+    return h('div', { className: 'phone-wrap' }, h('div', { className: 'phone-cap' }, p.caption),
+      h('div', { className: 'phone' },
+        h('div', { className: 'sb' }, h('span', null, '03:41'), h('span', { style: { display: 'flex', gap: 6, alignItems: 'center' } }, I('plane', 16), I('battery', 18))),
+        p.children, h('div', { className: 'homebar' })));
+  }
+  function Top(p) {
+    return [h('div', { key: 'f', className: 'top-fade' }),
+      h('div', { key: 't', className: 'top' }, p.left || h(Z.NavIsland, { onMenu: noop, onMap: noop }), p.center || h('span'), h(Z.SosButton, { onPress: noop, onHold: noop }))];
+  }
+  function MapBg(p) {
+    return h('svg', { className: 'mapbg', viewBox: '0 0 390 844', preserveAspectRatio: 'xMidYMid slice', 'aria-hidden': 'true' },
+      h('rect', { width: 390, height: 844, fill: 'var(--bg-100)' }),
+      h('path', { d: 'M-20 600 C80 560 140 640 240 600 S380 540 420 570 L420 900 L-20 900Z', fill: 'var(--info)', opacity: .13 }),
+      h('path', { d: 'M260 0 C250 120 300 200 290 330 S240 470 270 560', stroke: 'var(--info)', strokeOpacity: .18, strokeWidth: 26, fill: 'none' }),
+      [[0,190,390,230],[0,380,390,350],[60,0,90,844],[170,0,200,844],[330,0,320,600],[0,500,390,520],[0,90,390,110]].map(function (r, i) { return h('line', { key: i, x1: r[0], y1: r[1], x2: r[2], y2: r[3], stroke: 'var(--line-150)', strokeWidth: i % 2 ? 8 : 12, strokeLinecap: 'round' }); }),
+      [[110,0,120,844],[240,0,250,500],[0,290,390,300],[0,440,390,450],[0,690,390,700]].map(function (r, i) { return h('line', { key: 'm' + i, x1: r[0], y1: r[1], x2: r[2], y2: r[3], stroke: 'var(--line-100)', strokeWidth: 4 }); }),
+      [[20,130,60,45],[205,125,40,50],[20,240,70,40],[215,250,50,40],[130,320,30,60],[20,600,30,40]].map(function (r, i) { return h('rect', { key: 'b' + i, x: r[0], y: r[1], width: r[2], height: r[3], rx: 4, fill: 'var(--bg-200)' }); }),
+      p.route ? h('path', { d: p.route, stroke: 'var(--signal)', strokeWidth: 7, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }) : null);
+  }
+  ReactDOM.createRoot(document.getElementById('root')).render(
+    h('div', { className: 'phones' },
+      h(Phone, { caption: 'P2 Kontakt ze służbami' }, h(Top),
+        h('div', { className: 'scroll' }, h(Z.Message, { role: 'user', animate: false }, 'Gdzie mam iść?')),
+        h('div', { className: 'scrim' }),
+        h(Z.Sheet, { floating: true, title: 'Kontakt ze służbami', onClose: noop, maxHeight: '92%', className: 'phone-sheet' },
+          h(Z.CallPanel, { variant: 'sheet', contacts: ['Mama', 'Tomek'], onCall: noop, onSms: noop })),
+        h('div', { className: 'top', style: { zIndex: 50, justifyContent: 'flex-end' } }, h(Z.SosButton, { onPress: noop, onHold: noop }))),
+      h(Phone, { caption: 'P1 Panel boczny' }, h(Top),
+        h('div', { className: 'scroll' }, h(Z.Message, { role: 'user', animate: false }, 'Ktoś nie oddycha')),
+        h('div', { className: 'scrim' }),
+        h('div', { style: { position: 'absolute', top: 0, bottom: 0, left: 0, zIndex: 30, paddingTop: 44, paddingBottom: 26, boxSizing: 'border-box', background: 'var(--bg-100)' } },
+          h(Z.ChatDrawer, { currentId: 1, onNewChat: noop, onSelect: noop, onSettings: noop, groups: [
+            { label: 'Dziś', items: [{ id: 1, title: 'Ktoś nie oddycha' }, { id: 2, title: 'Blackout, niemowlę, 7. piętro' }] },
+            { label: 'Wczoraj', items: [{ id: 3, title: 'Co zabrać do schronu?' }] }] })),
+        h('div', { className: 'top', style: { zIndex: 50, justifyContent: 'flex-end' } }, h(Z.SosButton, { onPress: noop, onHold: noop }))),
+      h(Phone, { caption: 'AI generuje · odmowa' }, h(Top),
+        h('div', { className: 'scroll' },
+          h('div', null, h(Z.Notice, { variant: 'banner', icon: 'info' }, 'Pierwsza odpowiedź trwa dłużej.')),
+          h(Z.Message, { role: 'user', animate: false }, 'Jaką dawkę leku dać psu?'),
+          h(Z.NoSource, { suggestion: 'Zapytaj weterynarza albo farmaceutę. Dawkę leku dla zwierzęcia ustala lekarz.' }),
+          h(Z.Message, { role: 'user', animate: false }, 'Jak przechować insulinę bez prądu?'),
+          h(Z.Thinking, { label: 'Szukam w źródłach…', skeleton: true })),
+        h('div', { className: 'bottom' }, h(Z.Composer, { generating: true, onStop: noop, onVoice: noop }))))
+  );
+</script>
+</body>
+</html>

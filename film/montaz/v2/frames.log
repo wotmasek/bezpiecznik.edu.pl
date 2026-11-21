@@ -1,0 +1,14 @@
+room_s1 success 90s
+phone_s1 success 130s
+phone2_s1 success 165s
+phone3_s1 success 195s
+blinds_s1 success 275s
+floor_s1 success 356s
+stairs_s1 success 436s
+door_s1 success 516s
+tap_s1 success 586s
+table_s1 success 661s
+cpr_s1 success 731s
+shelter_s1 success 806s
+sos_s1 success 836s
+done ['room_s1', 'phone_s1', 'phone2_s1', 'phone3_s1', 'blinds_s1', 'floor_s1', 'stairs_s1', 'door_s1', 'tap_s1', 'table_s1', 'cpr_s1', 'shelter_s1', 'sos_s1']

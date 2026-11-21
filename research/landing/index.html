@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inspiracje: landing Bezpiecznika</title>
+<style>
+/* VOICE: calm, factual research memo for the team; conclusion first.
+   IDEA: the page behaves like Bezpiecznik itself, a quiet dark room with one ochre lamp.
+   PICTURE: real, verified screenshots of each reference, large, with what to take beside them.
+   COLOUR and TYPE: Bezpiecznik tokens (graphite bg-000, ink-100, ochre signal, sage verified); Atkinson Hyperlegible Next only.
+   LAYOUT: lead + landing skeleton up top, then 7 references (image | notes), rejects grid, technical notes, not-done list. */
+@font-face{font-family:"Atkinson";src:url(fonts/atkinson-hyperlegible-next-latin-ext-wght-normal.woff2) format("woff2");font-weight:200 800;unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Atkinson";src:url(fonts/atkinson-hyperlegible-next-latin-wght-normal.woff2) format("woff2");font-weight:200 800;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+:root{color-scheme:dark;--bg0:#100f0e;--bg1:#181715;--bg2:#21201d;--line1:#282623;--line15:#3a3732;--ink1:#eeece6;--ink2:#a9a59d;--ink3:#8a867f;--signal:#c9a66b;--signal-tint:#241f16;--verified:#8db89e;--verified-tint:#18211c;--sos-text:#e0857b;--sos-tint:#261816}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg0);color:var(--ink1);font:17px/1.6 "Atkinson",system-ui,sans-serif;overflow-x:clip}
+a{color:var(--ink1);text-decoration-color:var(--line15);text-underline-offset:3px}
+a:hover{text-decoration-color:var(--signal)}
+a:focus-visible{outline:2px solid var(--signal);outline-offset:3px;border-radius:4px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 max(5vw,16px)}
+.band{padding:clamp(36px,5vw,72px) 0;border-top:1px solid var(--line1)}
+h1{font-size:clamp(34px,5vw,52px);line-height:1.05;margin:0 0 16px;text-wrap:balance;font-weight:700;letter-spacing:-.01em}
+h1 span{color:var(--ink2)}
+h2{font-size:clamp(26px,3vw,32px);line-height:1.15;margin:0 0 8px;text-wrap:balance}
+h3{font-size:22px;line-height:1.25;margin:0}
+p{margin:0 0 12px;max-width:68ch}
+.lead{font-size:20px;color:var(--ink2);max-width:60ch}
+.muted{color:var(--ink2)}
+.small{font-size:14px;color:var(--ink3)}
+header{padding:clamp(40px,7vw,96px) 0 clamp(28px,4vw,48px)}
+.brand{display:flex;align-items:center;gap:10px;color:var(--ink2);font-size:15px;margin-bottom:28px}
+.brand i{width:10px;height:10px;border-radius:50%;background:var(--signal);box-shadow:0 0 18px #c9a66b80}
+.nav{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px}
+.nav a,.pill{display:inline-flex;align-items:center;min-height:36px;padding:6px 14px;border:1px solid var(--line15);border-radius:999px;text-decoration:none;font-size:15px;color:var(--ink1)}
+.nav a:hover{background:#eeece614}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:12px;margin-top:36px}
+.fact{background:var(--bg1);border:1px solid var(--line1);border-radius:18px;padding:16px 18px}
+.fact b{display:block;font-size:15px;color:var(--signal);margin-bottom:4px}
+.fact span{font-size:15px;color:var(--ink2)}
+/* skeleton */
+.skel{display:grid;gap:10px;margin-top:24px;counter-reset:s}
+.row{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.3fr) minmax(0,1fr);gap:16px;align-items:start;background:var(--bg1);border:1px solid var(--line1);border-radius:18px;padding:16px 18px}
+.row h4{margin:0;font-size:18px}
+.row h4 small{display:block;font-weight:400;font-size:14px;color:var(--ink3);margin-top:2px}
+.row p{margin:0;font-size:15px;color:var(--ink2)}
+.row .src{font-size:14px;color:var(--ink2)}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:13px;padding:2px 10px;border-radius:999px;background:var(--verified-tint);color:var(--verified);margin:2px 4px 2px 0;white-space:nowrap}
+.chip.c{background:var(--signal-tint);color:var(--signal)}
+/* references */
+.ref{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:clamp(20px,3vw,40px);padding:clamp(28px,4vw,48px) 0;border-top:1px solid var(--line1)}
+.ref:first-of-type{border-top:0}
+.shot{margin:0;border-radius:18px;overflow:hidden;border:1px solid var(--line15);background:var(--bg1);box-shadow:0 8px 24px #00000080;align-self:start}
+.shot img{display:block;width:100%;height:auto;max-height:620px;object-fit:cover;object-position:top}
+.shot.duo{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,1fr);gap:1px;background:var(--line15)}
+.shot.duo img{max-height:520px}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:6px 0 14px}
+.score{font-size:14px;font-weight:700;padding:2px 10px;border-radius:999px;background:var(--signal-tint);color:var(--signal);white-space:nowrap}
+.meta a{font-size:15px;color:var(--ink2)}
+.ref h5{font-size:14px;font-weight:700;color:var(--ink3);margin:16px 0 6px;letter-spacing:.01em}
+.ref ul{margin:0;padding-left:20px}
+.ref li{margin:0 0 6px;font-size:16px}
+.ref li::marker{color:var(--signal)}
+.ref ul.no li::marker{color:var(--sos-text)}
+.ref ul.no li{color:var(--ink2)}
+/* rejects */
+.rej{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr));gap:14px;margin-top:20px}
+.rej figure{margin:0;background:var(--bg1);border:1px solid var(--line1);border-radius:12px;overflow:hidden}
+.rej img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top;opacity:.75}
+.rej figcaption{padding:10px 12px;font-size:14px;color:var(--ink2)}
+.rej figcaption b{color:var(--ink1);display:block;font-size:15px}
+.copyref{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px;margin-top:20px}
+.quote{background:var(--bg1);border:1px solid var(--line1);border-radius:12px;padding:14px 16px;font-size:15px;color:var(--ink2)}
+.quote b{color:var(--ink1)}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:12px;margin-top:20px}
+.note{background:var(--bg1);border:1px solid var(--line1);border-radius:18px;padding:18px}
+.note h4{margin:0 0 6px;font-size:18px}
+.note p{font-size:15px;color:var(--ink2);margin:0}
+.note.warn{background:var(--sos-tint);border-color:#3a2420}
+.note.warn h4{color:var(--sos-text)}
+.list{margin:12px 0 0;padding-left:20px;color:var(--ink2)}
+.list li{margin-bottom:6px}
+footer{padding:40px 0 64px;border-top:1px solid var(--line1)}
+@media(max-width:860px){.ref{grid-template-columns:minmax(0,1fr)}.row{grid-template-columns:minmax(0,1fr);gap:6px}}
+@media (prefers-reduced-motion:no-preference){.shot img{transition:opacity .2s cubic-bezier(.2,0,0,1)}}
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <div class="brand"><i></i>Bezpiecznik · research · 21.11.2026</div>
+  <h1>Siedem stron, z których złożymy landing. <span>Reszta odpadła na zrzutach ekranu.</span></h1>
+  <p class="lead">Trzech agentów przeszukało produkty AI, aplikacje budujące zaufanie i galerie typu Awwwards. Każdy typ obejrzałem na żywo w przeglądarce (desktop i telefon), bo agenci widzieli tylko tekst. Najbliżej naszego „spokoju w ciemnym pokoju” są Claude Download, Calmaria i Cozy.</p>
+  <div class="facts">
+    <div class="fact"><b>Wygrywa struktura, nie efekty</b><span>Jedna jasna pigułka, nagłówek, ciemny ciepły grafit. Żadnych gradientów, jak w naszym design systemie.</span></div>
+    <div class="fact"><b>Telefon jest pierwszy</b><span>APK instaluje się na telefonie, więc większość wejść będzie mobilna. QR jest dla osób na komputerze.</span></div>
+    <div class="fact"><b>Demo zamiast obietnic</b><span>Hero jako composer z chipami (OpenAI) pokazuje prawdziwą odpowiedź ze źródłem, zanim ktoś cokolwiek zainstaluje.</span></div>
+  </div>
+  <nav class="nav" aria-label="Sekcje">
+    <a href="#szkielet">Szkielet landingu</a><a href="#inspiracje">7 inspiracji</a><a href="#odrzucone">Odrzucone</a><a href="#technika">Wnioski techniczne</a><a href="#niezrobione">Czego nie zrobiłem</a>
+  </nav>
+</header>
+
+<section class="band" id="szkielet"><div class="wrap">
+  <h2>Proponowany szkielet landingu</h2>
+  <p class="muted">Od góry strony, mobile-first. Każda sekcja ma wskazane źródło inspiracji i komponent z naszego design systemu, który już istnieje.</p>
+  <div class="skel" id="skel"></div>
+</div></section>
+
+<section class="band" id="inspiracje"><div class="wrap">
+  <h2>Siedem inspiracji</h2>
+  <p class="muted">Ocena dopasowania do naszego design systemu i odbiorcy: rodzice, seniorzy, osoby chore, nie programiści. Wszystkie zrzuty zrobione dziś, 21.11.2026.</p>
+  <div id="refs"></div>
+</div></section>
+
+<section class="band" id="odrzucone"><div class="wrap">
+  <h2>Odrzucone po zrzutach</h2>
+  <p class="muted">Agenci polecili je na podstawie treści. Na ekranie łamią zasady koloru albo są jasne. Z kilku bierzemy tylko teksty.</p>
+  <div class="rej" id="rej"></div>
+  <h3 style="margin-top:36px">Bierzemy tylko teksty, nie wygląd</h3>
+  <div class="copyref" id="copy"></div>
+</div></section>
+
+<section class="band" id="technika"><div class="wrap">
+  <h2>Wnioski techniczne</h2>
+  <div class="notes">
+    <div class="note"><h4>Wykrywanie platformy</h4><p>ChatGPT na Androidzie chowa kody QR i zostawia jeden przycisk „Android”. U nas: telefon z Androidem dostaje od razu „Pobierz APK”, komputer kod QR i krótki adres do przepisania, a iPhone informację „na razie tylko Android”.</p></div>
+    <div class="note warn"><h4>Treść widoczna bez JavaScriptu</h4><p>Claude Download na telefonie pokazuje pusty ekran, dopóki skrypt nie odpali animacji wejścia (zrzut niżej). W kryzysie i przy słabym zasięgu to niedopuszczalne. U nas animacja to tylko dodatek, a cały tekst jest w HTML od pierwszej klatki.</p></div>
+    <div class="note"><h4>Lekkość</h4><p>Statyczny HTML, fonty lokalnie (~53 KB, jak w aplikacji), zrzuty w WebP, bez wideo w tle i bez animacji przewijania. Zgodnie z dystrybucją MVP: zwykły serwer plików.</p></div>
+    <div class="note"><h4>Luka w design systemie</h4><p>Największy rozmiar w DS to <code>step</code> 20/28. Landing potrzebuje nagłówka „display” (ok. 40–56 px na desktopie, 32–36 px na telefonie). To decyzja do dopisania w tokenach.</p></div>
+    <div class="note"><h4>Kolor <code>verified</code> tylko dla źródeł</h4><p>Kuszą zielone ptaszki przy „bez konta, bez reklam”. DS rezerwuje szałwię dla „to jest ze źródła oficjalnego”. Ptaszki w manifeście prywatności robimy w <code>ink</code>, zielony zostaje dla chipów źródeł w demie.</p></div>
+    <div class="note"><h4>Instalacja spoza Google Play</h4><p>Żadna z galerii nie ma dobrego wzoru instrukcji instalacji APK. Projektujemy ją sami jako <code>StepsPanel</code> (3–4 kroki ze zrzutami z Androida) plus sumę SHA-256 do sprawdzenia (pomysł z GrapheneOS).</p></div>
+  </div>
+  <figure class="shot" style="max-width:260px;margin-top:20px"><img src="img/x-claude-mobile-empty.jpg" alt="Claude Download na telefonie: pusty ekran przed animacją" loading="lazy"></figure>
+  <p class="small" style="margin-top:8px">Claude Download na telefonie (390 px), stan po 12 s renderowania w Chrome headless.</p>
+</div></section>
+
+<section class="band" id="niezrobione"><div class="wrap">
+  <h2>Czego świadomie nie zrobiłem</h2>
+  <ul class="list">
+    <li>Nie budowałem landingu ani nie pisałem docelowych tekstów. Zgodnie z zadaniem to tylko research.</li>
+    <li>Awwwards przejrzałem pobieżnie: kategoria Mobile &amp; Apps to głównie portfolio agencji i eksperymenty WebGL, a nie strony produktów konsumenckich. Nic nie przeszło filtra.</li>
+    <li>land-book, lapa.ninja i onepagelove blokują automaty (403). godly.website przekierowuje na recent.design. Z minimal.gallery agent ocenił próbkę ok. 12 z ~60 stron w kategorii App, nie całość.</li>
+    <li>Zrzuty są statyczne. Animacji sterowanych przewijaniem (ChatGPT, Linear) nie oceniałem w ruchu.</li>
+    <li>Mobbin i strony aplikacji ratunkowych (np. Czerwony Krzyż: 403) nie zostały sprawdzone.</li>
+  </ul>
+</div></section>
+
+<footer><div class="wrap">
+  <p class="small">Metoda: 3 sub-agenty (Sonnet) do wyszukiwania, następnie weryfikacja każdego typu zrzutem w Chrome headless (1440 px i 390 px, mobilny user-agent Androida). Zrzuty i notatki: <code>research/landing/</code> w repozytorium. Zrzuty cudzych stron służą wyłącznie jako wewnętrzna inspiracja.</p>
+</div></footer>
+
+<script>
+{
+const skel=[
+ ["Hero","pierwszy ekran","Dwutonowy nagłówek: zdanie w ink-100, dalej ink-200, np. „Wiesz, co robić. Nawet bez internetu.” Jeden przycisk action „Pobierz na Androida”, obok link „Jak zainstalować”. Pod spodem linia: bezpłatnie · bez konta · działa offline.",["Calmaria","Cozy","Claude Download"],["Button"]],
+ ["Demo w composerze","zamiast zrzutów","„W czym mogę pomóc?” z chipami: Blackout, Alarm, RKO, Gdzie schron? Chip pokazuje zapisaną, prawdziwą odpowiedź aplikacji: 3 kroki i źródło z numerem strony.",["openai.com"],["Composer","QuickActions","StepsPanel","SourceChip"]],
+ ["Jak to działa","3 karty","„Zapytaj. Dostań 3 kroki. Sprawdź źródło.” Krótkie karty z pogrubionym początkiem zdania.",["Calmaria"],["PanelCard"]],
+ ["Manifest prywatności","2 kolumny","„Nic nie wychodzi z telefonu” | „Odpowiadamy tylko ze źródeł oficjalnych”, z pionowym separatorem. Dalej linia „Bez konta. Bez reklam. Bez internetu.”",["Cozy","Calmaria","Signal (tekst)"],["SectionHeader"]],
+ ["Co jest w środku","zakładki + telefon","Pionowe zakładki Czat / Mapa / Pierwsza pomoc obok makiety telefonu z prawdziwym ekranem aplikacji.",["chatgpt.com/overview","Linear"],["Segmented","ScreensMap"]],
+ ["Pobierz","karty + QR","Karta Android (wersja, rozmiar, SHA-256, przycisk) i karta z kodem QR oraz krótkim adresem do przepisania pod spodem.",["Claude Download","chatgpt.com/download","GrapheneOS (tekst)"],["ListRow","Button"]],
+ ["Instalacja APK","kroki","3–4 kroki instalacji z nieznanych źródeł, ze zrzutami z Androida, w akordeonie.",["własny projekt"],["StepsPanel"]],
+ ["FAQ i stopka","5–6 pytań","Pierwsze pytanie: „Czy instalacja spoza Google Play jest bezpieczna?”. W stopce lista źródeł (RCB, MON, MSWiA, PSP), prywatność i kontakt.",["Claude Download","Organic Maps (tekst)"],["ListRow"]]
+];
+document.getElementById('skel').innerHTML=skel.map(([t,s,d,src,ds])=>`<div class="row"><h4>${t}<small>${s}</small></h4><p>${d}</p><div class="src">${src.map(x=>`<span class="chip c">${x}</span>`).join('')}${ds.map(x=>`<span class="chip">${x}</span>`).join('')}</div></div>`).join('')+`<p class="small" style="margin-top:6px"><span class="chip c">ochra</span> źródło inspiracji · <span class="chip">szałwia</span> komponent naszego design systemu</p>`;
+
+const refs=[
+ {n:"Claude, strona pobierania",u:"https://claude.com/download",s:"9/10",img:["img/01-claude-download.jpg"],
+  why:"Paleta prawie identyczna z naszą (ciepły grafit i kremowy przycisk), a blok pobierania jest gotowym wzorem.",
+  take:["Wyśrodkowane hero: nagłówek, jedno zdanie, jedna jasna pigułka.","Sekcja „Get started”: tytuł po lewej, po prawej karty z wierszami „platforma + przycisk”.","Karta z kodem QR i adresem awaryjnym pod spodem („Or visit claude.ai/mobile”). To ratunek dla osób, które nie umieją skanować.","Sekcje oddzielone liniami 1 px zamiast kolorowych pasów."],
+  no:["Szeryfowy krój nagłówków, bo u nas jest jeden krój: Atkinson.","Rozbudowana nawigacja i listy rozszerzeń.","Treść ukryta do czasu animacji JS (patrz wnioski techniczne)."]},
+ {n:"Calmaria",u:"https://calmaria.app/",s:"9/10",img:["img/02-calmaria.jpg"],
+  why:"Prawie czarna, monochromatyczna aplikacja, która sprzedaje spokój. Ma przyciski iOS i Android, karty „jak to działa” i przypis ze źródłem.",
+  take:["Dwutonowy nagłówek: pierwsze zdanie białe, ciąg dalej szary. Hierarchia bez dodatkowego koloru.","Rząd pobierania: jasna pigułka, ciemna pigułka, cichy link.","3 karty „One tap. One shape. Three things.”, czyli nasze „Zapytaj. Dostań kroki. Sprawdź źródło.”","Przypis naukowy pod twierdzeniem, czyli webowa wersja naszego SourceChip.","„Made to disappear. No accounts. No ads.” jako pasek zaufania.","Duży panel z zaokrągleniem 28 px, a w nim dwa telefony."],
+  no:["Gradient zachodu słońca w makietach (nasycony, łamie DS).","Przerośnięte nagłówki z długim tekstem, bo seniorzy potrzebują krótszych bloków."]},
+ {n:"Cozy, prywatny dziennik",u:"https://cozyjournal.app/",s:"8/10",img:["img/03-cozy.jpg"],
+  why:"Ciepły brązowy grafit z kremowym tekstem, a prywatność jest główną obietnicą już w hero. Najbliżej naszego tonu.",
+  take:["Obietnica w nagłówku: „A private journal that stays yours”.","Manifest w 2 kolumnach z pionowym separatorem: „I won't train…” | „I never see a word of it”.","Linia pod przyciskami: „For macOS, Windows… · Pay once”.","Siatka kart (24 px) z wycinkami prawdziwego interfejsu.","Delikatne ziarno na tle i cicha, mało kontrastowa nawigacja."],
+  no:["Kolorowe kwiaty-ilustracje.","Pasek promocji Black Friday i ceny."]},
+ {n:"ChatGPT, strona pobierania",u:"https://chatgpt.com/download",s:"8/10",img:["img/04-chatgpt-download.jpg","img/04b-chatgpt-download-mobile.jpg"],duo:1,
+  why:"Najlepszy wzór QR i wykrywania platformy. Po prawej ta sama strona na Androidzie: QR znika, zostaje jeden przycisk.",
+  take:["Para: kod QR, a pod nim pigułka z nazwą platformy.","Wykrywanie platformy: na telefonie jeden przycisk, na komputerze QR.","Naprzemienne wiersze tekst/obraz.","Minimalna stopka: warunki, prywatność, język."],
+  no:["Fioletowo-niebieskie gradienty w kartach.","Podwójne „Zaloguj / Zarejestruj”, bo nie mamy kont."]},
+ {n:"OpenAI, strona główna",u:"https://openai.com/",s:"8/10",img:["img/05-openai.jpg"],
+  why:"Hero jest composerem czatu z chipami podpowiedzi. To 1:1 nasze Composer i QuickActions, więc landing może być żywym demem.",
+  take:["„W czym mogę pomóc?” i pole z rotującym przykładem pytania.","Chipy pod polem. U nas: Blackout, Alarm, RKO, Gdzie schron?","Kliknięcie pokazuje zapisaną, prawdziwą odpowiedź z aplikacji z chipem źródła. Działa bez modelu i bez serwera."],
+  no:["Kafle z gwiezdnym pyłem i newsami.","Gęsta nawigacja korporacyjna."]},
+ {n:"ChatGPT, przegląd produktu",u:"https://chatgpt.com/overview",s:"7/10",img:["img/06-chatgpt-overview.jpg"],
+  why:"Kanoniczny wzór „jeden nagłówek, jedna pigułka” na grafitowym tle, plus sekcja z zakładkami obok ekranu produktu.",
+  take:["Wielki wyśrodkowany nagłówek, jasna pigułka i link drugorzędny ze strzałką.","Pionowe zakładki (Czat / Praca / Codex) obok dużego ekranu, czyli u nas Czat / Mapa / Pierwsza pomoc."],
+  no:["Tęczowe podkreślenie słowa.","Ciężkie animacje sterowane przewijaniem."]},
+ {n:"Linear",u:"https://linear.app/",s:"6/10",img:["img/07-linear.jpg"],
+  why:"Wzór rzemiosła, nie treści. Ton jest dla zespołów programistów, więc bierzemy dyscyplinę, a nie gęstość.",
+  take:["Ciasny, duży nagłówek i opis w kolorze drugorzędnym.","Prawdziwy interfejs jako obraz w hero, na pełną szerokość, z delikatną ramką i cieniem.","Linie 1 px zamiast teł do oddzielania sekcji."],
+  no:["Język i gęstość informacji dla deweloperów.","Wiele CTA w nagłówku."]}
+];
+document.getElementById('refs').innerHTML=refs.map(r=>`<article class="ref">
+ <figure class="shot${r.duo?' duo':''}">${r.img.map(i=>`<img src="${i}" alt="Zrzut ekranu: ${r.n}" loading="lazy">`).join('')}</figure>
+ <div><h3>${r.n}</h3><div class="meta"><span class="score">dopasowanie ${r.s}</span><a href="${r.u}">${r.u.replace('https://','')}</a></div>
+ <p class="muted">${r.why}</p>
+ <h5>Bierzemy</h5><ul>${r.take.map(x=>`<li>${x}</li>`).join('')}</ul>
+ <h5>Nie bierzemy</h5><ul class="no">${r.no.map(x=>`<li>${x}</li>`).join('')}</ul></div></article>`).join('');
+
+const rej=[["lmstudio","LM Studio","Fioletowy przycisk i niebieski akcent. Bierzemy tylko „Copy download link”."],["comet","Perplexity Comet","Jasny, kolorowe sfery z gradientem."],["signal","Signal","Jasny i niebieski. Bierzemy tylko tekst „No ads. No trackers.”"],["obsidian","Obsidian","Fioletowy przycisk. Dobry wzór „przycisk pod Twój system + More platforms”."],["dia","Dia","Krzykliwy żółty, aplikacja dla pracowników biurowych."],["tiempo","Tiempo","Limonkowy neon. Struktura (jedno urządzenie, jedno CTA) jest OK."]];
+document.getElementById('rej').innerHTML=rej.map(([f,n,w])=>`<figure><img src="img/rej-${f}.jpg" alt="Zrzut ekranu: ${n}" loading="lazy"><figcaption><b>${n}</b>${w}</figcaption></figure>`).join('')+`<figure><figcaption><b>Też odpadły</b>Day One, Things (jasne), Organic Maps (surowy wygląd), Pillowtalk, Frequency Breathwork (wideo w tle), Awwwards: brak trafień.</figcaption></figure>`;
+
+const copy=[["Signal","„No ads. No trackers. No kidding.” Trzy krótkie zdania zamiast akapitu o prywatności."],["Organic Maps","Lista „Bez reklam, śledzenia, rejestracji” i alternatywne źródła pobrania. Darmowa aplikacja offline: najbliższy odpowiednik funkcjonalny."],["Obsidian","Trzy twierdzenia w jednym rzędzie na pierwszym ekranie: „Your thoughts are yours… Not even us.”"],["GrapheneOS","Weryfikacja: suma kontrolna i link do źródeł obok pobierania. Zaufanie przez możliwość sprawdzenia."],["DuckDuckGo AI Chat","Twierdzenie i od razu mechanizm („IP usuwane przed wysłaniem”) oraz uczciwe wyjątki. U nas: „to nie porada lekarska, w zagrożeniu dzwoń 112”."]];
+document.getElementById('copy').innerHTML=copy.map(([n,t])=>`<div class="quote"><b>${n}.</b> ${t}</div>`).join('');
+}
+</script>
+</body>
+</html>

@@ -1,6 +1,6 @@
-# Scenariusz filmu (75 s)
+# Scenariusz filmu (76 s)
 
-Wersja robocza 4 · 2026-11-21 · do wspólnej pracy. Film powstaje wyłącznie na pokaz dla jury hackathonu. Otwarte decyzje są [na końcu](#otwarte-decyzje).
+Wersja robocza 5 · 2026-11-21 · do wspólnej pracy. Film powstaje wyłącznie na pokaz dla jury hackathonu. Otwarte decyzje są [na końcu](#otwarte-decyzje).
 
 ## Pomysł w jednym zdaniu
 
@@ -8,6 +8,7 @@ Ten sam telefon, ta sama ciemność, to samo pytanie, zadane dwa razy. Za pierws
 
 ## Przekaz
 
+- **Motyw „Poza zasięgiem” (temat hackathonu):** pada dwa razy. Najpierw jako tytuł na czerni po upadku telefonu w scenie 3: bohater jest poza zasięgiem, a razem z siecią traci pomoc. Na końcu wraca w haśle „Poza zasięgiem sieci. W zasięgu ręki.” To samo wyrażenie zmienia znaczenie: zasięg sieci znika, ale pomoc zostaje w kieszeni.
 - **Zwrot akcji:** słowo „offline” zmienia znaczenie. W scenie 3 oznacza bezradność (Google nie działa). W scenie 4 to samo słowo świeci w pigułce stanu aplikacji, a odpowiedź i tak przychodzi.
 - **Lejek napięcia:** montaż zaczyna od świata i z każdym ujęciem jest bliżej widza: świat → Ukraina → Europa → Polska → „tutaj”. Widz ma poczuć, że zagrożenie idzie w jego stronę, a nie oglądać przypadkowe katastrofy.
 - **Uczciwość:** w scenie 4 pokazujemy prawdziwą odpowiedź aplikacji, z prawdziwymi źródłami. Montażem wolno skrócić czekanie, ale nie wolno podmieniać treści. Jury może poprosić o powtórzenie na żywo (zob. [scenariusz pokazu](scenariusz-pokazu.md)).
@@ -15,9 +16,9 @@ Ten sam telefon, ta sama ciemność, to samo pytanie, zadane dwa razy. Za pierws
 ## Hasło końcowe
 
 > **Internet znika pierwszy. Bezpiecznik zostaje.**
-> Zawsze przy tobie.
+> Poza zasięgiem sieci. W zasięgu ręki.
 
-Dwa poziomy: pierwsza linia duża, druga mniejsza, pojawia się pół sekundy później. Pierwsza linia opiera się na zdaniu z [Po co](../01-wizja/po-co.md): „W kryzysie internet znika jako pierwszy”. Druga zamyka obietnicę: aplikacja jest w kieszeni, nie w chmurze.
+Dwa poziomy: pierwsza linia duża, druga mniejsza, pojawia się pół sekundy później. Pierwsza linia opiera się na zdaniu z [Po co](../01-wizja/po-co.md): „W kryzysie internet znika jako pierwszy”. Druga to gra słów z tematem hackathonu „Poza zasięgiem” i zamyka obietnicę, którą wcześniej niosło „Zawsze przy tobie”: aplikacja jest w kieszeni, nie w chmurze.
 
 ## Przebieg
 
@@ -62,6 +63,9 @@ Perspektywa pierwszej osoby (POV). Noc, mieszkanie, pali się jedna mała lampka
 | 0:25 | **„Brak połączenia z internetem”**. Kciuk stuka „Spróbuj ponownie”, raz, drugi. Pasek: brak zasięgu | Bicie serca przyspiesza, syrena dalej |
 | 0:29 | Cisza na pół sekundy. Błysk za oknem oświetla pokój, obraz drży | Głuchy, daleki huk, pisk w uszach |
 | 0:31 | Telefon wypada z ręki ekranem w dół. Czerń | Cięcie do ciszy |
+| 0:32 | Na czerni wyłania się biały napis **Poza zasięgiem.** (1 s) | Cisza, tylko cichy pisk w uszach |
+
+Napis „Poza zasięgiem.” to tytuł filmu i temat hackathonu. Nie podrabiamy go jako komunikatu telefonu: w kadrze telefonu zostaje to, co telefon naprawdę pokazuje przy braku sieci, a „Poza zasięgiem” pojawia się tylko jako napis na czerni.
 
 Bez wybuchu w kadrze i bez ofiar. Strach buduje dźwięk i to, czego nie widać. To też najtańsze w realizacji.
 
@@ -105,10 +109,10 @@ Mikroscena 5 kończy się na uderzeniu: uciskające dłonie, cięcie do czerni, 
 - Pokazujemy tylko funkcje, które działają w zbudowanej aplikacji. Sygnałów syren (P2) nie ma. Jeśli coś z tabeli nie powstanie, wypada cała mikroscena.
 - Bez lektora. Niesie muzyka.
 
-### Scena 5 · Plansza (1:10–1:15)
+### Scena 5 · Plansza (1:10–1:16)
 
-- **Obraz:** czerń, logo Bezpiecznika, pod nim hasło **Internet znika pierwszy. Bezpiecznik zostaje.**, a po pół sekundzie mniejsze **Zawsze przy tobie.** Na dole drobnym krojem: „Działa bez internetu. Nie zastępuje 112.” (ten sam tekst co na pustym czacie, zob. [Ekran 1](../03-ekrany/ekran-1-czat.md)).
-- **Lektor:** „Internet znika pierwszy. Bezpiecznik zostaje. Zawsze przy tobie.”
+- **Obraz:** czerń, logo Bezpiecznika, pod nim hasło **Internet znika pierwszy. Bezpiecznik zostaje.**, a po pół sekundzie mniejsze **Poza zasięgiem sieci. W zasięgu ręki.** Na dole drobnym krojem: „Działa bez internetu. Nie zastępuje 112.” (ten sam tekst co na pustym czacie, zob. [Ekran 1](../03-ekrany/ekran-1-czat.md)).
+- **Lektor:** „Internet znika pierwszy. Bezpiecznik zostaje. Poza zasięgiem sieci. W zasięgu ręki.”
 - **Dźwięk:** ciągły ton syreny wycicha do zera.
 
 ## Wersja 60 s (gdyby był limit)
@@ -132,7 +136,7 @@ Film daje emocję i zapowiedź funkcji, a dowód przychodzi na żywo. Szczegół
 Trzy kwestie, ok. 9 s mowy. Generujemy wszystkie jednym wywołaniem (zimny start modelu trwa ok. 50 s), potem tniemy:
 
 ```bash
-saytts "A gdyby to było tutaj? ... Jeszcze raz. Tym razem wiesz, co zrobić. ... Internet znika pierwszy. Bezpiecznik zostaje. Zawsze przy tobie." \
+saytts "A gdyby to było tutaj? ... Jeszcze raz. Tym razem wiesz, co zrobić. ... Internet znika pierwszy. Bezpiecznik zostaje. Poza zasięgiem sieci. W zasięgu ręki." \
   -o film/lektor.wav --voice wojciech
 ```
 
@@ -147,6 +151,32 @@ To najbardziej czasochłonna część: ok. 2–3 h szukania i cięcia. Warto odd
 - Syrena: prawdziwe nagranie polskiej syreny (alarm i odwołanie).
 - Jeśli film miałby kiedyś trafić do sieci, trzeba wymienić materiał telewizyjny i muzykę na legalne źródła. To osobna praca, nie teraz.
 
+## Ujęcia AI
+
+Generujemy tylko ujęcia, których nie da się nagrać ani znaleźć w archiwum. Wszystko z dłońmi, ekranem aplikacji albo rytmem (RKO, latarka SOS) nagrywamy sami.
+
+| Ujęcie | Scena | Plik gotowy (`film/ai/gotowe/`) | Status |
+|---|---|---|---|
+| Osiedle z bloków, gasną latarnie i okna | 1, ujęcie 11 | `A_ulica_22_s1_mrok.mp4` | Zaakceptowane |
+| Przechwycenie drona w chmurach nad blokami, błysk oświetla pokój, spadają płonące odłamki | 3, dodatek do 3.3 | `B3_okno_55_s2_mrok.mp4` (zapas: `B3_okno_44_s3_mrok.mp4`) | Zaakceptowane. Dwie pierwsze wersje (błysk na horyzoncie) odrzucone: wyglądały jak zachód słońca |
+| Zalana uliczka | 1, ujęcia 6–7 (awaryjnie) | `C_powodz_11_s3_mrok.mp4` | Zaakceptowane. 4 z 5 wariantów odrzucone: w zatopionym aucie chodziły wycieraczki |
+
+Wszystkie gotowe pliki mają mroczną korekcję (zgaszone kolory, chłodne cienie, winieta, ziarno) i rozdzielczość 1920×1080. Surowe wersje bez korekcji leżą w `film/ai/wideo/`.
+
+**Technika:** klatka startowa z FLUX.2, potem MiniMax H3 (obraz → wideo, 1344×768, 3 s) lokalnie w ComfyUI. Skrypt: `film/ai/h3_i2v.py`. Wideo nie trafia do gita.
+
+**Weryfikacja detali.** Każde ujęcie przechodzi dwa przeglądy, zanim trafi do montażu:
+
+1. **Klatka po klatce:** arkusz 12 klatek (co 6. klatka). Sprawdzamy:
+   - fizykę: rzeczy, które nie powinny się ruszać (wycieraczki, światła w porzuconym aucie, zaparkowane samochody, budynki);
+   - ciągłość: okna, drzewa i auta nie znikają ani się nie mnożą, geometria bloków się nie wygina;
+   - fałszywe skojarzenia: błysk nie może wyglądać jak słońce, noc nie może przechodzić w zmierzch;
+   - ludzi, twarze i napisy: jeśli pojawią się nieproszone, ujęcie odpada;
+   - pory roku i realia: listopad w Polsce, polskie bloki, europejskie auta.
+2. **Na pełnym ekranie, w ruchu,** co najmniej 3 razy. Ocenia osoba, która nie generowała ujęcia.
+
+Ujęcie z jednym widocznym błędem odpada albo jest przycinane do fragmentu bez błędu. W filmie każde ujęcie AI trwa najwyżej 2 s i dostaje tę samą obróbkę co materiał z telewizji: ziarno i zgaszone kolory.
+
 ## Otwarte decyzje
 
 1. **Prawdziwy telefon czy emulator w ramce?** Proponuję prawdziwy telefon demo: zbliżenia ekranu z nagrania ekranu, dłoń kręcona drugim telefonem. Pasek stanu jest wtedy ten sam w scenach 3 i 4.
@@ -158,7 +188,8 @@ To najbardziej czasochłonna część: ok. 2–3 h szukania i cięcia. Warto odd
 | Odbiorca | Tylko jury hackathonu, prawa do materiałów nie są ograniczeniem |
 | 11 września | Tak, jako ujęcie otwierające |
 | Zagrożenie w scenach 3–4 | Alarm powietrzny |
-| Hasło końcowe | „Internet znika pierwszy. Bezpiecznik zostaje. Zawsze przy tobie.” |
+| Hasło końcowe | „Internet znika pierwszy. Bezpiecznik zostaje. Poza zasięgiem sieci. W zasięgu ręki.” Wcześniejsza wersja: „…Zawsze przy tobie.” |
+| Temat hackathonu „Poza zasięgiem” | Napis na czerni w scenie 3 i druga linia hasła końcowego |
 
 ## Do nagrania przez nas
 
@@ -197,6 +228,7 @@ Wszystko poniżej to sceny 3, 4 i 4b, ok. 2,5 h zdjęć łącznie. Reszty nie na
 | Scena 1, montaż | Fragmenty serwisów telewizyjnych (zob. [materiał do montażu](#materiał-do-montażu-scena-1)) |
 | Sceny 2 i 5, plansze | Napisy na czerni w montażu |
 | Lektor | `saytts`, głos Wojciecha |
+| Gasnące osiedle, błysk za oknem, zalana ulica | Ujęcia AI (zob. [ujęcia AI](#ujęcia-ai)) |
 | Syrena, huk, bicie serca, oddech, płacz niemowlęcia | Nagrania z sieci |
 | Muzyka do sceny 4b (110 BPM) | Z sieci |
 | Przewijanie taśmy, drżenie obrazu, zbliżenie na ikonę trybu samolotowego | Efekty w montażu |

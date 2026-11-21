@@ -1,1 +1,7 @@
 *.zip
+*.mp4
+*.mov
+*.mkv
+*.webm
+film/montaz/v2/ui/png/chrome/
+**/_tmp/

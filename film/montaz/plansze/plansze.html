@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<!-- Text layers for the film boards (scenes 2, 3, 5). Each layer renders alone on a transparent
+     1920x1080 canvas: plansze.html?layer=<id>. Positions are absolute so layers stack in ffmpeg.
+     Film type: Inter Display (static instances in fonts/), tracked capitals, one family throughout.
+     Brand wordmark only: Atkinson Hyperlegible Next ExtraBold (brand rule, design_systems/Bezpiecznik). -->
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face { font-family: "Film"; src: url(fonts/InterDisplay-Light.ttf);    font-weight: 300; }
+  @font-face { font-family: "Film"; src: url(fonts/InterDisplay-Regular.ttf);  font-weight: 400; }
+  @font-face { font-family: "Film"; src: url(fonts/InterDisplay-Medium.ttf);   font-weight: 500; }
+  @font-face { font-family: "Film"; src: url(fonts/InterDisplay-SemiBold.ttf); font-weight: 600; }
+  @font-face { font-family: "Brand"; src: url(fonts/atkinson-hyperlegible-next-latin-ext-wght-normal.woff2) format("woff2");
+               font-weight: 200 800; unicode-range: U+0100-024F, U+1E00-1EFF; }
+  @font-face { font-family: "Brand"; src: url(fonts/atkinson-hyperlegible-next-latin-wght-normal.woff2) format("woff2"); font-weight: 200 800; }
+  html, body { margin: 0; width: 1920px; height: 1080px; background: transparent; overflow: hidden; }
+  .layer { display: none; position: absolute; left: 0; width: 1920px; text-align: center;
+           font-family: "Film", sans-serif; color: #eeece6; text-transform: uppercase; }
+  .show { display: flex; justify-content: center; align-items: center; }
+  .title { top: 0; height: 1080px; font-size: 44px; font-weight: 300; letter-spacing: 0.32em; padding-left: 0.32em; }
+  .line  { height: 80px; font-size: 46px; letter-spacing: 0.26em; padding-left: 0.26em; }
+  .lt { font-weight: 300; } .md { font-weight: 500; }
+  .up { top: 452px; } .dn { top: 548px; }
+  #lockup { top: 0; height: 1080px; gap: 30px; text-transform: none; }
+  #lockup img { width: 92px; height: 92px; }
+  #lockup span { font-family: "Brand"; font-weight: 800; font-size: 76px; letter-spacing: -0.01em; color: #eeece6; }
+</style>
+</head>
+<body>
+  <div class="layer title" id="s2">A gdyby to było tutaj?</div>
+  <div class="layer title" id="s3">Poza zasięgiem.</div>
+  <div class="layer line lt up" id="s5a1">Internet znika pierwszy.</div>
+  <div class="layer line md dn" id="s5a2">Bezpiecznik zostaje.</div>
+  <div class="layer line lt up" id="s5b1">Poza zasięgiem sieci.</div>
+  <div class="layer line md dn" id="s5b2">W zasięgu ręki.</div>
+  <div class="layer" id="lockup"><img src="bezpiecznik-znak.svg" alt=""><span>Bezpiecznik</span></div>
+  <script>
+    const id = new URLSearchParams(location.search).get("layer");
+    if (id) document.getElementById(id).classList.add("show");
+  </script>
+</body>
+</html>
