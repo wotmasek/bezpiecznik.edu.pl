@@ -13,14 +13,15 @@
 | Guide snippets from `search_guides` | ≤ 800 | 2–3 snippets, ≤ 250 tokens each, cut at sentence ends |
 | Profile (via `get_profile`, only when needed) | ≤ 100 | Facts, not prose |
 | Other tool results | ≤ 300 | Per module default; longer data is paged |
-| Conversation history | ≤ 1,900 | About 12–15 short exchanges (answers are short, D18); older turns trimmed or summarised |
+| Conversation history | ≤ 1,600 | About 12 short exchanges (answers are short, D18); older turns trimmed or summarised |
 | Answer | ≤ 300 (≤ 450 for lists) | `maxOutputTokens`; "Pokaż więcej" continues in the same conversation ([style](../06-answers/style.md)) |
-| Reserve | ~300 | Template tokens, safety notes |
+| Reserve | ~300 (~150 when the answer is a 450-token list) | Template tokens, safety notes |
+| **Total** | **4,000 (4,150 with a list)** | ≤ 4,096 |
 
 ## How it is kept small
 
 1. **Live conversation in the engine (D7).** History is kept in the engine's KV cache between turns. Each turn the model reads only the new user text and new tool results. Today the full prompt is rebuilt and re-read every turn.
-2. **History compaction.** When history passes ~1,500 tokens, old turns get compacted:
+2. **History compaction.** When history passes ~1,600 tokens, old turns get compacted:
    - A guide answer keeps only its titles and the sources it used.
    - Talk keeps a short summary written by the model in one extra pass, or simply the last N turns if the summary pass is too slow.
 3. **Compact tool results.** Snippets come with ids, not full pages. "Pokaż całość" opens the source page in the UI and does not load it into the model.

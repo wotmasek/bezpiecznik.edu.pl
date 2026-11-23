@@ -40,7 +40,7 @@ Observed padding in the phone test: almost every talk reply opened with "Rozumie
 
 - **Prompt:** the rules above, plus 2 short examples (few-shot). Small models follow examples better than rules. With the live conversation they are read once per chat, so their ~250 tokens are affordable.
 - **Hard limit:** `maxOutputTokens` 300 by default, 450 for preparation lists. If the answer is cut, the UI shows "Pokaż więcej" and the model continues in the same conversation.
-- **Budget:** the answer reservation in [budget-4096](../04-context/budget-4096.md) drops from 800 to 300–450 tokens. The freed ~400 tokens go to history.
+- **Budget:** the answer reservation in [budget-4096](../04-context/budget-4096.md) drops from 800 to 300–450 tokens. The freed tokens go to history (1,500 → 1,600) and to keeping the total under 4,096.
 
 ## Draft prompt (Polish, ~220 tokens)
 
