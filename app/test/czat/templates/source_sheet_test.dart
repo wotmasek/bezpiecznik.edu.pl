@@ -74,7 +74,8 @@ void main() {
     await t.tap(find.text('Powiększ'));
     await t.pumpAndSettle();
     expect(find.text('Strona 14'), findsOneWidget);
-    expect(find.text('Dokument przykładowy (fixture)'), findsNWidgets(2));
+    // The chat shows only `{doc_short} · s. {page}`; the full title is in the sheet.
+    expect(find.text('Dokument przykładowy (fixture)'), findsOneWidget);
     expect(
       find.textContaining('Przykładowy fragment źródła'),
       findsNWidgets(2),

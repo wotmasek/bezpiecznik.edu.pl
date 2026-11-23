@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'app_templates.dart';
 import 'bullets_panel.dart';
 import 'chat_text.dart';
+import 'form_panel.dart';
 import 'md_blocks.dart';
 import 'no_source.dart';
 import 'panel_model.dart';
@@ -11,6 +12,7 @@ import 'placeholder_panel.dart';
 import 'quote_panel.dart';
 import 'source_sheet.dart';
 import 'steps_panel.dart';
+import 'todo_panel.dart';
 
 /// Everything a panel builder needs to draw one template of a message.
 class PanelScope {
@@ -68,15 +70,14 @@ typedef PanelBuilder = Widget Function(BuildContext context, PanelScope scope);
 class TemplateRegistry {
   TemplateRegistry([Map<String, PanelBuilder>? builders]) : _builders = {...?builders};
 
-  /// `steps`, `bullets`, `quote`, `no_source` real; `call`, `cpr`, `map`,
+  /// `steps`, `bullets`, `todo`, `form`, `quote`, `no_source`, `chat_text` real; `call`, `cpr`, `map`,
   /// `signal`, `animation` placeholders.
   factory TemplateRegistry.withDefaults() {
     return TemplateRegistry({
       'steps': (c, s) => StepsPanelView(scope: s),
       'bullets': (c, s) => BulletsPanelView(scope: s),
-      // Replaced by the real views (todo list, form) in their tasks.
-      'todo': (c, s) => BulletsPanelView(scope: s),
-      'form': (c, s) => const PlaceholderPanelView(type: 'form'),
+      'todo': (c, s) => TodoPanelView(scope: s),
+      'form': (c, s) => FormPanelView(scope: s),
       'quote': (c, s) => QuotePanelView(scope: s),
       'no_source': (c, s) => NoSourceView(kind: (s.panel as NoSourcePanel).kind),
       'chat_text': (c, s) => ChatTextView(text: (s.panel as ChatTextPanel).text),
