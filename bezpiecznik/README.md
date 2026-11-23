@@ -37,7 +37,7 @@ Ten folder to **przepis na aplikację**: jedyne źródło prawdy dla budującego
 - [Źródła wiedzy](04-dane/zrodla-wiedzy.md) · [Dane mapy](04-dane/dane-mapy.md) · [Kontrakty treści (JSON, DDL)](04-dane/kontrakty-tresci.md) · [Licencje i zgody](04-dane/licencje.md)
 
 **5. Technologia**
-- [Architektura](05-technologia/architektura.md) · [Lokalne AI](05-technologia/lokalne-ai.md) · [Mapa offline](05-technologia/mapa-offline.md) · [Prywatność i bezpieczeństwo](05-technologia/prywatnosc-i-bezpieczenstwo.md) · [Dystrybucja](05-technologia/dystrybucja.md)
+- [Architektura](05-technologia/architektura.md) · [Lokalne AI](05-technologia/lokalne-ai.md) · [Mapa offline](05-technologia/mapa-offline.md) · [Prywatność i bezpieczeństwo](05-technologia/prywatnosc-i-bezpieczenstwo.md) · [Dystrybucja](05-technologia/dystrybucja.md) · [Minimalne wymagania systemowe](05-technologia/wymagania-systemowe.md)
 
 **6. Ryzyka**
 - [Ryzyka i otwarte kwestie](06-ryzyka/ryzyka-i-otwarte-kwestie.md) · [Krytyka planu 2026-11-21](06-ryzyka/krytyka-2026-11-21.md)

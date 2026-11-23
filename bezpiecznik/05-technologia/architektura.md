@@ -10,7 +10,7 @@ Bezpiecznik to natywna aplikacja mobilna na **Android i iOS**. Nie ma wersji web
 
 | Platforma | Rola | Uwagi |
 |---|---|---|
-| Android | Główna platforma developmentu, testów i demo | Zalecane co najmniej 6–8 GB RAM do płynnego działania lokalnego AI. Dystrybucja w MVP: plik APK ([dystrybucja](dystrybucja.md)) |
+| Android | Główna platforma developmentu, testów i demo | Minimum 6 GB RAM, zalecane 8 GB ([wymagania systemowe](wymagania-systemowe.md)). Dystrybucja w MVP: plik APK ([dystrybucja](dystrybucja.md)) |
 | iOS | Szybki build z tego samego kodu, bez osobnej pracy nad funkcjami | Lokalne AI wymaga nowszych iPhone'ów z odpowiednią ilością pamięci. Build i podpis wymagają macOS + Xcode albo chmurowego CI z macOS (np. Codemagic, runnery macOS w GitHub Actions) oraz konta Apple Developer Program (TestFlight, podpisany build) |
 
 **Zasady od pierwszego dnia, żeby iOS był tani:**
