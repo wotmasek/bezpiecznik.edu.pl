@@ -40,6 +40,7 @@ The fix is model-first, built on modules.
 | 8 | [Context budget: 4096](04-context/budget-4096.md) | What fits, and how it is kept small |
 | 9 | [Hybrid retrieval](05-retrieval/hybrid-search.md) | BM25 + vectors, compact results |
 | 10 | [Answers and citations](06-answers/citations.md) | Free text, [n], unsourced marking, rendering into today's components |
+| 10a | [Answer style](06-answers/style.md) | Short, direct answers; draft prompt; length limits |
 | 11 | [Safety](07-safety/safety.md) | What stays deterministic and why |
 | 12 | [Performance](08-performance/performance.md) | Measurements and the tuning list |
 | 13 | [Roadmap](09-roadmap/plan.md) | Milestones with exit criteria |

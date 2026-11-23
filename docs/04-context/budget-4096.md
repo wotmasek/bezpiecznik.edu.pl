@@ -13,8 +13,8 @@
 | Guide snippets from `search_guides` | ≤ 800 | 2–3 snippets, ≤ 250 tokens each, cut at sentence ends |
 | Profile (via `get_profile`, only when needed) | ≤ 100 | Facts, not prose |
 | Other tool results | ≤ 300 | Per module default; longer data is paged |
-| Conversation history | ≤ 1,500 | About 10–12 short exchanges; older turns trimmed or summarised |
-| Answer | ≤ 800 | `maxOutputTokens` |
+| Conversation history | ≤ 1,900 | About 12–15 short exchanges (answers are short, D18); older turns trimmed or summarised |
+| Answer | ≤ 300 (≤ 450 for lists) | `maxOutputTokens`; "Pokaż więcej" continues in the same conversation ([style](../06-answers/style.md)) |
 | Reserve | ~300 | Template tokens, safety notes |
 
 ## How it is kept small
