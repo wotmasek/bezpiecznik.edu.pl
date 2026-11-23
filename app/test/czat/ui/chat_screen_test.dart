@@ -57,6 +57,35 @@ void main() {
     expect(find.byKey(const Key('composer-stop')), findsNothing);
   });
 
+  testWidgets('112 is pinned only for a risk conversation, exactly once', (
+    tester,
+  ) async {
+    final service = FakeAnswerService(
+      script: (q, _) => Stream.fromIterable([
+        AnswerThinking(ThinkingPhase.searching, q.contains('pożar')),
+        AnswerReady(fakeStepsAnswer()),
+      ]),
+    );
+    final c = await pumpChat(tester, service);
+    final call = find.byKey(const Key('call-112'));
+    expect(call, findsNothing); // empty chat
+    c.read(chatControllerProvider.notifier).send('zapas wody');
+    await tester.pump();
+    await tester.pump();
+    expect(find.byKey(const Key('user-bubble')), findsOneWidget);
+    expect(call, findsNothing); // non-risk chat
+    c.read(chatControllerProvider.notifier).send('pożar w kuchni');
+    await tester.pump();
+    await tester.pump();
+    c.read(chatControllerProvider.notifier).send('a co dalej');
+    await tester.pump();
+    await tester.pump();
+    expect(call, findsOneWidget); // stays for the rest of the conversation
+    c.read(chatControllerProvider.notifier).newChat();
+    await tester.pump();
+    expect(call, findsNothing);
+  });
+
   testWidgets('quick action tiles are at least 64 dp high', (tester) async {
     await pumpChat(tester, FakeAnswerService());
     for (final l in [

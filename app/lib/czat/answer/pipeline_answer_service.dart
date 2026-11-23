@@ -277,7 +277,12 @@ class PipelineAnswerService implements AnswerService {
         }
         return buildQuoteFallback(prompted, risk: risk, modelOff: false);
       }
-      return buildModelAnswer(v.panels, prompted, risk: risk);
+      final answer = buildModelAnswer(v.panels, prompted, risk: risk);
+      // Risk + only a `form`: nothing left to show but the sources.
+      if (answer.panels.every((p) => p is CallPanel)) {
+        return buildQuoteFallback(prompted, risk: risk, modelOff: false);
+      }
+      return answer;
     }
     return buildQuoteFallback(prompted, risk: risk, modelOff: false);
   }

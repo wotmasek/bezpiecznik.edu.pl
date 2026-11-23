@@ -188,6 +188,64 @@ void main() {
       expect(r.rejected.single.reason, RejectReason.droppedNegation);
     });
 
+    test('todo items are checked like bullets items', () {
+      final r = v.validate(
+        panels([
+          {
+            'type': 'todo',
+            'title': 'Do plecaka',
+            'items': [
+              {'text': 'Zapakuj wodę i latarkę.', 'source_id': 'c3'},
+              {'text': 'Zapakuj radio.', 'source_id': 'c3'},
+              {'text': 'Zapakuj apteczkę.', 'source_id': 'zmyslone'},
+            ],
+          },
+        ]),
+        [bag],
+      );
+      expect(r.panels.single['type'], 'todo');
+      expect(r.panels.single['title'], 'Do plecaka');
+      expect(r.panels.single['items'], [
+        {'text': 'Zapakuj wodę i latarkę.', 'source_id': 'c3'},
+      ]);
+      expect([for (final e in r.rejected) e.reason], [RejectReason.lowOverlap, RejectReason.unknownSource]);
+    });
+
+    test('form: structural checks only, anything malformed drops it', () {
+      Map<String, Object?> q(String text, List<Object?> options) => {'text': text, 'options': options};
+      List<Map<String, Object?>> check(List<Object?> questions) => v.validate(
+        panels([
+          {'type': 'form', 'questions': questions},
+        ]),
+        chunks,
+      ).panels;
+
+      final ok = check([
+        q(' Gdzie jesteś? ', ['W domu', 'Na zewnątrz']),
+        {...q('Kto jest z tobą?', ['Dziecko', 'Senior', 'Zwierzę']), 'multiple': true},
+      ]);
+      expect(ok, [
+        {
+          'type': 'form',
+          'questions': [
+            {'text': 'Gdzie jesteś?', 'multiple': false, 'options': ['W domu', 'Na zewnątrz']},
+            {'text': 'Kto jest z tobą?', 'multiple': true, 'options': ['Dziecko', 'Senior', 'Zwierzę']},
+          ],
+        },
+      ]);
+      final two = ['A', 'B'];
+      expect(check([]), isEmpty);
+      expect(check([for (var i = 0; i < 4; i++) q('Pytanie $i?', two)]), isEmpty); // > 3 questions
+      expect(check([q('Pytanie?', ['A'])]), isEmpty); // < 2 options
+      expect(check([q('Pytanie?', ['A', 'B', 'C', 'D', 'E', 'F'])]), isEmpty); // > 5 options
+      expect(check([q('x' * 91, two)]), isEmpty);
+      expect(check([q('Pytanie?', ['A', 'x' * 41])]), isEmpty);
+      expect(check([q(' ', two)]), isEmpty);
+      expect(check([q('Pytanie?', ['A', ' '])]), isEmpty);
+      expect(check([q('Pytanie?', ['A', 1])]), isEmpty);
+      expect(check([q('Dobre?', two), 'zle']), isEmpty);
+    });
+
     test('quote needs a retrieved source, duplicates collapse', () {
       final r = v.validate(
         panels([

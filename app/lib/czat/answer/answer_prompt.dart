@@ -16,8 +16,8 @@ const int kModelContextTokens = 2048;
 /// around them and the (long) source ids.
 const int kAnswerMaxTokens = 600;
 
-/// Characters of source text in one prompt. With the system prompt (~1.2 k
-/// characters) and the question this keeps the prompt under 1.4 k tokens at
+/// Characters of source text in one prompt. With the system prompt (~1.3 k
+/// characters) and the question this keeps the prompt under 1.45 k tokens at
 /// 2.5 characters per token, the densest Polish text measured.
 const int kPromptChunkBudgetChars = 2000;
 
@@ -59,23 +59,24 @@ List<({KbChunk chunk, String text})> fitChunks(List<KbChunk> chunks) {
 }
 
 const String kSystemPrompt = '''
-Jesteś asystentem bezpieczeństwa. Odpowiadasz WYŁĄCZNIE na podstawie fragmentów źródeł podanych w wiadomości. Nigdy nie korzystaj z własnej wiedzy.
+Jesteś asystentem bezpieczeństwa. Odpowiadasz WYŁĄCZNIE na podstawie podanych fragmentów źródeł. Nigdy nie korzystaj z własnej wiedzy.
 
 Zwróć jeden obiekt JSON, bez tekstu poza nim:
 {"panels":[{"type":"steps","title":"Teraz","items":[{"text":"...","source_id":"..."}]}]}
 
-Dozwolone panele:
-- "steps": kroki po kolei, "bullets": lista bez kolejności. Każdy element ma "text" i "source_id" wybrany z podanych fragmentów.
-- Znaczenia sygnałów, fakty i listy rzeczy to "bullets"; "steps" tylko dla czynności po kolei.
+Panele:
+- "steps": czynności po kolei. "bullets": fakty, znaczenia sygnałów, lista bez kolejności. Każdy element ma "text" i "source_id" z fragmentów.
+- "todo": co przygotować, spakować, sprawdzić; elementy jak w "bullets". Nie w nagłym wypadku.
 - "quote": {"type":"quote","source_id":"..."} gdy nie umiesz krótko streścić fragmentu.
+- "form": gdy pytanie jest zbyt ogólne, zamiast odpowiedzi 1-3 pytania wyboru, 2-5 opcji: {"type":"form","questions":[{"text":"...","multiple":false,"options":["...","..."]}]}
 
 Zasady:
-- Jeden element to jedna czynność, jedno krótkie zdanie (do 120 znaków), po polsku.
+- Element to jedna czynność, jedno krótkie zdanie (do 120 znaków), po polsku.
 - Używaj słów i liczb z fragmentu. Nie dodawaj liczb, dawek, czasów ani nazw leków, których nie ma we fragmencie.
 - Zachowaj zaprzeczenia ze źródła: jeśli fragment mówi "nie" lub "nigdy", krok też. Nie dodawaj zaprzeczeń, których nie ma.
-- Nie diagnozuj. Nie dodawaj panelu "call" ani innych paneli.
+- Nie diagnozuj. Nie dodawaj panelu "call" ani innych.
 - Gdy fragmenty nie odpowiadają na pytanie, zwróć {"panels":[]}.
-- Najwyżej 6 elementów w całej odpowiedzi, wybierz najważniejsze.
+- Najwyżej 6 elementów łącznie, wybierz najważniejsze.
 - Tytuł panelu: do 30 znaków.''';
 
 /// Short reminder appended on the single retry after an unparseable answer.
@@ -95,7 +96,7 @@ Map<String, Object?> answerSchema(List<String> sourceIds) => {
         'properties': {
           'type': {
             'type': 'string',
-            'enum': ['steps', 'bullets', 'quote'],
+            'enum': ['steps', 'bullets', 'todo', 'quote', 'form'],
           },
           'title': {'type': 'string'},
           'source_id': {'type': 'string', 'enum': sourceIds},
@@ -108,6 +109,21 @@ Map<String, Object?> answerSchema(List<String> sourceIds) => {
                 'source_id': {'type': 'string', 'enum': sourceIds},
               },
               'required': ['text', 'source_id'],
+            },
+          },
+          'questions': {
+            'type': 'array',
+            'items': {
+              'type': 'object',
+              'properties': {
+                'text': {'type': 'string'},
+                'multiple': {'type': 'boolean'},
+                'options': {
+                  'type': 'array',
+                  'items': {'type': 'string'},
+                },
+              },
+              'required': ['text', 'options'],
             },
           },
         },

@@ -35,7 +35,7 @@ List<Map<String, Object?>> _mergeNeighbours(List<Map<String, Object?>> panels) {
   final out = <Map<String, Object?>>[];
   for (final p in panels) {
     final last = out.isEmpty ? null : out.last;
-    final list = p['type'] == 'steps' || p['type'] == 'bullets';
+    final list = p['type'] == 'steps' || p['type'] == 'bullets' || p['type'] == 'todo';
     final a = last?['items'], b = p['items'];
     if (list && last != null && last['type'] == p['type'] && last['title'] == p['title'] && a is List && b is List) {
       out[out.length - 1] = {...last, 'items': [...a, ...b]};
@@ -46,13 +46,25 @@ List<Map<String, Object?>> _mergeNeighbours(List<Map<String, Object?>> panels) {
   return out;
 }
 
-/// Answer from validated model panels. `call` goes first when [risk].
+/// On a risk question `todo` becomes `bullets` and `form` is dropped (never
+/// ask questions in an emergency). Otherwise a `form` is kept only when it is
+/// the only panel: mixed with content, the content wins.
+List<Map<String, Object?>> _shape(List<Map<String, Object?>> panels, bool risk) {
+  final content = [
+    for (final p in panels)
+      if (p['type'] != 'form') risk && p['type'] == 'todo' ? {...p, 'type': 'bullets'} : p,
+  ];
+  return risk || content.isNotEmpty ? content : panels.take(1).toList();
+}
+
+/// Answer from validated model panels. `call` goes first when [risk]; the
+/// result may hold no content panel (risk + only a `form`).
 AssistantAnswer buildModelAnswer(
   List<Map<String, Object?>> panels,
   List<KbChunk> chunks, {
   required bool risk,
 }) {
-  panels = _mergeNeighbours(panels);
+  panels = _mergeNeighbours(_shape(panels, risk));
   final used = <String>{};
   for (final p in panels) {
     final id = p['source_id'];

@@ -5,6 +5,7 @@ library;
 
 import '../retrieval/retriever.dart';
 import '../retrieval/stopwords_fallback.dart';
+import '../templates/panel_model.dart' show FormPanel;
 import '../../ratunek/detect/normalize.dart';
 import 'answer_text.dart';
 
@@ -33,8 +34,8 @@ class RejectedItem {
 class ValidatedAnswer {
   const ValidatedAnswer({required this.panels, required this.rejected});
 
-  /// Panel JSON maps that survived: only `steps` / `bullets` with `items`
-  /// and `quote`. Never contains other types.
+  /// Panel JSON maps that survived: only `steps` / `bullets` / `todo` with
+  /// `items`, `quote` and `form`. Never contains other types.
   final List<Map<String, Object?>> panels;
   final List<RejectedItem> rejected;
 
@@ -46,6 +47,33 @@ class ValidatedAnswer {
 const int kMaxItemChars = 240;
 const int kMaxTitleChars = 30;
 const int kMaxItemsPerPanel = 8;
+const int kMaxFormQuestionChars = 90;
+const int kMaxFormOptionChars = 40;
+
+/// Item lists: `todo` items are checked exactly like `bullets` items.
+const Set<String> _listTypes = {'steps', 'bullets', 'todo'};
+
+/// A `form` (1-3 choice questions, 2-5 short options each) is not a claim, so
+/// it gets structural checks only; anything malformed drops the whole form.
+Map<String, Object?>? _form(Map<Object?, Object?> p) {
+  final raw = p['questions'];
+  if (raw is! List || raw.isEmpty || raw.length > FormPanel.maxQuestions) return null;
+  final questions = <Map<String, Object?>>[];
+  for (final q in raw) {
+    if (q is! Map) return null;
+    final text = q['text'], options = q['options'];
+    if (text is! String || options is! List) return null;
+    final t = text.trim();
+    if (t.isEmpty || t.length > kMaxFormQuestionChars) return null;
+    if (options.length < 2 || options.length > FormPanel.maxOptions) return null;
+    final opts = [for (final o in options) if (o is String) o.trim()];
+    if (opts.length != options.length || opts.any((o) => o.isEmpty || o.length > kMaxFormOptionChars)) {
+      return null;
+    }
+    questions.add({'text': t, 'multiple': q['multiple'] == true, 'options': opts});
+  }
+  return {'type': 'form', 'questions': questions};
+}
 
 /// Panel titles the UI may show (spec szablony-czatu.md examples + the
 /// defaults). Anything else the model writes is replaced by a default, so a
@@ -179,12 +207,12 @@ class _ChunkFacts {
 List<Object?> _mergeSplitPanels(List<Object?> raw) {
   bool titleOnly(Object? p) =>
       p is Map &&
-      (p['type'] == 'steps' || p['type'] == 'bullets') &&
+      _listTypes.contains(p['type']) &&
       p['items'] == null &&
       p['text'] == null;
   bool flat(Object? p) =>
       p is Map &&
-      (p['type'] == 'steps' || p['type'] == 'bullets') &&
+      _listTypes.contains(p['type']) &&
       p['items'] == null &&
       p['text'] is String &&
       p['source_id'] is String;
@@ -290,7 +318,12 @@ class AnswerValidator {
         }
         continue;
       }
-      if (type != 'steps' && type != 'bullets') continue;
+      if (type == 'form') {
+        final form = _form(p);
+        if (form != null) out.add(form);
+        continue;
+      }
+      if (!_listTypes.contains(type)) continue;
       final items = p['items'];
       if (items is! List) continue;
       final kept = <Map<String, Object?>>[];

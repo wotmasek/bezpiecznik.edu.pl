@@ -10,8 +10,6 @@ import 'thinking.dart';
 
 const String copyLabel = 'Kopiuj';
 
-const AssistantAnswer _callOnly = AssistantAnswer(panels: [CallPanel({'type': 'call'})]);
-
 /// One message of the list: user bubble on the right (bg-200, radius 18, max
 /// 80% wide), assistant content on the full width on the left.
 class MessageView extends StatelessWidget {
@@ -48,34 +46,15 @@ class MessageView extends StatelessWidget {
       );
     }
     switch (message.status) {
+      // A risk conversation keeps "Zadzwoń 112" pinned above the composer
+      // (chat screen), so no state here carries a call card.
       case MessageStatus.generating:
-        final thinking = Thinking(phase: message.phase, partialText: message.partialText);
-        if (!message.risk) return thinking;
-        // Same `call` template and spacing as the final answer, which starts
-        // with it: 112 is on screen while the model works, no jump at the end.
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const TemplateRenderer(answer: _callOnly),
-            SizedBox(height: t.space3),
-            thinking,
-          ],
-        );
+        return Thinking(phase: message.phase, partialText: message.partialText);
       case MessageStatus.stopped:
       case MessageStatus.error:
-        final note = Text(
+        return Text(
           message.text,
           style: t.chat.copyWith(color: message.status == MessageStatus.stopped ? t.ink300 : t.ink200),
-        );
-        if (!message.risk) return note;
-        // Stopping (or failing) a risk answer never removes the 112 panel.
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const TemplateRenderer(answer: _callOnly),
-            SizedBox(height: t.space3),
-            note,
-          ],
         );
       case MessageStatus.done:
         final answer = message.answer;

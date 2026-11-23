@@ -59,6 +59,22 @@ void main() {
     expect(promptTokens + req.maxTokens, lessThanOrEqualTo(kModelContextTokens));
   });
 
+  test('schema and prompt allow todo and form', () {
+    final req = buildAnswerRequest(question: 'co spakować', chunks: [chunk('c0', 'Woda.')]);
+    final panels = (req.jsonSchema!['properties'] as Map)['panels'] as Map;
+    final props = (panels['items'] as Map)['properties'] as Map;
+    expect((props['type'] as Map)['enum'], containsAll(['todo', 'form']));
+    expect(props['questions'], isA<Map>());
+    expect(kSystemPrompt, allOf(contains('"todo"'), contains('"form"')));
+  });
+
+  // 2048-token context: every character of the system prompt is paid on
+  // every question (1168 before todo/form, 1311 with them; the worst case
+  // above then leaves ~7 tokens).
+  test('system prompt stays within its size budget', () {
+    expect(kSystemPrompt.length, lessThanOrEqualTo(1320));
+  });
+
   test('a long chunk is cut at a sentence end, not mid-word', () {
     final p = _prompt([_sentences(1500)]);
     final body = p.split('\n')[2];
