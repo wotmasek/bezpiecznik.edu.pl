@@ -36,10 +36,27 @@ Indeks wektorowy bazy wiedzy (planowany) i model do embeddingów doliczyć po wy
 | Aplikacja z załadowanym modelem, w trakcie rozmowy | ≈ 2,5 GB (PSS) | Pixel 9, `dumpsys meminfo`, 2026-11-23, CPU, kontekst 2048 tokenów |
 | Kontekst modelu | 2048 tokenów | Obecna konfiguracja (`kModelContextTokens`) |
 
+### Pomiar kontekstu na Pixelu 9 (CPU, 2026-11-23)
+
+Ten sam model, prompt z fragmentów poradników, w środku ukryte „hasło”, odpowiedź 160 tokenów. Test: `app/integration_test/ctx_bench_test.dart` (gałąź `fix/chat-conversation`).
+
+| Kontekst | Prompt | Pierwsze słowo | Pisanie | RAM (szczyt) | „Hasło” |
+|---|---|---|---|---|---|
+| 2048 | 1,6K | 6,4–8,4 s | 17–20 tok/s | 2,5 GB | znalezione |
+| 4096 | 1,6K / 3,6K | 7,7 s / 17,6 s | 16–17 tok/s | 2,9 GB | znalezione |
+| 8192 | 1,6K / 3,6K / 7,7K | 11,5 s / 27 s / 75 s | 8–12 tok/s | 3,6 GB | znalezione |
+| 16384 | 1,6K / 12,2K | 24–27 s / 198 s | 6,4 tok/s | 4,5 GB | znalezione |
+
+- **Jakość nie spada**: model znalazł „hasło” w każdym przebiegu, także przy 12K tokenów, a odpowiedzi były takie same.
+- **Koszt rośnie z zarezerwowanym kontekstem, nawet niewykorzystanym.** Ten sam prompt 1,6K: pierwsze słowo po 6,4 s przy 2048, po 24 s przy 16384.
+- **Długi prompt jest drogi.** Wczytywanie idzie w tempie ok. 100–250 tokenów/s, więc 7,7K tokenów to 75 s czekania. Wkładanie wszystkiego do kontekstu nie działa na telefonie. Kontekst ma być mały i trafiony: narzędzia, wyszukiwanie, utrzymana rozmowa.
+- **Nagrzanie spowalnia ok. 1,8×.** Po kilku minutach pracy ten sam przebieg (2048, 1,6K) dał pierwsze słowo po 11,7 s zamiast 6,4 s (Thermal Status 0 → 1).
+- **Dla 6 GB RAM:** 4096 tokenów (≈ 2,9 GB) to rozsądny sufit. 8192 (≈ 3,6 GB) dopiero od 8 GB RAM.
+
 Research 2026-11-23 (źródła sprawdzone):
 
 - **Limit 2048 tokenów dotyczy tylko GPU.** Na GPU przy aktywacjach float16 wyniki psują się po ~2048 tokenach ([LiteRT-LM #4001](https://github.com/google-ai-edge/LiteRT-LM/issues/4001), otwarte). Aplikacja liczy na CPU (`LLM_BACKEND=cpu`), gdzie ten błąd nie występuje, więc kontekst można podnieść do 4096–8192 tokenów. Gemma 4 E2B obsługuje natywnie 128K, a wersja `.litertlm` do 32K ([karta modelu](https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm)).
-- **Na CPU pamięć podręczna KV rośnie w miarę rozmowy**, a nie od razu do pełnego rozmiaru ([#4096](https://github.com/google-ai-edge/LiteRT-LM/issues/4096)). Szacunek dla E2B: przy 8K to dziesiątki do kilkuset MB. To szacunek, nie pomiar.
+- ~~Na CPU pamięć KV rośnie w miarę rozmowy~~: pomiar powyżej temu przeczy. RAM i szybkość zależą od zarezerwowanego kontekstu. To samo pokazują pomiary na Galaxy S26 w [edge-llm-bench](https://github.com/john-rocky/edge-llm-bench).
 - **Google Edge Gallery** ustawia dla Gemma-4-E2B-it kontekst 32000 tokenów, odpowiedź do 4000 tokenów, najpierw GPU, i **wymaga 8 GB RAM** (`minDeviceMemoryInGb: 8`, [allowlista 1_0_23](https://github.com/google-ai-edge/gallery/blob/main/model_allowlists/1_0_23.json)). Nasze minimum 6 GB jest niższe niż Google'a, więc wymaga testu na prawdziwym telefonie z 6 GB.
 - **Szybkość:** największy zysk daje utrzymanie jednej rozmowy w silniku zamiast wysyłania całej historii co turę. Silnik trzyma KV między turami, a prompt systemowy można przeliczyć raz i klonować. Na flagowcu CPU czyta prompt z prędkością ~557 tokenów/s ([Google](https://developers.google.com/edge/litert-lm/models/gemma-4)), więc ponowne czytanie 4K tokenów kosztuje kilka sekund przy każdej odpowiedzi.
 - **Bez szans na 6 GB:** Gemma 4 E4B (Edge Gallery wymaga 12 GB) i NPU na Tensor G4, Snapdragonach i MediaTekach (brak modeli E2B na te układy).
@@ -55,5 +72,5 @@ Brakuje pomiaru na telefonie z 6 GB RAM. To warunek, żeby uznać minimum za pot
 ## Do potwierdzenia
 
 - Test na telefonie z 6 GB RAM: ładowanie modelu, odpowiedź, czy system nie zamyka aplikacji w tle.
-- Kontekst 4096 i 8192 tokenów na CPU: RAM i czas, na Pixelu 9 i na telefonie z 6 GB.
+- Kontekst 4096 na telefonie z 6 GB RAM (Pixel 9: zmierzone, patrz wyżej).
 - Strona pobierania i opis w sklepie podają wymagania z tej tabeli.
