@@ -2,12 +2,12 @@ import 'dart:convert';
 
 import 'package:bezpiecznik/czat/templates/md_blocks.dart';
 import 'package:bezpiecznik/czat/templates/no_source.dart';
-import 'package:bezpiecznik/czat/templates/panel_card.dart';
 import 'package:bezpiecznik/czat/templates/panel_model.dart';
 import 'package:bezpiecznik/czat/templates/template_fixtures.dart';
 import 'package:bezpiecznik/czat/templates/template_gallery.dart';
 import 'package:bezpiecznik/czat/templates/template_registry.dart';
 import 'package:bezpiecznik/czat/templates/template_renderer.dart';
+import 'package:bezpiecznik/czat/templates/todo_panel.dart';
 import 'package:bezpiecznik/wspolne/theme/bz_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -80,11 +80,14 @@ void main() {
     await tester.pumpWidget(host(Stateful(fixture('bullets'))));
     expect(find.text('Przykładowy element A'), findsOneWidget);
     expect(find.text('0 z 2'), findsNothing);
+    expect(find.byType(TodoPanelView), findsNothing);
 
-    await tester.pumpWidget(host(Stateful(fixture('bullets_checkable')), overrides: const []));
+    // Legacy checkable bullets are a to-do list.
+    await tester.pumpWidget(host(Stateful(fixture('bullets_checkable'))));
     await tester.pumpAndSettle();
+    expect(find.byType(TodoPanelView), findsOneWidget);
     expect(find.text('0 z 2'), findsOneWidget);
-    await tester.tap(find.byType(BzCheck).first);
+    await tester.tap(find.text('Woda pitna'));
     await tester.pump();
     expect(find.text('1 z 2'), findsOneWidget);
   });
@@ -97,9 +100,7 @@ void main() {
         overrides: [sourceOpenerProvider.overrideWithValue((_, s) => opened.add(s.sourceId))],
       ),
     );
-    expect(find.text('Źródło'), findsOneWidget);
-    expect(find.text('Dokument przykładowy (fixture)'), findsOneWidget);
-    expect(find.textContaining('s. 14 · Fixture 2025'), findsOneWidget);
+    expect(find.text('Przykład · s. 14'), findsOneWidget);
     expect(find.textContaining('Przykładowy fragment źródła'), findsOneWidget);
     expect(find.text('Tryb bez AI: fragmenty źródeł'), findsOneWidget);
     await tester.tap(find.text('Powiększ'));
@@ -151,8 +152,9 @@ void main() {
     expect(find.textContaining('hologram'), findsNothing);
   });
 
-  testWidgets('registry: placeholders for call/cpr/map/signal/animation and a plug-in builder', (tester) async {
-    for (final t in ['call', 'cpr', 'map', 'signal', 'animation']) {
+  testWidgets('registry: placeholders for cpr/map/signal/animation and a plug-in builder', (tester) async {
+    // `call` is drawn by the renderer's header, never as a panel.
+    for (final t in ['cpr', 'map', 'signal', 'animation']) {
       await tester.pumpWidget(host(TemplateRenderer(answer: fixture(t))));
       await tester.pumpAndSettle();
       expect(find.byKey(ValueKey('placeholder-$t')), findsOneWidget, reason: t);
@@ -188,10 +190,20 @@ void main() {
     }
     expect(find.text('Teraz'), findsOneWidget);
     expect(find.text('Do plecaka'), findsOneWidget);
-    expect(find.text('Dokument przykładowy (fixture)'), findsOneWidget);
-    for (final t in ['call', 'cpr', 'map', 'signal', 'animation']) {
+    expect(find.text('Lista do odhaczenia'), findsOneWidget);
+    expect(find.text('Kto mieszka w domu?'), findsOneWidget);
+    expect(find.text('Przykład · s. 14'), findsOneWidget);
+    for (final t in ['cpr', 'map', 'signal', 'animation']) {
       expect(find.byKey(ValueKey('placeholder-$t')), findsWidgets, reason: t);
     }
     expect(tester.takeException(), isNull);
+
+    // The gallery's form shows the message instead of sending it to the chat.
+    await tester.tap(find.text('Gaz'));
+    await tester.pump();
+    await tester.tap(find.text('Wyślij'));
+    await tester.pump();
+    expect(find.text('Czym ogrzewasz dom: Gaz.'), findsOneWidget);
+    expect(find.text('Kto mieszka w domu?'), findsNothing);
   });
 }

@@ -17,7 +17,6 @@ class BulletsPanelView extends StatelessWidget {
     final t = context.bz;
     final (title, items) = switch (scope.panel) {
       BulletsPanel(:final title, :final items) => (title, items),
-      TodoPanel(:final title, :final items) => (title, items),
       _ => ('', const <PanelItem>[]),
     };
     return Column(
