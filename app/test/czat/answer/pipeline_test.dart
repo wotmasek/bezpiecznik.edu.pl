@@ -402,6 +402,47 @@ void main() {
     });
   });
 
+  group('todo and form', () {
+    final todo = {
+      'type': 'todo',
+      'title': 'Do przygotowania',
+      'items': [
+        {'text': 'Zapas wody to trzy litry na osobę na dobę.', 'source_id': 'c2'},
+      ],
+    };
+    final form = {
+      'type': 'form',
+      'questions': [
+        {'text': 'Na ile osób?', 'multiple': false, 'options': ['1', '2-4', 'Więcej']},
+      ],
+    };
+    FakeEngine model(List<Object?> panels) => FakeEngine([
+      [jsonEncode({'panels': panels})],
+    ]);
+
+    test('todo with sources is accepted; on a risk question it becomes bullets', () async {
+      expect(types(ready(await run(svc(model([todo])), 'zapas wody'))), ['todo']);
+      expect(types(ready(await run(svc(model([todo]), risk: true)))), ['call', 'bullets']);
+    });
+
+    test('a form alone is kept, without sources', () async {
+      final a = ready(await run(svc(model([form])), 'zapasy'));
+      expect(types(a), ['form']);
+      expect(a.sources, isEmpty);
+    });
+
+    test('a form mixed with content is dropped', () async {
+      expect(types(ready(await run(svc(model([form, todo])), 'zapasy'))), ['todo']);
+    });
+
+    test('risk: a form is never shown, the quote fallback replaces it', () async {
+      final e = model([form]);
+      final a = ready(await run(svc(e, risk: true)));
+      expect(types(a), ['call', 'quote', 'quote']);
+      expect(e.requests.length, 1);
+    });
+  });
+
   group('cancel', () {
     test('cancelling the subscription cancels the engine and emits nothing more', () async {
       final e = FakeEngine([null]); // hangs
