@@ -11,7 +11,7 @@ Lokalny model językowy rozumie pytanie użytkownika i układa odpowiedź z frag
 | Cecha | Wartość |
 |---|---|
 | Rozmiar | ≈ 2,3 mld efektywnych parametrów, 2,58 GB wg strony LiteRT-LM Google (sprawdzone 2026-11-21). Pomiary Google: pierwszy token 0,3 s na GPU / 1,8 s na CPU (S26 Ultra); telefon demo zmierzyć w godzinie 2 |
-| Pamięć telefonu | od ≈ 4 GB RAM (dane orientacyjne, do zmierzenia) |
+| Pamięć telefonu | Minimum 6 GB RAM; aplikacja z modelem zajmuje ≈ 2,5 GB ([wymagania systemowe](wymagania-systemowe.md)) |
 | Uruchomienie | `flutter_edge_ai` (następca wycofanego `flutter_gemma`; migracja: zmiana importu i `dart fix --apply`), plik `.litertlm`, Android i iOS, bez sieci. Nazwy API sprawdzić w aktualnej dokumentacji pakietu |
 | Format odpowiedzi | Wymuszony format ze schematem JSON (`responseFormat: ResponseFormat.jsonSchema(...)` w `openChat`, od 2.6.0), bez wywoływania narzędzi: według dokumentacji pakietu formatu nie łączy się z narzędziami ani z `enableThinking: true`. Szczegóły: [format odpowiedzi](#format-odpowiedzi) |
 | Tryb myślenia | Wyłączony, bo wydłuża czas odpowiedzi |
