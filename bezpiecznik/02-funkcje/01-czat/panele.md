@@ -10,13 +10,15 @@ Odpowiedź Bezpiecznika nie jest ścianą tekstu, tylko zestawem gotowych paneli
 
 | Panel | Zawartość | Przykład |
 |---|---|---|
-| `steps` | Numerowane kroki po kolei, każdy z przyciskiem „zrobione” | Co zrobić w pierwszej godzinie blackoutu |
-| `bullets` | Lista punktowana bez kolejności | Co zabrać do schronu |
+| `steps` | Numerowane kroki po kolei (lista jak w ChatGPT, bez odhaczania, długa lista zwinięta) | Co zrobić w pierwszej godzinie blackoutu |
+| `bullets` | Lista punktowana bez kolejności | Czego nie robić przy powodzi |
+| `todo` | Lista do odhaczenia, tylko do przygotowań | Co spakować do plecaka |
+| `form` | 1–3 pytania wyboru przed odpowiedzią | „Kto mieszka w domu?” przed planem na brak prądu |
 | `map` | Miniatura mapy z najbliższym punktem, odległością i przyciskiem „Prowadź” | Najbliższy schron 450 m |
 | `animation` | Krótka animacja (GIF) | Ułożenie dłoni przy RKO |
-| `call` | Dwa przyciski: „Zadzwoń 112” i „Powiadom bliskich”; zwinięte „Więcej”: 999, 998, 997, współrzędne | Po opisie wypadku |
+| `call` | Jeden przycisk „Zadzwoń 112” przypięty nad polem wpisywania | Po opisie wypadku |
 | `signal` | Dźwięk SOS, latarka, stroboskop | Zagubienie w terenie |
-| `quote` | Cytat, dokument, strona, data wydania; okno PDF z podświetlonym fragmentem, do rozwinięcia na pełny ekran | Osobny szablon pod odpowiedzią; pod każdym krokiem jest tylko chip źródła |
+| `quote` | Cytat, dokument, strona, data wydania; okno PDF z podświetlonym fragmentem, do rozwinięcia na pełny ekran | Osobny szablon pod odpowiedzią; kroki mają tylko przypisy [n] i listę „Źródła · n” |
 | `cpr` | Instruktor RKO przypięty nad polem wiadomości na czas działania | „Ktoś nie oddycha” |
 
 Wygląd i pola: [../../03-ekrany/szablony-czatu.md](../../03-ekrany/szablony-czatu.md)
