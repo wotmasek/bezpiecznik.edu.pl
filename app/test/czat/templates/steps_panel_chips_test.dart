@@ -99,4 +99,19 @@ void main() {
     await _pump(tester, List.filled(5, 'a'));
     expect(find.byKey(const Key('steps-toggle')), findsNothing);
   });
+
+  testWidgets('footnote pill stays small and inline (not a full-width bar)', (tester) async {
+    await tester.pumpWidget(MaterialApp(
+      theme: buildBzTheme(),
+      home: Scaffold(
+        body: SizedBox(
+          width: 360,
+          child: MdItemText(text: 'Krok do wykonania.', footnote: 1, onFootnote: () {}),
+        ),
+      ),
+    ));
+    final size = tester.getSize(find.byType(FootnoteMark));
+    expect(size.width, lessThan(40));
+    expect(size.height, lessThanOrEqualTo(26));
+  });
 }

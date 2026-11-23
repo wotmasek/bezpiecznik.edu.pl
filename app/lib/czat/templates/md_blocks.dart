@@ -105,13 +105,15 @@ class FootnoteMark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.bz;
+    // No `alignment` here: inside a WidgetSpan it would make the pill as
+    // wide as the whole line.
     final pill = Container(
       constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
       padding: const EdgeInsets.symmetric(horizontal: 6),
-      alignment: Alignment.center,
       decoration: BoxDecoration(color: t.bg300, borderRadius: BorderRadius.circular(t.radiusFull)),
       child: Text(
         '$number',
+        textAlign: TextAlign.center,
         style: t.caption.copyWith(
           color: t.ink200,
           height: 20 / 13,
