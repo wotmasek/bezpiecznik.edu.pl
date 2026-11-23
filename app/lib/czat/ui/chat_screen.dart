@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/rendering.dart';
@@ -18,6 +20,15 @@ const String emptyChatHeading = 'Co się dzieje?';
 const String emptyChatNote = 'Działa bez internetu. Nie zastępuje 112.';
 const String newAnswerLabel = 'Nowa odpowiedź';
 
+/// How long "Zadzwoń 112" stays after an answer that no longer calls for it,
+/// so the button never vanishes the instant the new answer lands.
+const Duration call112UnpinDelay = Duration(seconds: 4);
+
+/// True when [m] calls for 112: flagged as risk while generating, or an
+/// answer carrying the `call` panel.
+bool carries112(ChatMessage m) =>
+    m.risk || (m.answer?.panels.any((p) => p is CallPanel) ?? false);
+
 /// E1: the chat. The shell overlay draws the island (top left) and SOS (top
 /// right) above this screen, so the list leaves room at the top and scrolls
 /// under a soft gradient.
@@ -36,7 +47,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     // (not a one-off read) keeps the provider active, so it loads the model
     // by itself when the in-app download finishes later.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) ref.listenManual(llmWarmUpProvider, (_, _) {});
+      if (!mounted) return;
+      ref.listenManual(llmWarmUpProvider, (_, _) {});
+      _sync112(ref.read(chatControllerProvider), immediate: true);
     });
   }
 
@@ -57,8 +70,46 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   /// Id of an answer that arrived while the user was reading higher up.
   String? _unseenAnswerId;
 
+  /// "Zadzwoń 112" pinned above the composer. Follows the latest turn (the
+  /// last question and what answered it), not the whole conversation.
+  bool _pin112 = false;
+  Timer? _unpin112;
+
+  /// Pins 112 as soon as the latest turn calls for it. A finished turn that
+  /// does not call for it unpins after [call112UnpinDelay] ([immediate] on
+  /// opening a chat). While the turn is still being answered nothing changes.
+  void _sync112(ChatState s, {bool immediate = false}) {
+    final lastUser = s.messages.lastIndexWhere((m) => m.isUser);
+    final turn = s.messages.skip(lastUser + 1).where((m) => !m.isUser);
+    final bool? want = turn.any(carries112)
+        ? true
+        : s.messages.isEmpty
+        ? false
+        : (turn.isEmpty || turn.any((m) => m.isThinking))
+        ? null
+        : false;
+    if (want != false) {
+      _unpin112?.cancel();
+      _unpin112 = null;
+      if (want == true && !_pin112) setState(() => _pin112 = true);
+      return;
+    }
+    if (!_pin112) return;
+    if (immediate) {
+      _unpin112?.cancel();
+      _unpin112 = null;
+      setState(() => _pin112 = false);
+    } else {
+      _unpin112 ??= Timer(call112UnpinDelay, () {
+        _unpin112 = null;
+        if (mounted) setState(() => _pin112 = false);
+      });
+    }
+  }
+
   @override
   void dispose() {
+    _unpin112?.cancel();
     _scroll.dispose();
     super.dispose();
   }
@@ -143,6 +194,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   void _onState(ChatState? prev, ChatState next) {
+    _sync112(next, immediate: prev?.chatId != next.chatId);
     if (next.saveFailed) {
       ref.read(chatControllerProvider.notifier).ackSaveError();
       ScaffoldMessenger.maybeOf(context)
@@ -223,11 +275,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     // the first bubble never touches SOS (final QA B16).
     final listTop = topInset + 56 + t.space2;
     _listTop = listTop;
-    // A risk conversation (flagged while generating, or an answer carrying
-    // `call`) keeps "Zadzwoń 112" pinned above the composer.
-    final risk = state.messages.any(
-      (m) => m.risk || (m.answer?.panels.any((p) => p is CallPanel) ?? false),
-    );
 
     return Scaffold(
       backgroundColor: t.bg000,
@@ -268,20 +315,31 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           ),
                         ),
                 ),
-                // "Zadzwoń 112" (risk conversation) stays pinned above the
-                // composer; while the RKO instructor runs, its own 112 pill
-                // takes over, so there is never a second 112 button.
+                // "Zadzwoń 112" stays pinned above the composer while the
+                // latest turn calls for it (see _sync112); while the RKO
+                // instructor runs, its own 112 pill takes over, so there is
+                // never a second 112 button.
                 ListenableBuilder(
                   listenable: cpr,
                   builder: (context, _) => Padding(
-                    padding: EdgeInsets.fromLTRB(t.space4, 0, t.space4, t.space2),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (risk && !cpr.running) const CallPanelView(),
-                        const CprPinnedHost(),
-                      ],
+                    padding: EdgeInsets.fromLTRB(
+                      t.space4,
+                      0,
+                      t.space4,
+                      t.space2,
+                    ),
+                    child: AnimatedSize(
+                      duration: t.durationBase,
+                      curve: t.easeOut,
+                      alignment: Alignment.bottomCenter,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (_pin112 && !cpr.running) const CallPanelView(),
+                          const CprPinnedHost(),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -334,7 +392,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 padding: EdgeInsets.only(
                   bottom:
                       52 +
-                      (risk && !cpr.running ? 56 + t.space2 : 0) +
+                      (_pin112 && !cpr.running ? 56 + t.space2 : 0) +
                       t.space4 +
                       t.space2 +
                       MediaQuery.paddingOf(context).bottom,
