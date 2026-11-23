@@ -595,6 +595,26 @@ class AssistantAnswer {
     );
   }
 
+  /// The answer as shown for a risk phrase (szablony-czatu.md, rule 4): no
+  /// to-do lists and no questions in an emergency, so `todo` becomes
+  /// `bullets` and `form` is dropped.
+  AssistantAnswer forRisk() {
+    if (!panels.any((p) => p is TodoPanel || p is FormPanel)) return this;
+    return copyWith(
+      panels: [
+        for (final p in panels)
+          if (p is TodoPanel)
+            BulletsPanel(
+              title: p.title,
+              items: p.items,
+              raw: {...p.raw, 'type': 'bullets'}..remove('checkable'),
+            )
+          else if (p is! FormPanel)
+            p,
+      ],
+    );
+  }
+
   /// Returns a copy with item [index] of panel [panelIndex] checked or not.
   AssistantAnswer withDone(int panelIndex, String? variantId, int index, bool value) {
     final key = doneKey(panelIndex, variantId);

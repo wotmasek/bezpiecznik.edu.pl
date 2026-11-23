@@ -60,11 +60,11 @@ void main() {
     expect(engine.requests, isEmpty);
   });
 
-  test('Ewakuacja quick action -> backpack bullets + shelter map, no model', () async {
+  test('Ewakuacja quick action -> backpack todo list + shelter map, no model', () async {
     final engine = FakeEngine([]);
     final e = await last(container(engine), 'Ewakuacja');
     final panels = (e as AnswerReady).answer.panels;
-    expect(panels.first, isA<BulletsPanel>());
+    expect(panels.first, isA<TodoPanel>());
     expect(panels.last, isA<MapPanel>());
     expect(engine.requests, isEmpty);
   });
@@ -112,7 +112,11 @@ void main() {
     final e = await last(container(engine), 'pożar, co spakować do plecaka');
     final panels = (e as AnswerReady).answer.panels;
     expect(panels.first, isA<CallPanel>());
+    // No to-do list in an emergency: the same items as plain bullets.
     expect(panels.whereType<BulletsPanel>(), hasLength(1));
+    expect(panels.whereType<TodoPanel>(), isEmpty);
+    final roundTrip = AssistantAnswer.fromJson((e).answer.toJson()).panels;
+    expect(roundTrip.whereType<TodoPanel>(), isEmpty);
   });
 
   test('schron still goes to the map, not the kit', () async {

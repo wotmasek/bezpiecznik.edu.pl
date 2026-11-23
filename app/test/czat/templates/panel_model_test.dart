@@ -287,4 +287,17 @@ void main() {
       }
     });
   });
+
+  test('forRisk: todo becomes bullets, form is dropped, the rest stays', () {
+    final a = AssistantAnswer.fromJson({
+      'panels': [
+        {'type': 'call'},
+        {'type': 'todo', 'title': 'Do plecaka', 'items': [{'text': 'Woda', 'source_id': 's'}]},
+        {'type': 'form', 'questions': [{'text': 'Ile osób?', 'options': ['1', '2']}]},
+      ],
+    }).forRisk();
+    expect(a.panels.map((p) => p.type), ['call', 'bullets']);
+    expect((a.panels[1] as BulletsPanel).items.single.text, 'Woda');
+    expect(AssistantAnswer.fromJson(a.toJson()).panels[1], isA<BulletsPanel>());
+  });
 }
