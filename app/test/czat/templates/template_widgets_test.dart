@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:bezpiecznik/czat/templates/md_blocks.dart';
 import 'package:bezpiecznik/czat/templates/no_source.dart';
+import 'package:bezpiecznik/czat/templates/panel_card.dart';
 import 'package:bezpiecznik/czat/templates/panel_model.dart';
 import 'package:bezpiecznik/czat/templates/template_fixtures.dart';
 import 'package:bezpiecznik/czat/templates/template_gallery.dart';
