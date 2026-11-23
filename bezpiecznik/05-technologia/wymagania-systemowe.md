@@ -36,7 +36,13 @@ Indeks wektorowy bazy wiedzy (planowany) i model do embeddingów doliczyć po wy
 | Aplikacja z załadowanym modelem, w trakcie rozmowy | ≈ 2,5 GB (PSS) | Pixel 9, `dumpsys meminfo`, 2026-11-23, CPU, kontekst 2048 tokenów |
 | Kontekst modelu | 2048 tokenów | Obecna konfiguracja (`kModelContextTokens`) |
 
-Większe okno kontekstu (historia rozmowy i wyniki narzędzi) zwiększa pamięć podręczną KV. Ile kosztuje 4096 i 8192 tokenów oraz jak to zmniejszyć (kwantyzacja KV, GPU, ponowne użycie promptu systemowego), wpisujemy tu po pomiarze. Research: 2026-11-23, w toku.
+Research 2026-11-23 (źródła sprawdzone):
+
+- **Limit 2048 tokenów dotyczy tylko GPU.** Na GPU przy aktywacjach float16 wyniki psują się po ~2048 tokenach ([LiteRT-LM #4001](https://github.com/google-ai-edge/LiteRT-LM/issues/4001), otwarte). Aplikacja liczy na CPU (`LLM_BACKEND=cpu`), gdzie ten błąd nie występuje, więc kontekst można podnieść do 4096–8192 tokenów. Gemma 4 E2B obsługuje natywnie 128K, a wersja `.litertlm` do 32K ([karta modelu](https://huggingface.co/litert-community/gemma-4-E2B-it-litert-lm)).
+- **Na CPU pamięć podręczna KV rośnie w miarę rozmowy**, a nie od razu do pełnego rozmiaru ([#4096](https://github.com/google-ai-edge/LiteRT-LM/issues/4096)). Szacunek dla E2B: przy 8K to dziesiątki do kilkuset MB. To szacunek, nie pomiar.
+- **Google Edge Gallery** ustawia dla Gemma-4-E2B-it kontekst 32000 tokenów, odpowiedź do 4000 tokenów, najpierw GPU, i **wymaga 8 GB RAM** (`minDeviceMemoryInGb: 8`, [allowlista 1_0_23](https://github.com/google-ai-edge/gallery/blob/main/model_allowlists/1_0_23.json)). Nasze minimum 6 GB jest niższe niż Google'a, więc wymaga testu na prawdziwym telefonie z 6 GB.
+- **Szybkość:** największy zysk daje utrzymanie jednej rozmowy w silniku zamiast wysyłania całej historii co turę. Silnik trzyma KV między turami, a prompt systemowy można przeliczyć raz i klonować. Na flagowcu CPU czyta prompt z prędkością ~557 tokenów/s ([Google](https://developers.google.com/edge/litert-lm/models/gemma-4)), więc ponowne czytanie 4K tokenów kosztuje kilka sekund przy każdej odpowiedzi.
+- **Bez szans na 6 GB:** Gemma 4 E4B (Edge Gallery wymaga 12 GB) i NPU na Tensor G4, Snapdragonach i MediaTekach (brak modeli E2B na te układy).
 
 ## Szybkość (zmierzone)
 
@@ -49,5 +55,5 @@ Brakuje pomiaru na telefonie z 6 GB RAM. To warunek, żeby uznać minimum za pot
 ## Do potwierdzenia
 
 - Test na telefonie z 6 GB RAM: ładowanie modelu, odpowiedź, czy system nie zamyka aplikacji w tle.
-- Kontekst 4096 i 8192 tokenów: RAM i czas na CPU i GPU.
+- Kontekst 4096 i 8192 tokenów na CPU: RAM i czas, na Pixelu 9 i na telefonie z 6 GB.
 - Strona pobierania i opis w sklepie podają wymagania z tej tabeli.
