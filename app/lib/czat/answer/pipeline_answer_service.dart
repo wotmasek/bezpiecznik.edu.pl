@@ -25,22 +25,11 @@ import 'answer_builder.dart';
 import 'answer_parser.dart';
 import 'answer_prompt.dart';
 import 'answer_validator.dart';
+import 'conversation.dart';
 
 typedef SearchFn = Future<RetrievalResult> Function(String question);
 
 const bool _chatLog = bool.fromEnvironment('CHAT_LOG');
-
-/// System prompt for off-topic small talk (no sources, no facts).
-const String kChatSystemPrompt =
-    'Jesteś spokojnym, życzliwym rozmówcą w aplikacji Bezpiecznik. '
-    'Odpowiadaj po polsku, ciepło i krótko: 1–3 zdania. '
-    'Możesz porozmawiać o drobiazgach i pomóc się uspokoić (np. zachęcić do '
-    'spokojnego oddechu). Nie podawaj faktów, liczb, instrukcji ani porad '
-    'medycznych, prawnych czy dotyczących bezpieczeństwa. Gdy pytanie wymaga '
-    'wiedzy, powiedz, że tego nie wiesz. Nigdy nie mów, że jesteś człowiekiem '
-    'ani lekarzem. Jeśli ktoś wspomina o zagrożeniu, przemocy albo o '
-    'zrobieniu sobie krzywdy, napisz, żeby od razu zadzwonił pod 112 albo pod '
-    '116 123 (telefon zaufania dla dorosłych).';
 
 /// Retrieval / prompt query for the "Alarm / schron" quick action.
 const String kAlarmQuery = 'sygnały alarmowe syreny alarm schron';
@@ -118,14 +107,49 @@ class PipelineAnswerService implements AnswerService {
       // nearest-shelter map card to whatever the sources give.
       final alarm = isAlarmQuickAction(question);
       if (alarm) question = kAlarmQuery;
+      // A personal crisis (suicidal thoughts, self-harm, panic) never goes to
+      // the guides: a caring reply with 116 123 and the pinned 112.
+      if (!alarm && isCrisis(question)) {
+        risk = true;
+        emit(const AnswerThinking(ThinkingPhase.composing, true));
+        final talk = await _chat(question, ctx, run, crisis: true);
+        if (run.cancelled) return;
+        emit(AnswerReady(talk ?? buildChatReply(kCrisisFallback, crisis: true)));
+        return;
+      }
       // Risk first: a pipeline error below must still be able to show 112.
       risk = await isRisk(question);
       if (run.cancelled) return;
       // Show 112 now, not after the model (owner rule): the final answer
       // starts with the same `call` panel.
       if (risk) emit(const AnswerThinking(ThinkingPhase.searching, true));
-      final result = await search(question);
+      // Feelings, thanks, questions about the assistant or the profile: talk,
+      // even when the sentence shares words with the guides ("mama", "dom").
+      final talkFirst = !risk && !alarm && isTalk(question);
+      if (talkFirst) {
+        emit(const AnswerThinking(ThinkingPhase.composing));
+        final talk = await _chat(question, ctx, run);
+        if (run.cancelled) return;
+        if (talk != null) {
+          emit(AnswerReady(talk));
+          return;
+        }
+      }
+      // A follow-up ("a ile wody?") is searched together with the previous
+      // question; so is a short question that finds nothing on its own.
+      final previous = ctx.previousQuestion?.trim() ?? '';
+      final withPrevious = previous.isEmpty ? null : '$previous $question';
+      var result = await search(
+        withPrevious != null && isFollowUp(question) ? withPrevious : question,
+      );
       if (run.cancelled) return;
+      if (withPrevious != null &&
+          result.decision != RetrievalDecision.found &&
+          question.trim().split(RegExp(r'\s+')).length <= 5) {
+        final retry = await search(withPrevious);
+        if (run.cancelled) return;
+        if (retry.decision == RetrievalDecision.found) result = retry;
+      }
 
       if (result.decision != RetrievalDecision.found || result.chunks.isEmpty) {
         // A risk phrase is never "off topic" (the risk detector tolerates
@@ -135,10 +159,16 @@ class PipelineAnswerService implements AnswerService {
             ? NoSourceKind.offTopic
             : NoSourceKind.noSource;
         // Owner 08:33: off-topic small talk gets a short warm reply (no facts),
-        // labelled as not from the guides. Any failure: the off-topic refusal.
-        if (kind == NoSourceKind.offTopic && !alarm) {
+        // labelled as not from the guides. So does a sentence with no source
+        // in the middle of a conversation ("ona uważa, że za mało pomagam").
+        // Any failure: the refusal.
+        final talkInstead = !risk &&
+            !alarm &&
+            !talkFirst &&
+            (kind == NoSourceKind.offTopic || ctx.inConversation);
+        if (talkInstead) {
           emit(const AnswerThinking(ThinkingPhase.composing));
-          final talk = await _chat(question, run);
+          final talk = await _chat(question, ctx, run);
           if (run.cancelled) return;
           if (talk != null) {
             emit(AnswerReady(talk));
@@ -194,26 +224,34 @@ class PipelineAnswerService implements AnswerService {
     }
   }
 
-  /// Conversational reply for off-topic small talk, or null (model error,
-  /// timeout, empty output, cancelled).
-  Future<AssistantAnswer?> _chat(String question, _Run run) async {
+  /// Conversational reply (small talk, feelings, the profile, a crisis), or
+  /// null (model error, timeout, empty output, cancelled). It sees the last
+  /// turns of the chat and the profile. A crisis reply always carries the
+  /// 116 123 / 112 line and the call panel.
+  Future<AssistantAnswer?> _chat(
+    String question,
+    ChatContext ctx,
+    _Run run, {
+    bool crisis = false,
+  }) async {
     try {
+      final profile = await _profile();
+      if (run.cancelled) return null;
       final text = (await run
               .collect(LlmRequest(
-                systemPrompt: kChatSystemPrompt,
-                messages: [LlmMessage.user(question)],
-                maxTokens: 160,
-                temperature: 0.6,
+                systemPrompt: chatSystemPrompt(profile: profile, crisis: crisis),
+                messages: [
+                  for (final t in ctx.history)
+                    t.user ? LlmMessage.user(clipTurn(t.text)) : LlmMessage.assistant(clipTurn(t.text)),
+                  LlmMessage.user(question),
+                ],
+                maxTokens: 280,
+                temperature: 0.7,
               ))
-              .timeout(const Duration(seconds: 30)))
+              .timeout(const Duration(seconds: 40)))
           .trim();
       if (text.isEmpty || run.cancelled) return null;
-      return AssistantAnswer.fromJson({
-        'origin': 'ai',
-        'panels': [
-          {'type': 'chat_text', 'text': text},
-        ],
-      });
+      return buildChatReply(text, crisis: crisis);
     } catch (e) {
       onLog?.call('chat reply unavailable: $e');
       if (e is TimeoutException) unawaited(run.engine.cancel());
