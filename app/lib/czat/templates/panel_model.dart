@@ -141,7 +141,13 @@ sealed class ChatPanel {
         case 'steps':
           return StepsPanel._parse(map) ?? UnknownPanel(type, map);
         case 'bullets':
+          // Legacy: checkable bullets (stored chats) are a to-do list now.
+          if (map['checkable'] == true) return TodoPanel._parse(map) ?? UnknownPanel(type, map);
           return BulletsPanel._parse(map) ?? UnknownPanel(type, map);
+        case 'todo':
+          return TodoPanel._parse(map) ?? UnknownPanel(type, map);
+        case 'form':
+          return FormPanel._parse(map) ?? UnknownPanel(type, map);
         case 'quote':
           final id = _str(map['source_id']);
           if (id == null || id.isEmpty) return UnknownPanel(type, map);
@@ -235,18 +241,16 @@ class StepsPanel extends ChatPanel {
   }
 }
 
-/// `bullets`: unordered list, optionally checkable.
+/// `bullets`: unordered list.
 class BulletsPanel extends ChatPanel {
   const BulletsPanel({
     required this.title,
     required this.items,
-    this.checkable = false,
     Map<String, Object?> raw = const {},
   }) : super(raw);
 
   final String title;
   final List<PanelItem> items;
-  final bool checkable;
 
   @override
   String get type => 'bullets';
@@ -254,12 +258,83 @@ class BulletsPanel extends ChatPanel {
   static BulletsPanel? _parse(Map<String, Object?> map) {
     final items = _items(map['items']);
     if (items.isEmpty) return null;
-    return BulletsPanel(
-      title: _str(map['title']) ?? '',
-      items: items,
-      checkable: map['checkable'] == true,
-      raw: map,
-    );
+    return BulletsPanel(title: _str(map['title']) ?? '', items: items, raw: map);
+  }
+}
+
+/// `todo`: a list to tick off, only for preparation (backpack, supplies,
+/// home). Never for a risk phrase: the app turns it into [BulletsPanel]
+/// there. Checked items live in [AssistantAnswer.done].
+class TodoPanel extends ChatPanel {
+  const TodoPanel({
+    required this.title,
+    required this.items,
+    Map<String, Object?> raw = const {},
+  }) : super(raw);
+
+  final String title;
+  final List<PanelItem> items;
+
+  @override
+  String get type => 'todo';
+
+  static TodoPanel? _parse(Map<String, Object?> map) {
+    final items = _items(map['items']);
+    if (items.isEmpty) return null;
+    return TodoPanel(title: _str(map['title']) ?? '', items: items, raw: map);
+  }
+}
+
+/// One question of a [FormPanel].
+class FormQuestion {
+  const FormQuestion({required this.text, required this.options, this.multiple = false});
+
+  final String text;
+  final List<String> options;
+
+  /// Several options may be picked.
+  final bool multiple;
+}
+
+/// `form`: 1-3 choice questions the assistant asks before it answers.
+/// The answers go back as the user's next message. Never for a risk phrase.
+/// JSON: `{"type":"form","questions":[{"text":"...","multiple":false,
+/// "options":["Tak","Nie"]}]}`.
+class FormPanel extends ChatPanel {
+  const FormPanel({required this.questions, this.title = '', Map<String, Object?> raw = const {}})
+    : super(raw);
+
+  static const int maxQuestions = 3;
+  static const int maxOptions = 5;
+
+  final String title;
+  final List<FormQuestion> questions;
+
+  @override
+  String get type => 'form';
+
+  static FormPanel? _parse(Map<String, Object?> map) {
+    final raw = map['questions'];
+    if (raw is! List) return null;
+    final questions = <FormQuestion>[];
+    for (final q in raw) {
+      if (q is! Map) continue;
+      final text = _str(q['text'])?.trim();
+      final options = [
+        for (final o in (q['options'] is List ? q['options'] as List : const []))
+          if (o is String && o.trim().isNotEmpty) o.trim()
+          else if (o is Map && (_str(o['label'])?.trim().isNotEmpty ?? false)) _str(o['label'])!.trim(),
+      ];
+      if (text == null || text.isEmpty || options.length < 2) continue;
+      questions.add(FormQuestion(
+        text: text,
+        options: options.take(maxOptions).toList(),
+        multiple: q['multiple'] == true || q['kind'] == 'multi',
+      ));
+      if (questions.length == maxQuestions) break;
+    }
+    if (questions.isEmpty) return null;
+    return FormPanel(questions: questions, title: _str(map['title']) ?? '', raw: map);
   }
 }
 
@@ -490,6 +565,11 @@ class AssistantAnswer {
 
   Set<int> doneFor(int panelIndex, String? variantId) =>
       done[doneKey(panelIndex, variantId)] ?? const {};
+
+  /// Whether the form of panel [panelIndex] was sent or skipped. Stored in
+  /// [done] like a checked item 0 (a form has no variants), so it round-trips
+  /// with the message and [PanelScope.onDoneChanged] can set it.
+  bool formClosed(int panelIndex) => doneFor(panelIndex, null).isNotEmpty;
 
   AssistantAnswer copyWith({
     List<ChatPanel>? panels,

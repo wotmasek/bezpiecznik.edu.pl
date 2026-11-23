@@ -1,13 +1,12 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../wspolne/theme/bz_theme.dart';
-import 'panel_card.dart';
+import 'md_blocks.dart';
 import 'panel_model.dart';
 import 'template_registry.dart';
 
-/// `bullets`: unordered list; `checkable` adds a checkbox per element and an
-/// "{n} z {m}" counter in the header (DS BulletsPanel). Checked state is kept
-/// in the message for now (profile `supplies.kit[]` sync comes later).
+/// `bullets`: an optional heading and a bulleted list, as plain text (no
+/// card). A footnote `[n]` ends each run of items citing the same page.
 class BulletsPanelView extends StatelessWidget {
   const BulletsPanelView({super.key, required this.scope});
 
@@ -16,102 +15,28 @@ class BulletsPanelView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = context.bz;
-    final panel = scope.panel as BulletsPanel;
-    final done = scope.done;
-    return PanelCard(
-      title: panel.title,
-      aside: panel.checkable
-          ? Text(
-              '${done.where((i) => i < panel.items.length).length} z ${panel.items.length}',
-              style: t.caption.copyWith(color: t.ink300),
-            )
-          : null,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (var i = 0; i < panel.items.length; i++)
-            _BulletRow(
-              item: panel.items[i],
-              source: _chipSource(scope, panel.items, i),
-              checkable: panel.checkable,
-              checked: done.contains(i),
-              onChanged: (v) => scope.onDoneChanged(i, v),
-              onOpenSource: scope.onOpenSource,
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Source for item [i]'s chip, or null when it equals the previous item's
-/// (same rule as steps, BG18/BG38: no repeated chips; first item keeps it).
-SourceRecord? _chipSource(PanelScope scope, List<PanelItem> items, int i) {
-  final s = scope.answer.source(items[i].sourceId);
-  if (s == null || i == 0) return s;
-  final p = scope.answer.source(items[i - 1].sourceId);
-  final same =
-      p != null &&
-      p.docId == s.docId &&
-      p.pageLabel == s.pageLabel &&
-      p.chipLabel == s.chipLabel;
-  return same ? null : s;
-}
-
-class _BulletRow extends StatelessWidget {
-  const _BulletRow({
-    required this.item,
-    required this.source,
-    required this.checkable,
-    required this.checked,
-    required this.onChanged,
-    required this.onOpenSource,
-  });
-
-  final PanelItem item;
-  final SourceRecord? source;
-  final bool checkable;
-  final bool checked;
-  final ValueChanged<bool> onChanged;
-  final void Function(SourceRecord) onOpenSource;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = context.bz;
-    return Padding(
-      padding: const EdgeInsets.only(top: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    final (title, items) = switch (scope.panel) {
+      BulletsPanel(:final title, :final items) => (title, items),
+      TodoPanel(:final title, :final items) => (title, items),
+      _ => ('', const <PanelItem>[]),
+    };
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (title.isNotEmpty) ...[MdHeading(title), SizedBox(height: t.space2)],
+        for (var i = 0; i < items.length; i++)
           Padding(
-            padding: const EdgeInsets.only(top: 10, left: 3, right: 15),
-            child: DecoratedBox(
-              decoration: BoxDecoration(color: t.ink200, shape: BoxShape.circle),
-              child: const SizedBox(width: 6, height: 6),
+            padding: EdgeInsets.only(top: i == 0 ? 0 : t.space1),
+            child: MdListItem(
+              marker: '•',
+              child: MdItemText(
+                text: items[i].text,
+                footnote: footnoteAfter(scope.footnotes, scope.answer, items, i),
+                onFootnote: scope.onShowSources,
+              ),
             ),
           ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.text,
-                  style: t.chat.copyWith(color: checked ? t.ink300 : t.ink100),
-                ),
-                if (source != null)
-                  SourceChip(source: source!, onTap: () => onOpenSource(source!)),
-              ],
-            ),
-          ),
-          if (checkable)
-            // The 48 dp hit area is taller than the 26 dp first line; lift it
-            // so the 24 dp box centres on that line (hit testing follows).
-            Transform.translate(
-              offset: Offset(0, -(t.minTouchTarget - 26) / 2),
-              child: BzCheck(value: checked, onChanged: onChanged, label: item.text),
-            ),
-        ],
-      ),
+      ],
     );
   }
 }

@@ -56,7 +56,7 @@ void main() {
       expect(s.itemsFor('nope').single.text, 'A', reason: 'falls back to the first variant');
     });
 
-    test('bullets (checkable, kit_id)', () {
+    test('legacy checkable bullets parse as todo (kit_id kept)', () {
       final b = ChatPanel.fromJson({
         'type': 'bullets',
         'title': 'Do plecaka',
@@ -64,8 +64,7 @@ void main() {
         'items': [
           {'text': 'Woda', 'source_id': 's', 'kit_id': 'water'},
         ],
-      }) as BulletsPanel;
-      expect(b.checkable, isTrue);
+      }) as TodoPanel;
       expect(b.items.single.kitId, 'water');
     });
 

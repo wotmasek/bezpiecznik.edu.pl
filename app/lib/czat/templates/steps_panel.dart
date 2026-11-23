@@ -1,21 +1,15 @@
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../ratunek/ui/card_link_button.dart';
-import '../../wspolne/theme/bz_buttons.dart';
 import '../../wspolne/theme/bz_theme.dart';
 import 'panel_card.dart';
 import 'panel_model.dart';
-import 'read_aloud.dart';
 import 'template_registry.dart';
 
 /// Header shown when every step is checked (spec `steps` "Stany").
 const String stepsAllDoneText = 'Wszystko zrobione';
 
-/// Read-aloud button labels (spec `steps`).
-const String readAloudStartLabel = 'Czytaj na głos';
-const String readAloudStopLabel = 'Zatrzymaj czytanie';
 
 /// `steps`: numbered, checkable steps; a source chip appears under a step only
 /// when its source differs from the previous step's (BG18: no repeated chips).
@@ -27,7 +21,6 @@ class StepsPanelView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.bz;
     final panel = scope.panel as StepsPanel;
     final items = panel.itemsFor(scope.variant);
     final done = scope.done;
@@ -41,14 +34,6 @@ class StepsPanelView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (scope.showVariantSwitch && scope.variant != null) ...[
-            BzSegmented(
-              options: panel.variantOptions,
-              value: scope.variant!,
-              onChanged: scope.onVariantChanged,
-            ),
-            SizedBox(height: t.space2),
-          ],
           for (var i = 0; i < items.length; i++)
             _StepRow(
               number: i + 1,
@@ -60,109 +45,8 @@ class StepsPanelView extends StatelessWidget {
               onChanged: (v) => scope.onDoneChanged(i, v),
               onOpenSource: scope.onOpenSource,
             ),
-          if (panel.readAloud && items.isNotEmpty) ...[
-            SizedBox(height: t.space2),
-            ReadAloudButton(
-              texts: [for (final it in items) it.text],
-              done: done,
-            ),
-          ],
         ],
       ),
-    );
-  }
-}
-
-/// "Czytaj na głos" / "Zatrzymaj czytanie". Reads the steps from the current
-/// (first unchecked) one onwards; checking the current step moves the speech
-/// to the next one. Hidden while no Polish voice is known to be available.
-class ReadAloudButton extends ConsumerStatefulWidget {
-  const ReadAloudButton({super.key, required this.texts, required this.done});
-
-  final List<String> texts;
-  final Set<int> done;
-
-  @override
-  ConsumerState<ReadAloudButton> createState() => _ReadAloudButtonState();
-}
-
-class _ReadAloudButtonState extends ConsumerState<ReadAloudButton> {
-  late final ReadAloudVoice _voice = ref.read(readAloudVoiceProvider);
-  bool _available = false;
-  bool _speaking = false;
-  int _run = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _voice.isAvailable().then((ok) {
-      if (mounted && ok) setState(() => _available = true);
-    }, onError: (_) {});
-  }
-
-  int get _current {
-    for (var i = 0; i < widget.texts.length; i++) {
-      if (!widget.done.contains(i)) return i;
-    }
-    return -1;
-  }
-
-  @override
-  void didUpdateWidget(ReadAloudButton old) {
-    super.didUpdateWidget(old);
-    if (!_speaking || widget.done.length == old.done.length) return;
-    final cur = _current;
-    if (cur == -1) {
-      _stop();
-    } else {
-      _start(cur);
-    }
-  }
-
-  @override
-  void dispose() {
-    if (_speaking) _voice.stop();
-    _run++;
-    super.dispose();
-  }
-
-  Future<void> _stop() async {
-    _run++;
-    if (mounted) setState(() => _speaking = false);
-    await _voice.stop();
-  }
-
-  Future<void> _start(int from) async {
-    final run = ++_run;
-    await _voice.stop();
-    if (!mounted || run != _run) return;
-    setState(() => _speaking = true);
-    for (var i = from; i < widget.texts.length; i++) {
-      if (widget.done.contains(i)) continue;
-      await _voice.speak(widget.texts[i]);
-      if (!mounted || run != _run) return;
-    }
-    setState(() => _speaking = false);
-  }
-
-  void _toggle() {
-    if (_speaking) {
-      _stop();
-      return;
-    }
-    final cur = _current;
-    if (cur != -1) _start(cur);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (!_available) return const SizedBox.shrink();
-    return BzButton(
-      label: _speaking ? readAloudStopLabel : readAloudStartLabel,
-      icon: _speaking ? LucideIcons.volumeX : LucideIcons.volume2,
-      size: BzButtonSize.lg,
-      fullWidth: true,
-      onPressed: _toggle,
     );
   }
 }

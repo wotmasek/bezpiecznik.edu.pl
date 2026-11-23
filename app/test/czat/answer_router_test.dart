@@ -98,12 +98,12 @@ void main() {
     expect(engine.requests, isEmpty);
   });
 
-  test('plecak -> checkable bullets, model not called', () async {
+  test('plecak -> todo list, model not called', () async {
     final engine = FakeEngine([]);
     final e = await last(container(engine), 'co spakować do plecaka ewakuacyjnego');
     final answer = (e as AnswerReady).answer;
     expect(answer.origin, AnswerOrigin.rules);
-    expect((answer.panels.single as BulletsPanel).checkable, isTrue);
+    expect(answer.panels.single, isA<TodoPanel>());
     expect(engine.requests, isEmpty);
   });
 

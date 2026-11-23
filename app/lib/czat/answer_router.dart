@@ -10,7 +10,7 @@ import 'ui/answer_service.dart';
 /// Production answer order (spec ekran-1-czat.md, zakres-mvp.md):
 /// 1. risk phrase → rescue card, no model (< 1 s);
 /// 2. shelter / where-to-go / hospital intent → `map` template, no model;
-/// 3. "plecak / co spakować" → checkable `bullets` from the PSP list, no model;
+/// 3. "plecak / co spakować" → `todo` list from the PSP list, no model;
 /// 4. everything else → the sourced answer pipeline (retrieval + model).
 class RoutedAnswerService implements AnswerService {
   RoutedAnswerService({
