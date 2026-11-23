@@ -144,6 +144,7 @@ class ChatController extends Notifier<ChatState> {
       for (final m in state.messages)
         if (m.isUser) m.text,
     ].lastOrNull;
+    final history = chatHistory(state.messages);
     final now = DateTime.now();
     final user = ChatMessage(
       id: newChatId(),
@@ -159,7 +160,11 @@ class ChatController extends Notifier<ChatState> {
     );
     state = state.copyWith(chatId: chatId, messages: [...state.messages, user, assistant]);
     _persist(chatId, user);
-    _run(question, ChatContext(chatId: chatId, previousQuestion: previous), assistant.id);
+    _run(
+      question,
+      ChatContext(chatId: chatId, previousQuestion: previous, history: history),
+      assistant.id,
+    );
   }
 
   void _run(String question, ChatContext ctx, String assistantId) {
@@ -298,3 +303,33 @@ class ChatController extends Notifier<ChatState> {
 final chatControllerProvider = NotifierProvider<ChatController, ChatState>(
   ChatController.new,
 );
+
+/// The last [max] finished turns of [messages] for the conversational reply.
+/// A conversational answer keeps its text; an answer from the guides becomes
+/// its panel titles, so the model knows the topic without the whole list.
+List<ChatTurn> chatHistory(List<ChatMessage> messages, {int max = 6}) {
+  final out = <ChatTurn>[];
+  for (final m in messages) {
+    if (m.isUser) {
+      out.add((user: true, text: m.text, chat: false));
+      continue;
+    }
+    final a = m.answer;
+    if (a == null || m.status == MessageStatus.generating) continue;
+    final talk = [for (final p in a.panels) if (p is ChatTextPanel) p.text].join(' ');
+    if (talk.isNotEmpty) {
+      out.add((user: false, text: talk, chat: true));
+    } else {
+      final titles = [
+        for (final p in a.panels)
+          if (p.raw['title'] case final String t when t.isNotEmpty) t,
+      ];
+      out.add((
+        user: false,
+        text: titles.isEmpty ? '(odpowiedź z poradników)' : '(odpowiedź z poradników: ${titles.join(', ')})',
+        chat: false,
+      ));
+    }
+  }
+  return out.length <= max ? out : out.sublist(out.length - max);
+}

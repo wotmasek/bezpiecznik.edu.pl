@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:bezpiecznik/czat/answer/conversation.dart';
 import 'package:bezpiecznik/czat/answer/answer_builder.dart';
 import 'package:bezpiecznik/czat/answer/pipeline_answer_service.dart';
 import 'package:bezpiecznik/czat/llm/llm_engine.dart';
@@ -299,7 +300,7 @@ void main() {
       expect(types(a), ['chat_text']);
       expect((a.panels.single as ChatTextPanel).text, 'Rozumiem, że to stresujące. Weź spokojny oddech.');
       expect(a.sources, isEmpty);
-      expect(e.requests.single.systemPrompt, kChatSystemPrompt);
+      expect(e.requests.single.systemPrompt, startsWith(kChatSystemPrompt));
       expect(e.requests.single.jsonMode, isFalse);
     });
 

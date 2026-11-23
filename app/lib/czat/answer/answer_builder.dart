@@ -1,6 +1,7 @@
 /// Builds [AssistantAnswer]s (panels + source records) for the pipeline.
 library;
 
+import 'conversation.dart';
 import '../retrieval/retriever.dart';
 import '../templates/panel_model.dart';
 
@@ -108,6 +109,18 @@ AssistantAnswer buildQuoteFallback(
 /// The two calm refusals. Never carries a `call` panel except for a risk
 /// phrase in a `noSource` case (spec: "Gdy wiadomość zawiera frazę ryzyka,
 /// aplikacja dodaje szablon call"). Off-topic never gets 112.
+/// A conversational reply. A crisis reply starts with the call panel (pinned
+/// 112) and always ends with the 116 123 / 112 line.
+AssistantAnswer buildChatReply(String text, {bool crisis = false}) {
+  final t = crisis && !text.contains('116 123') ? '$text\n\n$kCrisisHelpLine' : text;
+  return AssistantAnswer.fromJson({
+    'origin': 'ai',
+    'panels': _withCall([
+      {'type': 'chat_text', 'text': t},
+    ], crisis),
+  });
+}
+
 AssistantAnswer buildRefusal(NoSourceKind kind, {bool risk = false}) {
   final callAllowed = risk && kind == NoSourceKind.noSource;
   return AssistantAnswer.fromJson({

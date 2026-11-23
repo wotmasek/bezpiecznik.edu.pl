@@ -7,14 +7,28 @@ import '../templates/panel_model.dart';
 
 /// What the chat controller gives the service besides the question.
 class ChatContext {
-  const ChatContext({required this.chatId, this.previousQuestion});
+  const ChatContext({
+    required this.chatId,
+    this.previousQuestion,
+    this.history = const [],
+  });
 
   final String chatId;
 
   /// Previous user question in this chat (spec: the model gets the current and
   /// the previous question).
   final String? previousQuestion;
+
+  /// Last turns of this chat, oldest first, for the conversational reply.
+  /// An assistant turn answered from the guides is its titles only.
+  final List<ChatTurn> history;
+
+  /// The last assistant turn was a conversational reply (not the guides).
+  bool get inConversation => history.isNotEmpty && !history.last.user && history.last.chat;
 }
+
+/// One past turn as the conversational reply sees it.
+typedef ChatTurn = ({bool user, String text, bool chat});
 
 /// Phase shown in the thinking bubble (spec ekran-1-czat.md, "Teksty").
 enum ThinkingPhase {
