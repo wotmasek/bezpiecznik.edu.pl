@@ -19,11 +19,11 @@ class _FileBundle extends CachingAssetBundle {
 }
 
 void main() {
-  testWidgets('child CPR card renders call, badge, child steps, footer', (tester) async {
+  testWidgets('child CPR card renders badge, variant chip, CPR, child steps, footer', (tester) async {
     final service = (await tester.runAsync(() => RescueAnswerService.load(_FileBundle())))!;
     final answer = (await service.tryAnswer('dziecko nie oddycha'))!;
-    // The app registry: call, cpr (draws the variant switch now that it is
-    // the first panel with variants), map, signal.
+    // The app registry: call, cpr, map, signal. The renderer skips `call`
+    // (the chat pins "Zadzwoń 112" above the composer).
     final registry = buildAppTemplateRegistry();
     await tester.pumpWidget(
       ProviderScope(
@@ -36,17 +36,15 @@ void main() {
         ),
       ),
     );
-    expect(find.text(call112Label), findsOneWidget);
+    expect(find.text(call112Label), findsNothing);
     expect(find.text('Do weryfikacji'), findsOneWidget);
     expect(find.text('Karta ratunkowa'), findsOneWidget);
     expect(find.text(rescueCardFooterText), findsOneWidget);
-    // Child variant is selected in the switch.
-    expect(find.text('Dziecko'), findsWidgets);
-    // Call panel, then the CPR instructor, then the steps (BG26).
-    final call = tester.getTopLeft(find.text(call112Label)).dy;
+    // Child variant is selected in the header chip.
+    expect(find.descendant(of: find.byKey(const Key('variant-chip')), matching: find.text('Dziecko')), findsOneWidget);
+    // The CPR instructor, then the steps (BG26).
     final start = tester.getTopLeft(find.text(cprStartLabel)).dy;
-    final firstStep = tester.getTopLeft(find.textContaining('Zapewnij bezpieczeństwo')).dy;
-    expect(call, lessThan(start));
+    final firstStep = tester.getTopLeft(find.textContaining('Zapewnij bezpieczeństwo', findRichText: true)).dy;
     expect(start, lessThan(firstStep));
   });
 }
