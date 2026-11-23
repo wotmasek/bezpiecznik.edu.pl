@@ -34,17 +34,19 @@ Priorytet demo: **●** występuje w scenariuszu pokazu · **○** potrzebne w a
 
 | Szablon | Komponent | Demo |
 | --- | --- | --- |
-| kontener każdego szablonu | `PanelCard` | ● |
-| `steps` | `StepsPanel`: kroki z odhaczaniem, bieżący krok, chip źródła przy każdym kroku, warianty, „Czytaj na głos” | ● |
-| `bullets` | `BulletsPanel`: lista, opcjonalnie do odhaczania | ● |
-| `quote` | `QuotePanel`: wycinek strony PDF z podświetleniem, „Powiększ” | ● |
+| odpowiedź jako tekst (redesign 2026-11, styl ChatGPT) | `MdHeading`, `MdListItem`, `FootnoteMark`, wiersz akcji „Czytaj na głos” + „Źródła · n”, rozwijana lista źródeł. `PanelCard` tylko w narzędziach (`map`, `cpr`, `signal`) | ● |
+| `steps` | `StepsPanel`: lista numerowana bez odhaczania, przypisy, zwijanie powyżej 5 kroków („Pokaż wszystkie kroki · n”) | ● |
+| `bullets` | `BulletsPanel`: lista punktowana, przypisy | ● |
+| `todo` | `TodoPanel`: okrągłe pola jak w ChatGPT, przekreślenie, licznik „n z m”; tylko przygotowania | ● |
+| `form` | `FormPanel`: 1–3 pytania wyboru (`BzChip`), „Pomiń” / „Wyślij” → odpowiedzi jako wiadomość użytkownika | ● |
+| `quote` | `QuotePanel`: wycinek strony z podświetleniem, „Powiększ” w rogu okna, podpis źródła pod oknem | ● |
 | `map` | `MapCard`: mini mapa, odległość, kierunek, źródło punktu, „Prowadź” | ● |
-| `call` | `CallPanel` (`inline`): Zadzwoń 112 + Powiadom bliskich | ● |
+| `call` | jeden przycisk **Zadzwoń 112** (`sos`, 56 dp) przypięty nad polem wpisywania na czas rozmowy z frazą ryzyka; w treści wiadomości nie ma karty | ● |
 | `signal` | `SignalPanel`: dźwięk, latarka SOS, stroboskop, przerwa, licznik | ● |
 | `cpr` | `CprCard` (przed startem) + `CprPinned` (działa) | ● |
 | `animation` | `AnimationPanel`: pętla GIF, w ograniczonym ruchu pierwsza klatka + „Odtwórz” | ● |
-| chip źródła | `SourceChip`: `▸ {doc_short}, s. {page_label}` | ● |
-| przełącznik wariantu | `Segmented` | ● |
+| przypis / źródła | `FootnoteMark` `[n]` (jeden numer na stronę dokumentu) + pigułka „Źródła · n”; `SourceChip` zostaje w `cpr` | ● |
+| przełącznik wariantu | `VariantChip`: cichy chip „Dorosły ⌄” w nagłówku wiadomości, menu z `✓` | ● |
 
 ## PV · Podgląd PDF
 
@@ -96,7 +98,7 @@ Priorytet demo: **●** występuje w scenariuszu pokazu · **○** potrzebne w a
 3. **Pigułka stanu usunięta.** Spec (elementy globalne): `StatusPill` „offline · GPS · bateria” na środku u góry E1 i E2. Decyzja 21.11: usunięta — za dużo informacji. Stan GPS pokazują tam, gdzie ma znaczenie, `MapCard`, `CallPanel` i `Notice` na mapie.
    **Rozstrzygnięcie:** `StatusPill` usunięta ze specyfikacji. Stan GPS i baterii jest na mapie (`Notice`), w `MapCard` i w `CallPanel`.
 4. **Panel SOS: dwa przyciski.** Spec P2 ma pozycję (współrzędne, DMS, adres), 112, 999 / 998 / 997, notki, ciche zgłoszenie i sygnał. Decyzja 21.11: tylko **Zadzwoń 112** i **Powiadom bliskich** (SMS z lokalizacją). Współrzędne i numery służb usunięte — ludzie ich nie rozumieją, a 112 łączy ze wszystkimi i przekazuje lokalizację (AML). Ten sam układ ma szablon `call` w czacie.
-   **Rozstrzygnięcie:** na wierzchu dwa przyciski po 80 px (**Zadzwoń 112**, **Powiadom bliskich**) z przełącznikiem „Dołącz dane z profilu”; pod spodem zwinięty wiersz „Więcej” (domyślnie zamknięty): 999 / 998 / 997, współrzędne (dziesiętne i DMS), najbliższy adres (po MVP), notka AML, „Co powiedzieć dyspozytorowi”. Dotyczy `CallPanel` `sheet` i `inline`.
+   **Rozstrzygnięcie:** na wierzchu dwa przyciski po 80 px (**Zadzwoń 112**, **Powiadom bliskich**) z przełącznikiem „Dołącz dane z profilu”; pod spodem zwinięty wiersz „Więcej” (domyślnie zamknięty): 999 / 998 / 997, współrzędne (dziesiętne i DMS), najbliższy adres (po MVP), notka AML, „Co powiedzieć dyspozytorowi”. Dotyczy `CallPanel` `sheet` (Panel 2). W czacie od 23.11 jest tylko przycisk „Zadzwoń 112” przypięty nad polem wpisywania (redesign: minimalizm, mniej informacji).
 5. **Panel boczny.** Spec P1: godzina przy każdym czacie, „Nowy czat” 56 dp, wiersz 56 dp. Decyzja 21.11: bez godzin, układ jak w ChatGPT — wiersze 44 px, bez ramek.
    **Rozstrzygnięcie:** układ jak w ChatGPT przyjęty w `panel-1-boczny.md` (logo 36 px, „Nowy czat” jako wiersz z ikoną, wiersze 44 px bez godzin i ramek, bieżący czat zaznaczony tłem).
 6. **Podświetlenie cytatu.** Spec: „żółte tło ok. 40%”. System używa ochry `signal` (`highlight`), żeby nie dokładać koloru; na stronie PDF wygląda jak zakreślacz.

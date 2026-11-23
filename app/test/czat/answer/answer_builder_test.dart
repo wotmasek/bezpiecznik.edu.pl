@@ -58,6 +58,29 @@ void main() {
     expect([for (final p in a.panels) p.type], ['steps', 'quote', 'steps']);
   });
 
+  Map<String, Object?> form() => {
+    'type': 'form',
+    'questions': [
+      {'text': 'Gdzie jesteś?', 'multiple': false, 'options': ['W domu', 'Na zewnątrz']},
+    ],
+  };
+
+  test('todo stays a todo without risk, becomes bullets on a risk question', () {
+    final todo = _steps('Do plecaka', ['Woda.'], type: 'todo');
+    expect(buildModelAnswer([todo], chunks, risk: false).panels.single, isA<TodoPanel>());
+    final risky = buildModelAnswer([todo], chunks, risk: true);
+    expect([for (final p in risky.panels) p.type], ['call', 'bullets']);
+  });
+
+  test('a form is kept only alone and never on a risk question', () {
+    expect(buildModelAnswer([form()], chunks, risk: false).panels.single, isA<FormPanel>());
+    expect(
+      [for (final p in buildModelAnswer([form(), _steps('Teraz', ['A.'])], chunks, risk: false).panels) p.type],
+      ['steps'],
+    );
+    expect([for (final p in buildModelAnswer([form()], chunks, risk: true).panels) p.type], ['call']);
+  });
+
   test('the call panel still goes first for a risk phrase', () {
     final a = buildModelAnswer(
       [_steps('Teraz', ['A.']), _steps('Teraz', ['B.'])],

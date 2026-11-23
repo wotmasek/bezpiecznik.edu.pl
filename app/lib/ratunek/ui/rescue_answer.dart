@@ -93,7 +93,9 @@ class RescueAnswerService {
 
   /// Returns [answer] with a `call` panel in front (unless it has one).
   /// For model / rules answers to risk phrases (spec rule 2 and 3).
+  /// Also applies [chat.AssistantAnswer.forRisk] (no to-do list or form).
   static chat.AssistantAnswer withCallFirst(chat.AssistantAnswer answer) {
+    answer = answer.forRisk();
     if (answer.panels.any((p) => p is chat.CallPanel)) return answer;
     return answer.copyWith(
       panels: [

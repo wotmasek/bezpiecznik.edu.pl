@@ -32,7 +32,7 @@ Decyzje właściciela produktu z 2026-11-21. Zastępują dawny układ z pięciom
 | P1 | Panel boczny | [panel-1-boczny.md](panel-1-boczny.md) | Przycisk menu na wyspie w E1, przesunięcie od lewej krawędzi w E1 |
 | P2 | Kontakt ze służbami | [panel-2-kontakt-ze-sluzbami.md](panel-2-kontakt-ze-sluzbami.md) | Dotknięcie SOS na dowolnym ekranie |
 | — | Szablony w czacie | [szablony-czatu.md](szablony-czatu.md) | Elementy odpowiedzi w E1 |
-| PV | Podgląd PDF (pełny ekran) | [szablony-czatu.md](szablony-czatu.md#podgląd-pdf-pełny-ekran) | Chip źródła pod krokiem, „Powiększ” w szablonie `quote` |
+| PV | Podgląd PDF (pełny ekran) | [szablony-czatu.md](szablony-czatu.md#podgląd-pdf-pełny-ekran) | Przypis / wiersz listy „Źródła · n”, „Powiększ” w szablonie `quote` |
 
 ## Mapa nawigacji
 

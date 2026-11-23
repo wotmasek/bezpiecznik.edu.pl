@@ -21,6 +21,13 @@ Model zwraca tylko `{ "panels": [...] }` (format z [lokalne-ai.md](../05-technol
 | `text` | string? | Tylko dla `refusal`: tekst odmowy |
 | `created_at` | ISO 8601 | Czas utworzenia |
 
+**Wygląd (redesign 2026-11, styl ChatGPT).** Odpowiedź to tekst, nie karty: nagłówek szablonu (`step` 20/28), lista numerowana albo punktowana (`chat` 17/26, znacznik w kolumnie 28 dp, kolor `ink-200`), odstępy z tokenów. Ramek i tła nie mają szablony `steps`, `bullets`, `todo`, `quote` i `chat_text`. Ramkę ma tylko `form` (to kontrolki do wypełnienia) oraz narzędzia `map`, `cpr`, `signal`. Kolejność w wiadomości:
+
+1. Wiersz nagłówka: etykieta `origin`, plakietka „Do weryfikacji”, a po prawej jeden [przełącznik wariantu](#warianty), gdy wiadomość ma warianty.
+2. Szablony w kolejności `panels[]` (bez `call`, zob. [`call`](#call)).
+3. Wiersz akcji: „Czytaj na głos” (pierwszy `steps` z `read_aloud`) i pigułka „Źródła · n” ([przypisy](#przypisy-i-lista-źródeł)).
+4. Rozwinięta lista źródeł (po dotknięciu pigułki albo przypisu), notka, stopka karty ratunkowej.
+
 Etykieta nad wiadomością według `origin`: `rescue_card` → „Karta ratunkowa”, `rules` → „Z twojego profilu” (brak etykiety, gdy wiadomość ma pole `intent`, [intencje](../04-dane/kontrakty-tresci.md#intencje)), `ai` → brak, `no_ai` → „Tryb bez AI: fragmenty źródeł”, `refusal` → brak (odmowa to spokojny komponent `NoSource`, bez 112; [odmowa](../02-funkcje/01-czat/odpowiedzi-tylko-ze-zrodel.md#odmowa)).
 
 ### Kto może użyć którego szablonu
@@ -29,6 +36,8 @@ Etykieta nad wiadomością według `origin`: `rescue_card` → „Karta ratunkow
 |---|---|---|---|---|
 | `steps` | treść | tak | tak | nie |
 | `bullets` | treść | tak | tak | nie |
+| `todo` | treść | tak (nie przy frazie ryzyka) | tak | nie |
+| `form` | pytania | tak (nie przy frazie ryzyka) | nie | nie |
 | `quote` | treść | tak | tak | tak (jedyny szablon treści) |
 | `animation` | treść | **nie** | tak | nie |
 | `cpr` | treść | **nie** | tak | nie |
@@ -41,16 +50,17 @@ Etykieta nad wiadomością według `origin`: `rescue_card` → „Karta ratunkow
 ### Reguły
 
 1. Każdy szablon treści ma co najmniej jedno źródło (`source_id`). Każdy element `steps` i `bullets` ma własne `source_id`.
-2. Szablon `call` pojawia się zawsze, gdy sytuacja może zagrażać życiu. Pilnuje tego aplikacja, nie model: dodaje `call` na początku wiadomości, gdy `origin = rescue_card` albo gdy wiadomość użytkownika (nie znalezione fragmenty) trafia na listę fraz ryzyka (np. pożar, gaz, wypadek, powódź, krwawi, nieprzytomny; plik [`assets/phrases/risk.json`](../04-dane/kontrakty-tresci.md#frazy-ryzyka)).
+2. Szablon `call` pojawia się zawsze, gdy sytuacja może zagrażać życiu. Pilnuje tego aplikacja, nie model: dodaje `call` na początku wiadomości (ekran czatu przypina wtedy „Zadzwoń 112” nad polem wpisywania), gdy `origin = rescue_card` albo gdy wiadomość użytkownika (nie znalezione fragmenty) trafia na listę fraz ryzyka (np. pożar, gaz, wypadek, powódź, krwawi, nieprzytomny; plik [`assets/phrases/risk.json`](../04-dane/kontrakty-tresci.md#frazy-ryzyka)).
 3. Najwyżej jeden `call` i jeden `cpr` w wiadomości. `call` zawsze jako pierwszy szablon.
-4. Walidacja odpowiedzi modelu: nieznany `type` → szablon usunięty. Element bez istniejącego `source_id` albo bez pokrycia w fragmencie → element usunięty. Szablon treści bez elementów → usunięty. Brak szablonów treści po walidacji → wiadomość w trybie bez AI (`no_ai`, szablony `quote` z najlepszymi fragmentami).
-5. Krótko: jeden element `steps` to jeden czasownik i jedna czynność, do 120 znaków.
-6. Karty ratunkowe (`assets/cards/{card_id}.json`, [kontrakt](../04-dane/kontrakty-tresci.md)), reguły planu 72 h i plecaka, ich rekordy źródeł (bez plików PDF) i animacje są dołączone do aplikacji, a nie do pobieranych paczek. Działają zaraz po instalacji.
+4. `todo` i `form` nigdy przy frazie ryzyka: aplikacja zamienia `todo` na `bullets` i usuwa `form`. `form` zostaje tylko wtedy, gdy jest jedynym szablonem odpowiedzi.
+5. Walidacja odpowiedzi modelu: nieznany `type` → szablon usunięty. Element bez istniejącego `source_id` albo bez pokrycia w fragmencie → element usunięty. Szablon treści bez elementów → usunięty. Brak szablonów treści po walidacji → wiadomość w trybie bez AI (`no_ai`, szablony `quote` z najlepszymi fragmentami).
+6. Krótko: jeden element `steps` to jeden czasownik i jedna czynność, do 120 znaków.
+7. Karty ratunkowe (`assets/cards/{card_id}.json`, [kontrakt](../04-dane/kontrakty-tresci.md)), reguły planu 72 h i plecaka, ich rekordy źródeł (bez plików PDF) i animacje są dołączone do aplikacji, a nie do pobieranych paczek. Działają zaraz po instalacji.
 
 ### Warianty
 
 - Szablony `steps`, `animation`, `cpr` mogą mieć warianty (np. `adult` Dorosły, `child` Dziecko, `infant` Niemowlę).
-- Wybór wariantu jest jeden na wiadomość (`selected_variant`). Przełącznik segmentowy rysuje tylko pierwszy szablon z wariantami. Zmiana przełącza wszystkie szablony wiadomości.
+- Wybór wariantu jest jeden na wiadomość (`selected_variant`). Przełącznik to cichy chip „Dorosły ⌄” w wierszu nagłówka wiadomości (`VariantChip`); dotknięcie otwiera małe menu z opcjami i `✓` przy wybranej. Zmiana przełącza wszystkie szablony wiadomości.
 - Wszystkie szablony z wariantami w jednej wiadomości mają ten sam zbiór `id` wariantów (sprawdzane przy budowie kart).
 - Domyślnie wybrany jest pierwszy wariant, chyba że fraza użytkownika nazywa dziecko lub niemowlę. Słowa z `variant_words` karty ([kontrakt karty](../04-dane/kontrakty-tresci.md#karta-ratunkowa)) ustawiają `selected_variant`: dziecko, dziecka, syn, córka → `child`; niemowlę, niemowlak, bobas, noworodek → `infant`. Gdy pasują słowa obu wariantów, wygrywa `infant` (*domyślne, do potwierdzenia*). Nie dobieramy wariantu z profilu.
 - Pierwszeństwo fraz: „nieprzytomny i nie oddycha” i „nie oddycha” zawsze wygrywają z „nieprzytomny” (karta RKO, nie „Utrata przytomności”). Karta „Utrata przytomności” zaczyna się od kroku „Sprawdź oddech: patrz, słuchaj, czuj do 10 s” i przycisku „Nie oddycha → RKO”, który wstawia kartę RKO ([karty ratunkowe](../02-funkcje/02-pierwsza-pomoc/karty-ratunkowe.md#utrata-przytomności--rko)).
@@ -74,9 +84,16 @@ Etykieta nad wiadomością według `origin`: `rescue_card` → „Karta ratunkow
 | `text` | string | Treść fragmentu |
 | `rects` | number[][] | Prostokąty podświetlenia `[x, y, w, h]`, ułamki 0–1 strony, początek w lewym górnym rogu |
 
-### Chip źródła
+### Przypisy i lista źródeł
 
-`SourceChip`: `▸ {doc_short}, s. {page_label}`. Dotknięcie otwiera [podgląd PDF](#podgląd-pdf-pełny-ekran) na `pdf_page` z podświetlonymi `rects`. Cel dotyku min. 48 dp wysokości (chip może wyglądać na mniejszy). Etykieta dla czytnika: „Źródło: {doc_title}, strona {page_label}. Otwórz.”
+Elementy list nie mają już chipów pod każdym punktem. Źródła są ponumerowane w kolejności czytania: jeden numer na stronę dokumentu (`doc_id` + `page_label`), więc kilka fragmentów z tej samej strony to jeden przypis.
+
+- Przypis `[n]` to mała pigułka (20 dp, `bg-300`, cyfra `ink-200`) na końcu ostatniego elementu ciągu elementów z tej samej strony. W zwiniętej liście stoi na ostatnim widocznym elemencie.
+- Pod odpowiedzią pigułka „Źródła · n” (przycisk `secondary`, ikona książki). Dotknięcie jej albo dowolnego przypisu rozwija listę: `n  {doc_short} · s. {page_label}  ›`, wiersz min. 44 dp. Wiersz otwiera [podgląd PDF](#podgląd-pdf-pełny-ekran) pierwszego cytowanego fragmentu tej strony.
+- `quote` nie dostaje numeru: ma własny podpis pod oknem.
+- Etykieta przypisu dla czytnika: „Źródło {n}”; wiersza listy: „Źródło {n}: {doc_title}, strona {page_label}. Otwórz.”
+
+`SourceChip` (`▸ {doc_short}, s. {page_label}`) zostaje w narzędziach, które go używają (np. `cpr`).
 
 ---
 
@@ -116,66 +133,121 @@ Z wariantami (zamiast `items`):
 | `items` | gdy brak `variants` | Elementy `{ text, source_id }` |
 | `variants` | nie | `{ id, label, items }[]` |
 | `read_aloud` | nie | Pokazuje przycisk „Czytaj na głos”. `true` w kartach ratunkowych |
-| `items[].done` | — | Dopisuje aplikacja w zapisanej wiadomości. Osobno dla każdego wariantu |
 | `items[].card_link` | nie | `{ label, card_id }`: przycisk pod krokiem, wstawia kartę jako nową wiadomość z tym samym wariantem. Tylko w kartach ratunkowych ([kontrakt](../04-dane/kontrakty-tresci.md#karta-ratunkowa)) |
 
 ```
-┌ Teraz ───────────────────────┐
-│ [Dorosły][Dziecko][Niemowlę] │
-│                              │
-│ ┃1. Krok bieżący.         [ ]│
-│ ┃   ▸ PRC/ERC 2025, s. 12    │
-│  2. Krok drugi, dłuższy,  [ ]│
-│     w dwóch liniach.         │
-│     ▸ PRC/ERC 2025, s. 12    │
-│  3. Krok zrobiony.        [✓]│
-│     ▸ PRC/ERC 2025, s. 14    │
-│                              │
-│ [     Czytaj na głos       ] │
-└──────────────────────────────┘
+RKO                                    Dorosły ⌄
+1. Upewnij się, że Ty, poszkodowany
+   i świadkowie jesteście bezpieczni.
+2. …
+5. Włącz w telefonie tryb głośnomówiący… [1]
+( ⌄ Pokaż wszystkie kroki · 43 )
+( 🔊 Czytaj na głos )  ( 📖 Źródła · 1 )
 ```
 
 **Interakcje**
 
-- `[ ]` przełącza „zrobione”. Krok zrobiony: przygaszony, z `✓`. Pierwszy niezrobiony krok jest bieżący (pogrubienie, pasek po lewej).
-- Chip źródła → podgląd PDF.
-- Przełącznik wariantu → zmienia warianty w całej wiadomości.
-- „Czytaj na głos” czyta bieżący krok (synteza mowy offline). Oznaczenie kroku jako zrobionego czyta następny. Drugie dotknięcie: „Zatrzymaj czytanie”. Kroki nie są czytane bez tego przycisku, także w kartach ratunkowych (komendy `cpr` mówi instruktor sam, zob. [`cpr`](#cpr)).
+- Lista numerowana, bez odhaczania (kroki w nagłej sytuacji czyta się po kolei, nie odhacza). Przypis → rozwija listę źródeł.
+- Lista dłuższa niż 5 kroków jest zwinięta do 5 z przyciskiem „Pokaż wszystkie kroki · n”; po rozwinięciu „Zwiń”.
+- Przełącznik wariantu jest w nagłówku wiadomości ([warianty](#warianty)).
+- „Czytaj na głos” (wiersz akcji pod odpowiedzią) czyta kroki od pierwszego, po jednym (synteza mowy systemu, `pl-PL`). Drugie dotknięcie: „Zatrzymaj czytanie”. Kroki nie są czytane bez tego przycisku, także w kartach ratunkowych (komendy `cpr` mówi instruktor sam, zob. [`cpr`](#cpr)).
 
-**Stany:** wszystkie zrobione → nagłówek z `✓` i tekstem „Wszystko zrobione”. Brak polskiego głosu w systemie → przycisk ukryty.
+**Stany:** brak polskiego głosu w systemie → przycisk ukryty. Pole `items[].done` z zapisanych starszych wiadomości jest ignorowane.
 
 ## `bullets`
 
-**Cel:** lista bez kolejności (co zabrać, czego unikać, braki w plecaku).
+**Cel:** lista bez kolejności (czego unikać, znaczenia sygnałów, fakty).
 
 ```json
 {
   "type": "bullets",
-  "title": "Do plecaka",
-  "checkable": true,
+  "title": "Czego nie robić",
   "items": [
-    { "text": "Woda pitna", "source_id": "poradnik-2025-s22-f1" }
+    { "text": "…", "source_id": "poradnik-2025-s22-f1" }
   ]
 }
 ```
 
 | Pole | Wymagane | Opis |
 |---|---|---|
-| `title` | tak | Do 30 znaków |
+| `title` | nie | Do 30 znaków |
 | `items` | tak | `{ text, source_id }[]` |
-| `checkable` | nie | `true`: każdy element ma pole odhaczenia (plecak, lista braków) |
-| `items[].kit_id` | gdy `checkable` | Identyfikator rzeczy w profilu (`supplies.kit[].id`) |
 
 ```
-┌ Do plecaka ──────────────────┐
-│ • Woda pitna             [✓] │
-│   ▸ Poradnik bezp., s. 22    │
-│ • Latarka i baterie      [ ] │
-│   ▸ Poradnik bezp., s. 22    │
+Czego nie robić
+•  Pierwszy punkt.
+•  Drugi punkt. [1]
+```
+
+Starsza forma `"checkable": true` jest czytana jako [`todo`](#todo).
+
+## `todo`
+
+**Cel:** lista do odhaczenia, **tylko do przygotowań** (plecak, zapasy, przygotowanie domu). Nigdy w sytuacji zagrożenia: przy frazie ryzyka aplikacja pokazuje te same elementy jako `bullets`.
+
+```json
+{
+  "type": "todo",
+  "title": "Do plecaka",
+  "items": [
+    { "text": "Woda pitna", "source_id": "psp-plecak-s2-f1", "kit_id": "psp_woda" }
+  ]
+}
+```
+
+| Pole | Wymagane | Opis |
+|---|---|---|
+| `title` | nie | Do 30 znaków |
+| `items` | tak | `{ text, source_id, kit_id? }[]` |
+| `items[].kit_id` | nie | Identyfikator rzeczy w profilu (`supplies.kit[].id`) |
+
+```
+Do plecaka                         2 z 46
+◉  ~~Regularnie przyjmowane leki~~
+○  Środki przeciwbólowe
+…
+○  Rękawiczki nitrylowe [1]
+( ⌄ Pokaż wszystkie · 46 )
+```
+
+**Wygląd:** okrągłe pole 20 dp (obrys `line-200` 1,5 dp); zaznaczone: wypełnione `ink-100` z `✓`, tekst `ink-300` przekreślony. Cały wiersz (min. 44 dp) przełącza stan; przypis nie przełącza. Licznik „{n} z {m}” po prawej od nagłówka. Lista dłuższa niż 8 jest zwinięta.
+
+**Stan:** na razie zapisany w wiadomości (`done`); docelowo w profilu (`supplies.kit[]`: `id`, `checked`, `checkedAt`, [profil](ekran-4-profil.md)), tak by ta sama rzecz w innej wiadomości miała ten sam stan, a usunięcie czatu nie kasowało plecaka.
+
+## `form`
+
+**Cel:** zanim odpowie, asystent dopytuje 1–3 krótkimi pytaniami wyboru, gdy pytanie jest zbyt ogólne, by odpowiedzieć ze źródeł. Nigdy przy frazie ryzyka.
+
+```json
+{
+  "type": "form",
+  "questions": [
+    { "text": "Kto mieszka w domu?", "multiple": true, "options": ["Dorośli", "Dzieci", "Osoby starsze", "Zwierzęta"] },
+    { "text": "Czym ogrzewasz dom?", "options": ["Prąd", "Gaz", "Piec na drewno lub węgiel", "Miejskie"] }
+  ]
+}
+```
+
+| Pole | Wymagane | Opis |
+|---|---|---|
+| `questions` | tak | 1–3 pytania |
+| `questions[].text` | tak | Do 90 znaków |
+| `questions[].options` | tak | 2–5 opcji, każda do 40 znaków |
+| `questions[].multiple` | nie | `true`: można wybrać kilka („Możesz wybrać kilka”) |
+
+```
+┌──────────────────────────────┐
+│ Kto mieszka w domu?          │
+│ Możesz wybrać kilka          │
+│ (Dorośli)(Dzieci)(Starsi)…   │
+│                              │
+│ Czym ogrzewasz dom?          │
+│ (Prąd)(Gaz)(Piec)(Miejskie)  │
+│              Pomiń [Wyślij]  │
 └──────────────────────────────┘
 ```
 
-**Interakcje:** odhaczanie (gdy `checkable`), chip → podgląd PDF. Stan odhaczenia trzyma profil (`supplies.kit[]`: `id`, `checked`, `checkedAt`, [profil](ekran-4-profil.md)), a wiadomość go tylko pokazuje: odhaczenie zapisuje się w profilu, a ta sama rzecz w innej wiadomości pokazuje ten sam stan. Usunięcie czatu nie kasuje stanu plecaka.
+**Interakcje:** opcje to chipy (`BzChip`). „Wyślij” (aktywne, gdy jest co najmniej jedna odpowiedź) wysyła odpowiedzi jako wiadomość użytkownika: „Kto mieszka w domu: Dorośli, Dzieci. Czym ogrzewasz dom: Gaz.” i zamyka formularz. „Pomiń” tylko zamyka formularz. Zamknięty formularz znika; odpowiedzi zostają jako dymek użytkownika.
 
 ## `map`
 
@@ -265,35 +337,20 @@ Format: GIF. Później Lottie: to samo pole, renderer wybiera po rozszerzeniu pl
 
 ## `call`
 
-**Cel:** wezwanie pomocy bez wychodzenia z czatu. To ten sam komponent co [Panel 2](panel-2-kontakt-ze-sluzbami.md) (`CallPanel`, wariant `inline`), z tym samym układem.
+**Cel:** jedno dotknięcie do 112, gdy sytuacja może zagrażać życiu.
 
 ```json
 { "type": "call" }
 ```
 
-Brak pól od modelu. Pozycję, adres i kontakty ICE dopisuje aplikacja przy wyświetleniu.
-
-Na wierzchu dwa duże przyciski (po 80 px): **Zadzwoń 112** i **Powiadom bliskich** (SMS), pod nimi przełącznik „Dołącz dane z profilu”, linia stanu GPS i zwinięty wiersz **„Więcej”** (domyślnie zamknięty).
+Brak pól od modelu. Aplikacja nie rysuje `call` w treści wiadomości: gdy rozmowa ma frazę ryzyka (wiadomość z `risk` albo odpowiedź z `call`), ekran czatu przypina nad polem wpisywania jeden przycisk **Zadzwoń 112** (`sos`, 56 dp, pełna szerokość, ikona telefonu i napis wyśrodkowane). Przycisk jest widoczny już w trakcie generowania odpowiedzi i zostaje do końca rozmowy.
 
 ```
-┌ Wezwij pomoc ────────────────┐
-│ ┌──────────────────────────┐ │
-│ │       ZADZWOŃ 112        │ │
-│ └──────────────────────────┘ │
-│ ┌──────────────────────────┐ │
-│ │    POWIADOM BLISKICH     │ │
-│ └──────────────────────────┘ │
-│ [✓] Dołącz dane z profilu    │
-│ GPS ±12 m                    │
-│ Więcej                     ▾ │
-└──────────────────────────────┘
+( 📞  Zadzwoń 112 )
+[ Zapytaj, co zrobić…        ↑ ]
 ```
 
-Po rozwinięciu „Więcej” (inline, w tej samej karcie): 999 Pogotowie, 998 Straż, 997 Policja, współrzędne (dziesiętne i DMS), najbliższy adres (po MVP), notka AML, „Co powiedzieć dyspozytorowi” i sygnał ratunkowy. Szczegóły: [Panel 2](panel-2-kontakt-ze-sluzbami.md#elementy).
-
-**Interakcje:** identyczne jak w [Panelu 2](panel-2-kontakt-ze-sluzbami.md#elementy): „Zadzwoń 112” (oraz numery z „Więcej”) → systemowe wybieranie numeru, „Powiadom bliskich” → systemowe okno SMS. Dotknięcie współrzędnych w „Więcej” → kopiuje je i pokazuje toast „Skopiowano współrzędne”.
-
-**Stany:** jak w Panelu 2 (brak GPS, brak adresu, brak kontaktów ICE, telefon bez SMS).
+**Interakcje:** dotknięcie → systemowe wybieranie 112. Bez kontaktów ICE, SMS, linii GPS i „Więcej” w czacie: pełny [Panel 2](panel-2-kontakt-ze-sluzbami.md) (SMS do bliskich, pozycja, 999/998/997) otwiera przycisk SOS.
 
 ## `signal`
 
@@ -344,17 +401,13 @@ Po rozwinięciu „Więcej” (inline, w tej samej karcie): 999 Pogotowie, 998 S
 | `title` | nie | Domyślnie „Źródło” |
 
 ```
-┌ Źródło ──────────────────────┐
-│ Poradnik bezpieczeństwa      │
-│ s. 14 · RCB, MON, MSWiA 2025 │
-│ ┌──────────────────────────┐ │
-│ │ …tekst strony…           │ │
-│ │ ▓▓▓▓ cytowany fragment ▓ │ │
-│ │ ▓▓▓▓▓▓▓▓▓▓▓▓▓            │ │
-│ │ …tekst strony…           │ │
-│ └──────────────────────────┘ │
-│                 [ Powiększ ] │
+┌──────────────────────────────┐
+│ …tekst strony…               │
+│ ▓▓▓▓ cytowany fragment ▓▓▓▓  │
+│ ▓▓▓▓▓▓▓▓▓▓▓                  │
+│              ( ⤢ Powiększ )  │
 └──────────────────────────────┘
+ERC 2025, Pierwsza pomoc · s. 12
 ```
 
 **Wygląd i zasady**
@@ -364,7 +417,7 @@ Po rozwinięciu „Więcej” (inline, w tej samej karcie): 999 Pogotowie, 998 S
 - Strona rysowana z pliku PDF albo z wcześniej wyrenderowanego obrazu strony w paczce bazy wiedzy. Wybór należy do buildera; kontrakt (`pdf_file`, `pdf_page`, `rects`) jest ten sam.
 - Etykieta dla czytnika ekranu: pełny `text` fragmentu.
 
-**Interakcje:** „Powiększ” albo dotknięcie okna → podgląd PDF.
+**Interakcje:** „Powiększ” (pigułka w prawym dolnym rogu okna, w środku strony) albo dotknięcie okna → podgląd PDF. Pod oknem podpis `{doc_short} · s. {page_label}`.
 
 **Stany:** puste `rects` → górna część strony bez podświetlenia i pełny `text` pod oknem. Brak pliku PDF → sam `text` i dopisek „Nie mogę otworzyć pliku PDF. Pokazuję tekst fragmentu.”
 
@@ -494,25 +547,30 @@ Wstawiana bez modelu po frazie „nie oddycha” albo po szybkim przycisku „Kt
   "selected_variant": "adult",
   "panels": [
     { "type": "call" },
+    { "type": "cpr", "source_id": "prc-2025-s14-f1", … },
     { "type": "steps", "title": "RKO", "read_aloud": true, "variants": [ … ] },
-    { "type": "animation", "caption": "Ułożenie dłoni", "variants": { … }, "source_id": "prc-2025-s14-f2" },
-    { "type": "cpr", "source_id": "prc-2025-s14-f1", … }
+    { "type": "animation", "caption": "Ułożenie dłoni", "variants": { … }, "source_id": "prc-2025-s14-f2" }
   ]
 }
 ```
 
-Pod każdą wiadomością `rescue_card` aplikacja dopisuje: „Ta instrukcja nie zastępuje połączenia z 112.”
+`call` przypina „Zadzwoń 112” nad polem wpisywania; instruktor `cpr` stoi przed listą kroków, żeby „Start” nie był pod 43 krokami. Pod każdą wiadomością `rescue_card` aplikacja dopisuje: „Ta instrukcja nie zastępuje połączenia z 112.”
 
 ## Kryteria akceptacji
 
 - [ ] Odpowiedź modelu z nieznanym `type`, z `animation` albo z `cpr` jest odrzucana na etapie walidacji.
 - [ ] Element `steps` z nieistniejącym `source_id` nie jest wyświetlany.
 - [ ] Gdy po walidacji nie zostaje żaden szablon treści, wiadomość pokazuje szablony `quote` z etykietą „Tryb bez AI: fragmenty źródeł”.
-- [ ] Każda wiadomość `rescue_card` zaczyna się od `call` i kończy tekstem „Ta instrukcja nie zastępuje połączenia z 112.”
+- [ ] Każda wiadomość `rescue_card` zaczyna się od `call` (przypięte „Zadzwoń 112” nad polem wpisywania) i kończy tekstem „Ta instrukcja nie zastępuje połączenia z 112.”
 - [ ] Pytanie zawierające „pożar” dostaje `call`, nawet gdy model go nie zwrócił.
+- [ ] Rozmowa bez frazy ryzyka nie pokazuje przycisku „Zadzwoń 112”.
+- [ ] Karta RKO pokazuje 5 kroków i „Pokaż wszystkie kroki · 43”; żaden krok nie ma pola odhaczenia.
+- [ ] Przypis i pigułka „Źródła · n” rozwijają listę źródeł; wiersz listy otwiera podgląd PDF.
+- [ ] `todo` przy frazie ryzyka wyświetla się jako `bullets`; `form` przy frazie ryzyka nie pojawia się.
+- [ ] „Wyślij” w `form` wysyła odpowiedzi jako wiadomość użytkownika i chowa formularz.
 - [ ] Zmiana wariantu na „Niemowlę” przełącza naraz `steps`, `animation` i `cpr` w tej samej wiadomości.
-- [ ] Stan „zrobione” kroku przetrwa zamknięcie i ponowne otwarcie aplikacji.
-- [ ] Chip źródła otwiera podgląd PDF na `pdf_page` z podświetlonym fragmentem; `✕` wraca do czatu w to samo miejsce.
+- [ ] Stan odhaczenia `todo` przetrwa zamknięcie i ponowne otwarcie aplikacji.
+- [ ] Wiersz listy źródeł otwiera podgląd PDF na `pdf_page` z podświetlonym fragmentem; `✕` wraca do czatu w to samo miejsce.
 - [ ] `quote` pokazuje wycinek strony z podświetleniem; przewijanie palcem po oknie przewija czat.
 - [ ] `map` bez pozycji GPS nie pokazuje odległości, tylko „Nie znam twojej pozycji.”
 - [ ] „Prowadź” otwiera Mapę w trybie trasy do tego samego punktu.

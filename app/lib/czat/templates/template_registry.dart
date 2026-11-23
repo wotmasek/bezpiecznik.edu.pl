@@ -4,12 +4,15 @@ import 'package:material_ui/material_ui.dart';
 import 'app_templates.dart';
 import 'bullets_panel.dart';
 import 'chat_text.dart';
+import 'form_panel.dart';
+import 'md_blocks.dart';
 import 'no_source.dart';
 import 'panel_model.dart';
 import 'placeholder_panel.dart';
 import 'quote_panel.dart';
 import 'source_sheet.dart';
 import 'steps_panel.dart';
+import 'todo_panel.dart';
 
 /// Everything a panel builder needs to draw one template of a message.
 class PanelScope {
@@ -23,6 +26,8 @@ class PanelScope {
     required this.done,
     required this.onDoneChanged,
     required this.onOpenSource,
+    this.footnotes = Footnotes.none,
+    this.onShowSources,
   });
 
   final ChatPanel panel;
@@ -34,7 +39,8 @@ class PanelScope {
   /// Selected variant id of the message (null when no panel has variants).
   final String? variant;
 
-  /// True only for the first panel of the message that has variants.
+  /// Legacy: panels used to draw the segmented switch. The renderer now draws
+  /// one [VariantChip] in the message header and always passes false.
   final bool showVariantSwitch;
   final ValueChanged<String> onVariantChanged;
 
@@ -44,6 +50,12 @@ class PanelScope {
 
   /// Opens the PDF preview for a source (no-op until PV exists).
   final void Function(SourceRecord source) onOpenSource;
+
+  /// Footnote numbers of the whole answer (see [footnoteAfter]).
+  final Footnotes footnotes;
+
+  /// Tapping a footnote: expands the numbered source list under the answer.
+  final VoidCallback? onShowSources;
 }
 
 typedef PanelBuilder = Widget Function(BuildContext context, PanelScope scope);
@@ -58,12 +70,14 @@ typedef PanelBuilder = Widget Function(BuildContext context, PanelScope scope);
 class TemplateRegistry {
   TemplateRegistry([Map<String, PanelBuilder>? builders]) : _builders = {...?builders};
 
-  /// `steps`, `bullets`, `quote`, `no_source` real; `call`, `cpr`, `map`,
+  /// `steps`, `bullets`, `todo`, `form`, `quote`, `no_source`, `chat_text` real; `call`, `cpr`, `map`,
   /// `signal`, `animation` placeholders.
   factory TemplateRegistry.withDefaults() {
     return TemplateRegistry({
       'steps': (c, s) => StepsPanelView(scope: s),
       'bullets': (c, s) => BulletsPanelView(scope: s),
+      'todo': (c, s) => TodoPanelView(scope: s),
+      'form': (c, s) => FormPanelView(scope: s),
       'quote': (c, s) => QuotePanelView(scope: s),
       'no_source': (c, s) => NoSourceView(kind: (s.panel as NoSourcePanel).kind),
       'chat_text': (c, s) => ChatTextView(text: (s.panel as ChatTextPanel).text),

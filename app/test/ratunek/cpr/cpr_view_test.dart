@@ -95,26 +95,31 @@ Future<(Rig, ProviderContainer)> pumpCard(
   return (rig, container);
 }
 
+/// Picks [label] in the message header [VariantChip] menu.
+Future<void> pickVariant(WidgetTester tester, String label) async {
+  await tester.tap(find.byKey(const Key('variant-chip')));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(label).last);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   testWidgets('source chip follows the selected variant', (tester) async {
     await pumpCard(tester);
     expect(find.text('ERC 2025, BLS krok po kroku, s.\u00A03'), findsOneWidget);
-    await tester.tap(find.text('Niemowlę'));
-    await tester.pump();
+    await pickVariant(tester, 'Niemowlę');
     expect(find.text('ERC 2025, podsumowanie zmian, s.\u00A067'), findsOneWidget);
     expect(find.text('ERC 2025, BLS krok po kroku, s.\u00A03'), findsNothing);
-    await tester.tap(find.text('Dorosły'));
-    await tester.pump();
+    await pickVariant(tester, 'Dorosły');
     expect(find.text('ERC 2025, BLS krok po kroku, s.\u00A03'), findsOneWidget);
   });
 
   testWidgets('card: variant switch, summary, start shows the pinned panel', (tester) async {
     final (rig, _) = await pumpCard(tester);
-    expect(find.text('Dorosły'), findsOneWidget);
-    expect(find.text('Niemowlę'), findsOneWidget);
+    // The variant is picked in the message header chip.
+    expect(find.descendant(of: find.byKey(const Key('variant-chip')), matching: find.text('Dorosły')), findsOneWidget);
     expect(find.text('Dorosły · 110/min · 30:2'), findsOneWidget);
-    await tester.tap(find.text('Niemowlę'));
-    await tester.pump();
+    await pickVariant(tester, 'Niemowlę');
     expect(find.text('Niemowlę · 110/min · 30:2'), findsOneWidget);
     await tester.tap(find.text(cprStartLabel));
     await tester.pump();
@@ -226,8 +231,7 @@ void main() {
 
   testWidgets('keyboard open, child breaths phase: compact line has "Dalej"', (tester) async {
     final (rig, _) = await pumpCard(tester);
-    await tester.tap(find.text('Dziecko'));
-    await tester.pump();
+    await pickVariant(tester, 'Dziecko');
     await tester.tap(find.text(cprStartLabel));
     await tester.pump();
     tester.view.viewInsets = const FakeViewPadding(bottom: 300);
@@ -280,8 +284,7 @@ void main() {
     expect(find.text('Dorosły · 110/min · 30:2'), findsOneWidget);
     // Child ratio shown must match the card data (compressions:breaths).
     final child = rkoConfig().variant('child')!;
-    await tester.tap(find.text('Dziecko'));
-    await tester.pump();
+    await pickVariant(tester, 'Dziecko');
     expect(find.text('Dziecko · 110/min · ${child.compressions}:${child.breaths}'), findsOneWidget);
     expect(child.compressions, 30);
     expect(child.breaths, 2);
@@ -304,8 +307,7 @@ void main() {
 
   testWidgets('child initial breaths: neutral label with the card count, untimed, "Dalej"', (tester) async {
     final (rig, _) = await pumpCard(tester);
-    await tester.tap(find.text('Dziecko'));
-    await tester.pump();
+    await pickVariant(tester, 'Dziecko');
     await tester.tap(find.text(cprStartLabel));
     await tester.pump();
     expect(find.text('Oddechy ratownicze'), findsOneWidget);
@@ -322,8 +324,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     final (rig, _) = await pumpCard(tester);
-    await tester.tap(find.text('Dziecko'));
-    await tester.pump();
+    await pickVariant(tester, 'Dziecko');
     await tester.tap(find.text(cprStartLabel));
     await tester.pump();
     final phase = find.byKey(const ValueKey('cpr-phase'));
@@ -474,8 +475,7 @@ void main() {
     tester.view.devicePixelRatio = 2.625;
     addTearDown(tester.view.reset);
     final (rig, _) = await pumpCard(tester);
-    await tester.tap(find.text('Dziecko'));
-    await tester.pump();
+    await pickVariant(tester, 'Dziecko');
     await tester.tap(find.text(cprStartLabel));
     await tester.pump();
     // Initial breaths: worst case (Dalej + AED reminder row all visible).
@@ -509,8 +509,7 @@ void main() {
 
   testWidgets('tap inserts the AED card (session variant), session keeps running', (tester) async {
     final (rig, container) = await pumpCard(tester);
-    await tester.tap(find.text('Niemowlę'));
-    await tester.pump();
+    await pickVariant(tester, 'Niemowlę');
     await tester.tap(find.text(cprStartLabel));
     await tester.pump();
     expect(rig.session.variant!.id, 'infant');

@@ -61,10 +61,9 @@ void main() {
     expect(a!.origin, AnswerOrigin.rules);
     expect(a.intent, 'kit');
     expect(a.verify, isTrue);
-    final p = a.panels.single as BulletsPanel;
+    final p = a.panels.single as TodoPanel;
     expect(p.title, 'Do plecaka');
     expect(p.title.length, lessThanOrEqualTo(30));
-    expect(p.checkable, isTrue);
     expect(p.items.length, 46);
     expect(p.items.map((i) => i.kitId).toSet().length, 46);
     for (final i in p.items) {
@@ -85,7 +84,7 @@ void main() {
   test('answer survives storage round-trip', () async {
     final a = (await KitAnswerService().tryAnswer('plecak'))!;
     final b = AssistantAnswer.fromJson(a.toJson());
-    expect((b.panels.single as BulletsPanel).items.length, 46);
+    expect((b.panels.single as TodoPanel).items.length, 46);
     expect(b.intent, 'kit');
   });
 }

@@ -21,7 +21,7 @@ Użytkownik opisuje sytuację własnymi słowami albo dotyka szybkiego przycisku
 | `▦` na wyspie | E2 Mapa |
 | SOS dotknięcie / przytrzymanie | P2 / systemowe wybieranie 112 |
 | `map`: „Prowadź” / dotknięcie mini mapy | E2 w trybie trasy / E2 wyśrodkowana na punkcie |
-| Chip źródła, `quote` → „Powiększ” | PV Podgląd PDF |
+| Wiersz listy źródeł, `quote` → „Powiększ” | PV Podgląd PDF |
 | `call`: „Zadzwoń 112” (numery w „Więcej”) / „Powiadom bliskich” | Systemowe wybieranie numeru / systemowe okno SMS |
 
 ## Układ
@@ -144,7 +144,7 @@ Wiadomości użytkownika: dymek po prawej. Odpowiedzi: szablony na całą szerok
 | Ktoś nie oddycha | Karta RKO (`rescue_card`, `card_id: rko`) |
 | Brak prądu | Plan 72 h, wariant blackout, z profilu (`rules`) |
 | Alarm / schron | Plan 72 h, wariant alarm i schronienie (`rules`) + `map` `nearest_shelter` |
-| Ewakuacja | Plan 72 h, wariant ewakuacja (`rules`) + plecak `bullets` `checkable` + `map` `nearest_shelter` |
+| Ewakuacja | Plan 72 h, wariant ewakuacja (`rules`) + plecak `todo` + `map` `nearest_shelter` |
 
 ### Przepływ po wysłaniu wiadomości
 

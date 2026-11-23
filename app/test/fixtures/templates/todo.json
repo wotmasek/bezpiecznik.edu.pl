@@ -1,0 +1,88 @@
+{
+  "_note": "Synthetic template fixture, not medical or safety content (verify:true, source: none).",
+  "verify": true,
+  "origin": "ai",
+  "panels": [
+    {
+      "type": "todo",
+      "title": "Lista do odhaczenia",
+      "items": [
+        {
+          "text": "Przykładowy Element A",
+          "source_id": "fixture-s2-f1"
+        },
+        {
+          "text": "Przykładowy Element B",
+          "source_id": "fixture-s2-f1"
+        },
+        {
+          "text": "Przykładowy Element C",
+          "source_id": "fixture-s2-f1"
+        },
+        {
+          "text": "Przykładowy Element D",
+          "source_id": "fixture-s2-f1"
+        },
+        {
+          "text": "Przykładowy Element E",
+          "source_id": "fixture-s2-f1"
+        },
+        {
+          "text": "Przykładowy Element F",
+          "source_id": "fixture-s2-f1"
+        },
+        {
+          "text": "Przykładowy Element G",
+          "source_id": "fixture-s1-f1"
+        },
+        {
+          "text": "Przykładowy Element H",
+          "source_id": "fixture-s1-f1"
+        },
+        {
+          "text": "Przykładowy Element I",
+          "source_id": "fixture-s1-f1"
+        },
+        {
+          "text": "Przykładowy Element J",
+          "source_id": "fixture-s1-f1"
+        }
+      ]
+    }
+  ],
+  "sources": {
+    "fixture-s1-f1": {
+      "source_id": "fixture-s1-f1",
+      "doc_id": "fixture",
+      "doc_title": "Dokument przykładowy (fixture)",
+      "doc_short": "Przykład",
+      "publisher": "Fixture",
+      "issued": "2025",
+      "page_label": "14",
+      "pdf_page": 16,
+      "pdf_file": "fixture/fixture.pdf",
+      "text": "Przykładowy fragment źródła, pokazany w szablonie quote. To tekst testowy, nie treść porady.",
+      "rects": [
+        [
+          0.1,
+          0.2,
+          0.8,
+          0.05
+        ]
+      ]
+    },
+    "fixture-s2-f1": {
+      "source_id": "fixture-s2-f1",
+      "doc_id": "fixture",
+      "doc_title": "Dokument przykładowy (fixture)",
+      "doc_short": "Przykład",
+      "publisher": "Fixture",
+      "issued": "2025",
+      "page_label": "22",
+      "pdf_page": 24,
+      "pdf_file": "fixture/fixture.pdf",
+      "text": "Drugi przykładowy fragment.",
+      "rects": []
+    }
+  }
+}

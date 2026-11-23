@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bezpiecznik/czat/data/chat_store.dart';
 import 'package:bezpiecznik/czat/ui/answer_service.dart';
 import 'package:bezpiecznik/czat/ui/chat_controller.dart';
+import 'package:bezpiecznik/czat/templates/md_blocks.dart';
 import 'package:bezpiecznik/czat/templates/panel_model.dart';
 import 'package:bezpiecznik/czat/ui/chat_screen.dart';
 import 'package:bezpiecznik/ratunek/cpr/cpr_session.dart';
@@ -57,6 +58,35 @@ void main() {
     expect(find.byKey(const Key('composer-stop')), findsNothing);
   });
 
+  testWidgets('112 is pinned only for a risk conversation, exactly once', (
+    tester,
+  ) async {
+    final service = FakeAnswerService(
+      script: (q, _) => Stream.fromIterable([
+        AnswerThinking(ThinkingPhase.searching, q.contains('pożar')),
+        AnswerReady(fakeStepsAnswer()),
+      ]),
+    );
+    final c = await pumpChat(tester, service);
+    final call = find.byKey(const Key('call-112'));
+    expect(call, findsNothing); // empty chat
+    c.read(chatControllerProvider.notifier).send('zapas wody');
+    await tester.pump();
+    await tester.pump();
+    expect(find.byKey(const Key('user-bubble')), findsOneWidget);
+    expect(call, findsNothing); // non-risk chat
+    c.read(chatControllerProvider.notifier).send('pożar w kuchni');
+    await tester.pump();
+    await tester.pump();
+    c.read(chatControllerProvider.notifier).send('a co dalej');
+    await tester.pump();
+    await tester.pump();
+    expect(call, findsOneWidget); // stays for the rest of the conversation
+    c.read(chatControllerProvider.notifier).newChat();
+    await tester.pump();
+    expect(call, findsNothing);
+  });
+
   testWidgets('quick action tiles are at least 64 dp high', (tester) async {
     await pumpChat(tester, FakeAnswerService());
     for (final l in [
@@ -87,7 +117,7 @@ void main() {
   );
 
   testWidgets(
-    'typing and sending shows a right-aligned bubble, then panels with a source chip',
+    'typing and sending shows a right-aligned bubble, then panels with a footnote',
     (tester) async {
       final service = FakeAnswerService();
       await pumpChat(tester, service);
@@ -110,8 +140,8 @@ void main() {
           tester.view.physicalSize.width / tester.view.devicePixelRatio - 40,
         ),
       );
-      expect(find.text('Przykładowy krok pierwszy'), findsOneWidget);
-      expect(find.text('Przykład, s.\u00A014'), findsOneWidget);
+      expect(find.textContaining('Przykładowy krok pierwszy', findRichText: true), findsOneWidget);
+      expect(find.byType(FootnoteMark), findsWidgets);
       // The input is cleared after sending.
       expect(
         tester

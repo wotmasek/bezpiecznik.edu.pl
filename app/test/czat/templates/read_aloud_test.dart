@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:bezpiecznik/czat/templates/panel_model.dart';
 import 'package:bezpiecznik/czat/templates/read_aloud.dart';
-import 'package:bezpiecznik/czat/templates/steps_panel.dart';
 import 'package:bezpiecznik/czat/templates/template_registry.dart';
+import 'package:bezpiecznik/czat/templates/template_renderer.dart';
 import 'package:bezpiecznik/wspolne/theme/bz_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -44,7 +44,6 @@ Future<void> _pump(
   WidgetTester tester,
   ReadAloudVoice voice, {
   bool readAloud = true,
-  Set<int> done = const {},
 }) async {
   final answer = AssistantAnswer(
     sources: const {},
@@ -62,25 +61,14 @@ Future<void> _pump(
   );
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [readAloudVoiceProvider.overrideWithValue(voice)],
+      overrides: [
+        readAloudVoiceProvider.overrideWithValue(voice),
+        templateRegistryProvider.overrideWithValue(TemplateRegistry.withDefaults()),
+      ],
       child: MaterialApp(
         theme: buildBzTheme(),
         home: Scaffold(
-          body: SingleChildScrollView(
-            child: StepsPanelView(
-              scope: PanelScope(
-                panel: answer.panels.first,
-                index: 0,
-                answer: answer,
-                variant: null,
-                showVariantSwitch: false,
-                onVariantChanged: (_) {},
-                done: done,
-                onDoneChanged: (_, _) {},
-                onOpenSource: (_) {},
-              ),
-            ),
-          ),
+          body: SingleChildScrollView(child: TemplateRenderer(answer: answer)),
         ),
       ),
     ),
@@ -121,20 +109,16 @@ void main() {
     expect(v.spoken, ['raz', 'dwa']);
   });
 
-  testWidgets('starts at the first unchecked step', (tester) async {
+  testWidgets('reads from step 1 to the end, then the button resets', (tester) async {
     final v = _FakeVoice();
-    await _pump(tester, v, done: {0});
+    await _pump(tester, v);
     await tester.tap(find.text(readAloudStartLabel));
     await tester.pump();
-    expect(v.spoken, ['dwa']);
-  });
-
-  testWidgets('button resets after the last step', (tester) async {
-    final v = _FakeVoice();
-    await _pump(tester, v, done: {0, 1});
-    await tester.tap(find.text(readAloudStartLabel));
+    v.finish();
     await tester.pump();
-    expect(v.spoken, ['trzy']);
+    v.finish();
+    await tester.pump();
+    expect(v.spoken, ['raz', 'dwa', 'trzy']);
     v.finish();
     await tester.pump();
     await tester.pump();

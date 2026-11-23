@@ -21,7 +21,8 @@ registry and the 112 footer for `rescue_card`. State changes (variant, checked s
 `onChanged(updatedAnswer)`; the chat controller stores them (`updateAnswer`).
 
 `TemplateRegistry` (`templateRegistryProvider`) maps `panels[].type` -> `Widget Function(BuildContext, PanelScope)`.
-Defaults: `steps`, `bullets`, `quote`, `no_source`; placeholders (bordered box with the type name, key
+Defaults: `steps`, `bullets`, `todo`, `form`, `quote`, `no_source`, `chat_text` (light markdown,
+`md_text.dart`); placeholders (bordered box with the type name, key
 `placeholder-{type}`) for `call`, `cpr`, `map`, `signal`, `animation`. Plug in without editing this folder:
 
 ```dart
@@ -33,6 +34,7 @@ ProviderScope(overrides: [templateRegistryProvider.overrideWithValue(r)], ...)
 `showVariantSwitch` (true only for the first panel with variants), `onVariantChanged`, `done`,
 `onDoneChanged(item, value)`, `onOpenSource`. `sourceOpenerProvider` (default: source sheet; takes the tapped BuildContext) is called by source
 chips and "Powiększ"; the PDF-preview task overrides it.
+`formSenderProvider` (default: chat controller `send`) sends a form's answers; the gallery overrides it.
 
 ## Gallery
 

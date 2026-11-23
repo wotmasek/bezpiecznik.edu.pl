@@ -11,7 +11,7 @@ const String kKitAssetPath = 'assets/phrases/kit_psp.json';
 /// Intent id stored on the answer (`AssistantAnswer.intent`).
 const String kKitIntent = 'kit';
 
-/// Answers "plecak / co spakować" with a checkable `bullets` panel
+/// Answers "plecak / co spakować" with a `todo` panel
 /// ("Do plecaka") from the PSP checklist, origin `rules`, no model
 /// (ekran-1-czat.md, step 3). Items come only from `kit_psp.json`, generated
 /// from the knowledge chunks of `psp-plecak-ewakuacyjny-lista` (page 2).
@@ -52,9 +52,8 @@ class KitAnswerService {
   AssistantAnswer build(Map<String, Object?> data) {
     final items = data['items'] as List;
     final panel = {
-      'type': 'bullets',
+      'type': 'todo',
       'title': data['title'] ?? 'Do plecaka',
-      'checkable': true,
       'items': items,
     };
     final used = {for (final i in items) (i as Map)['source_id']};

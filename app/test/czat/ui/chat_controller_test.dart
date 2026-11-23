@@ -140,6 +140,31 @@ void main() {
     expect(saved[1].status, MessageStatus.stopped);
   });
 
+  test('form answers come back as the next message with the asked question as context', () async {
+    final service = ManualService();
+    final c = makeContainer(service, store);
+    final ctl = c.read(chatControllerProvider.notifier);
+    ctl.send('Jak się przygotować?');
+    service.calls[0].$3.add(
+      AnswerReady(
+        AssistantAnswer.fromJson({
+          'panels': [
+            {
+              'type': 'form',
+              'questions': [
+                {'text': 'Na co?', 'options': ['Powódź', 'Brak prądu']},
+              ],
+            },
+          ],
+        }),
+      ),
+    );
+    await pumpEventQueue();
+    ctl.send('Powódź');
+    expect(service.calls[1].$1, 'Powódź');
+    expect(service.calls[1].$2.previousQuestion, 'Jak się przygotować?');
+  });
+
   test('stop without a running generation does nothing', () {
     final c = makeContainer(ManualService(), store);
     c.read(chatControllerProvider.notifier).stop();

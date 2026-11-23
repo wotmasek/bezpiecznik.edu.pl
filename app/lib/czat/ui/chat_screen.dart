@@ -3,9 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/rendering.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../ratunek/cpr/cpr_session.dart';
 import '../../ratunek/cpr/cpr_view.dart';
 import '../../wspolne/theme/bz_theme.dart';
 import '../llm/llm_provider.dart';
+import '../templates/call/call_panel_view.dart';
+import '../templates/panel_model.dart';
 import 'chat_controller.dart';
 import 'composer.dart';
 import 'message_view.dart';
@@ -209,6 +212,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final t = context.bz;
     final state = ref.watch(chatControllerProvider);
     final controller = ref.read(chatControllerProvider.notifier);
+    final cpr = ref.watch(cprSessionProvider);
     ref.listen(chatControllerProvider, _onState);
 
     // Shell: island/SOS sit at topInset (status bar + 8, at least 48) and are
@@ -219,6 +223,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     // the first bubble never touches SOS (final QA B16).
     final listTop = topInset + 56 + t.space2;
     _listTop = listTop;
+    // A risk conversation (flagged while generating, or an answer carrying
+    // `call`) keeps "Zadzwoń 112" pinned above the composer.
+    final risk = state.messages.any(
+      (m) => m.risk || (m.answer?.panels.any((p) => p is CallPanel) ?? false),
+    );
 
     return Scaffold(
       backgroundColor: t.bg000,
@@ -259,10 +268,22 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           ),
                         ),
                 ),
-                // Running RKO instructor stays pinned above the composer.
-                Padding(
-                  padding: EdgeInsets.fromLTRB(t.space4, 0, t.space4, t.space2),
-                  child: const CprPinnedHost(),
+                // "Zadzwoń 112" (risk conversation) stays pinned above the
+                // composer; while the RKO instructor runs, its own 112 pill
+                // takes over, so there is never a second 112 button.
+                ListenableBuilder(
+                  listenable: cpr,
+                  builder: (context, _) => Padding(
+                    padding: EdgeInsets.fromLTRB(t.space4, 0, t.space4, t.space2),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (risk && !cpr.running) const CallPanelView(),
+                        const CprPinnedHost(),
+                      ],
+                    ),
+                  ),
                 ),
                 Padding(
                   // The pill is wider than the content column (reference
@@ -313,6 +334,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 padding: EdgeInsets.only(
                   bottom:
                       52 +
+                      (risk && !cpr.running ? 56 + t.space2 : 0) +
                       t.space4 +
                       t.space2 +
                       MediaQuery.paddingOf(context).bottom,

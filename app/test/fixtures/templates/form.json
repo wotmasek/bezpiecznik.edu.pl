@@ -1,0 +1,38 @@
+{
+  "_note": "Synthetic template fixture, not medical or safety content (verify:true, source: none).",
+  "verify": true,
+  "origin": "ai",
+  "panels": [
+    {
+      "type": "form",
+      "questions": [
+        {
+          "text": "Kto mieszka w domu?",
+          "multiple": true,
+          "options": [
+            "Dorośli",
+            "Dzieci",
+            "Osoby starsze",
+            "Zwierzęta"
+          ]
+        },
+        {
+          "text": "Czy ktoś potrzebuje prądu do sprzętu medycznego?",
+          "options": [
+            "Tak",
+            "Nie"
+          ]
+        },
+        {
+          "text": "Czym ogrzewasz dom?",
+          "options": [
+            "Prąd",
+            "Gaz",
+            "Piec na drewno lub węgiel",
+            "Miejskie"
+          ]
+        }
+      ]
+    }
+  ]
+}
