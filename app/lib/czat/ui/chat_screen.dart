@@ -268,8 +268,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           ),
                         ),
                 ),
-                // "Zadzwoń 112" (risk conversation) and the running RKO
-                // instructor stay pinned above the composer.
+                // "Zadzwoń 112" (risk conversation) stays pinned above the
+                // composer; while the RKO instructor runs, its own 112 pill
+                // takes over, so there is never a second 112 button.
                 ListenableBuilder(
                   listenable: cpr,
                   builder: (context, _) => Padding(
@@ -278,11 +279,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        if (risk)
-                          Padding(
-                            padding: EdgeInsets.only(bottom: cpr.running ? t.space2 : 0),
-                            child: const CallPanelView(),
-                          ),
+                        if (risk && !cpr.running) const CallPanelView(),
                         const CprPinnedHost(),
                       ],
                     ),
@@ -337,7 +334,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 padding: EdgeInsets.only(
                   bottom:
                       52 +
-                      (risk ? 56 + t.space2 : 0) +
+                      (risk && !cpr.running ? 56 + t.space2 : 0) +
                       t.space4 +
                       t.space2 +
                       MediaQuery.paddingOf(context).bottom,
