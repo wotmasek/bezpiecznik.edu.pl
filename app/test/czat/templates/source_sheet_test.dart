@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:bezpiecznik/app_router.dart';
 import 'package:bezpiecznik/czat/data/chat_store.dart';
+import 'package:bezpiecznik/czat/templates/md_blocks.dart';
 import 'package:bezpiecznik/czat/templates/panel_model.dart';
 import 'package:bezpiecznik/czat/templates/template_fixtures.dart';
 import 'package:bezpiecznik/czat/templates/source_sheet.dart';
@@ -40,10 +41,12 @@ Future<void> pumpApp(WidgetTester t, String fixture) => t.pumpWidget(
 
 void main() {
   testWidgets(
-    'chip opens source sheet with title, page, text; Zamknij closes',
+    'source row opens source sheet with title, page, text; Zamknij closes',
     (t) async {
       await pumpApp(t, 'steps');
-      await t.tap(find.text('Przykład, s.\u00A022'));
+      await t.tap(find.byType(FootnoteMark).at(1));
+      await t.pump();
+      await t.tap(find.byKey(const ValueKey('source-row-2')));
       await t.pumpAndSettle();
       expect(find.text('Strona 22'), findsOneWidget);
       expect(find.text('Zamknij'), findsOneWidget);

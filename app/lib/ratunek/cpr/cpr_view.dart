@@ -77,7 +77,8 @@ void registerCprTemplate(TemplateRegistry r, {bool inlinePinned = true}) {
   );
 }
 
-/// DS `CprCard`: before start (variant switch, rate, Start). While the
+/// DS `CprCard`: before start (rate, Start; the variant is picked in the
+/// message header). While the
 /// instructor runs it shows [CprPinned] inline or a note.
 class CprCard extends ConsumerWidget {
   const CprCard({super.key, required this.scope, this.inlinePinned = true});
@@ -178,14 +179,6 @@ class CprCard extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (scope.showVariantSwitch && scope.variant != null) ...[
-                BzSegmented(
-                  options: panel.variantOptions,
-                  value: scope.variant!,
-                  onChanged: scope.onVariantChanged,
-                ),
-                SizedBox(height: t.space3),
-              ],
               ?meta,
               SizedBox(height: t.space3),
               BzButton(

@@ -1,9 +1,9 @@
 import 'dart:convert';
 
+import 'package:bezpiecznik/czat/templates/md_blocks.dart';
 import 'package:bezpiecznik/czat/templates/no_source.dart';
 import 'package:bezpiecznik/czat/templates/panel_card.dart';
 import 'package:bezpiecznik/czat/templates/panel_model.dart';
-import 'package:bezpiecznik/czat/templates/steps_panel.dart';
 import 'package:bezpiecznik/czat/templates/template_fixtures.dart';
 import 'package:bezpiecznik/czat/templates/template_gallery.dart';
 import 'package:bezpiecznik/czat/templates/template_registry.dart';
@@ -46,47 +46,34 @@ class _StatefulState extends State<Stateful> {
 }
 
 void main() {
-  testWidgets('steps: numbered, source chip under each step, current step bold', (tester) async {
+  testWidgets('steps: heading, numbered list, a footnote ends each same-page run', (tester) async {
     await tester.pumpWidget(host(Stateful(fixture('steps'))));
     expect(find.text('Teraz'), findsOneWidget);
-    expect(find.text('Przykładowy krok 1'), findsOneWidget);
-    expect(find.text('1'), findsOneWidget);
-    expect(find.text('3'), findsOneWidget);
-    expect(find.text('Przykład, s.\u00A014'), findsNWidgets(2));
-    expect(find.text('Przykład, s.\u00A022'), findsOneWidget);
-    final first = tester.widget<Text>(find.text('Przykładowy krok 1'));
-    final second = tester.widget<Text>(find.text('Przykładowy krok 2'));
-    expect(first.style!.fontWeight, FontWeight.w700);
-    expect(second.style!.fontWeight, FontWeight.w500);
-  });
-
-  testWidgets('steps: checking moves the current step and finishing shows "Wszystko zrobione"', (tester) async {
-    await tester.pumpWidget(host(Stateful(fixture('steps'))));
-    Future<void> check(String stepText) async {
-      await tester.tap(find.bySemanticsLabel(RegExp('Krok \\d: $stepText')).first);
-      await tester.pump();
-    }
-
-    await check('Przykładowy krok 1');
-    expect(tester.widget<Text>(find.text('Przykładowy krok 1')).style!.fontWeight, FontWeight.w500);
-    expect(tester.widget<Text>(find.text('Przykładowy krok 2')).style!.fontWeight, FontWeight.w700);
-    expect(find.textContaining(stepsAllDoneText), findsNothing);
-
-    await check('Przykładowy krok 2');
-    await check('Przykładowy krok 3');
-    expect(find.text('Teraz: $stepsAllDoneText'), findsOneWidget);
+    expect(find.textContaining('Przykładowy krok 1', findRichText: true), findsOneWidget);
+    expect(find.text('1.'), findsOneWidget);
+    expect(find.text('3.'), findsOneWidget);
+    // Pages 14, 22, 14 -> footnotes 1, 2, 1; no checkboxes.
+    expect([for (final m in tester.widgetList<FootnoteMark>(find.byType(FootnoteMark))) m.number], [1, 2, 1]);
+    expect(find.byType(BzCheck), findsNothing);
   });
 
   testWidgets('steps: variant switch changes the listed steps', (tester) async {
     await tester.pumpWidget(host(Stateful(fixture('steps_variants'))));
-    expect(find.text('Przykładowy krok 3'), findsNothing, reason: 'adult has 2 steps');
+    Future<void> pick(String label) async {
+      await tester.tap(find.byKey(const Key('variant-chip')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(label).last);
+      await tester.pumpAndSettle();
+    }
+
+    final step3 = find.textContaining('Przykładowy krok 3', findRichText: true);
+    expect(step3, findsNothing, reason: 'adult has 2 steps');
     expect(find.text('Dorosły'), findsOneWidget);
-    await tester.tap(find.text('Dziecko'));
-    await tester.pump();
-    expect(find.text('Przykładowy krok 3'), findsOneWidget);
-    await tester.tap(find.text('Niemowlę'));
-    await tester.pump();
-    expect(find.text('Przykładowy krok 2'), findsNothing);
+    await pick('Dziecko');
+    expect(step3, findsOneWidget);
+    expect(find.text('Dziecko'), findsOneWidget);
+    await pick('Niemowlę');
+    expect(find.textContaining('Przykładowy krok 2', findRichText: true), findsNothing);
   });
 
   testWidgets('bullets: plain has no checkboxes, checkable has a counter', (tester) async {
@@ -119,7 +106,7 @@ void main() {
     expect(opened, ['fixture-s1-f1']);
   });
 
-  testWidgets('chip tap goes to the source opener', (tester) async {
+  testWidgets('footnote tap unfolds the source list, a row opens the source', (tester) async {
     final opened = <String>[];
     await tester.pumpWidget(
       host(
@@ -127,7 +114,10 @@ void main() {
         overrides: [sourceOpenerProvider.overrideWithValue((_, s) => opened.add(s.pageLabel))],
       ),
     );
-    await tester.tap(find.text('Przykład, s.\u00A022'));
+    expect(find.byKey(const Key('sources-list')), findsNothing);
+    await tester.tap(find.byType(FootnoteMark).at(1));
+    await tester.pump();
+    await tester.tap(find.byKey(const ValueKey('source-row-2')));
     expect(opened, ['22']);
   });
 
@@ -152,7 +142,8 @@ void main() {
     expect(find.text('Karta ratunkowa'), findsOneWidget);
     expect(find.text('Do weryfikacji'), findsOneWidget);
     expect(find.text('Ta instrukcja nie zastępuje połączenia z 112.'), findsOneWidget);
-    expect(find.byKey(const ValueKey('placeholder-call')), findsOneWidget);
+    // No inline call panel: the chat pins "Zadzwoń 112" above the composer.
+    expect(find.byKey(const ValueKey('placeholder-call')), findsNothing);
 
     await tester.pumpWidget(host(TemplateRenderer(answer: fixture('unknown_ignored'))));
     await tester.pumpAndSettle();
