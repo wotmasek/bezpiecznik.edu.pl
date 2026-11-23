@@ -343,7 +343,7 @@ Format: GIF. Później Lottie: to samo pole, renderer wybiera po rozszerzeniu pl
 { "type": "call" }
 ```
 
-Brak pól od modelu. Aplikacja nie rysuje `call` w treści wiadomości: gdy rozmowa ma frazę ryzyka (wiadomość z `risk` albo odpowiedź z `call`), ekran czatu przypina nad polem wpisywania jeden przycisk **Zadzwoń 112** (`sos`, 56 dp, pełna szerokość, ikona telefonu i napis wyśrodkowane). Przycisk jest widoczny już w trakcie generowania odpowiedzi i zostaje do końca rozmowy.
+Brak pól od modelu. Aplikacja nie rysuje `call` w treści wiadomości: gdy ostatnia tura rozmowy (ostatnie pytanie i odpowiedzi na nie) ma frazę ryzyka (wiadomość z `risk` albo odpowiedź z `call`), ekran czatu przypina nad polem wpisywania jeden przycisk **Zadzwoń 112** (`sos`, 56 dp, pełna szerokość, ikona telefonu i napis wyśrodkowane). Przycisk jest widoczny już w trakcie generowania odpowiedzi. Po kolejnym pytaniu zostaje, dopóki trwa odpowiedź; jeśli nowa odpowiedź nie zaleca 112, znika 4 s po jej pojawieniu się (zwinięcie `durationBase`), a odpowiedź z ryzykiem przypina go od razu z powrotem. Po otwarciu rozmowy z historii stan wynika od razu z ostatniej tury.
 
 ```
 ( 📞  Zadzwoń 112 )
@@ -564,6 +564,7 @@ Wstawiana bez modelu po frazie „nie oddycha” albo po szybkim przycisku „Kt
 - [ ] Każda wiadomość `rescue_card` zaczyna się od `call` (przypięte „Zadzwoń 112” nad polem wpisywania) i kończy tekstem „Ta instrukcja nie zastępuje połączenia z 112.”
 - [ ] Pytanie zawierające „pożar” dostaje `call`, nawet gdy model go nie zwrócił.
 - [ ] Rozmowa bez frazy ryzyka nie pokazuje przycisku „Zadzwoń 112”.
+- [ ] Po odpowiedzi z ryzykiem i kolejnej odpowiedzi bez niego przycisk „Zadzwoń 112” znika po 4 s; kolejna odpowiedź z ryzykiem pokazuje go od razu.
 - [ ] Karta RKO pokazuje 5 kroków i „Pokaż wszystkie kroki · 43”; żaden krok nie ma pola odhaczenia.
 - [ ] Przypis i pigułka „Źródła · n” rozwijają listę źródeł; wiersz listy otwiera podgląd PDF.
 - [ ] `todo` przy frazie ryzyka wyświetla się jako `bullets`; `form` przy frazie ryzyka nie pojawia się.
