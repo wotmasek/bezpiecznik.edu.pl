@@ -145,6 +145,8 @@ AssistantAnswer buildMarkdownAnswer(
     return {'text': segs.map((s) => s.text).join().trim(), 'source_id': ?id};
   }
 
+  // Placeholders the model copies from the prompt ("[n]", "[Profil domu]").
+  text = text.replaceAll(RegExp(r'\s*\[(?:n|profil domu)\]', caseSensitive: false), '');
   for (final b in parseMd(text)) {
     switch (b.kind) {
       case MdKind.heading:

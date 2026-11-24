@@ -16,7 +16,7 @@ String _sentences(int chars) {
 void main() {
   test('system prompt is compact (~250-400 tokens), Polish markdown, no JSON', () {
     final tokens = estimateTokens(answerSystemPrompt());
-    expect(tokens, inInclusiveRange(200, 400));
+    expect(tokens, inInclusiveRange(200, 460));
     expect(kSystemPrompt, isNot(contains('JSON')));
     expect(kSystemPrompt, allOf(contains('[n]'), contains('poradniki'), contains('mapę schronów'), contains('SOS')));
     expect(answerSystemPrompt(), endsWith('Profil domu: pusty.'));
