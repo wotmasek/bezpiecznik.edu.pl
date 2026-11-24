@@ -21,8 +21,11 @@ const _question =
 // `--dart-define=CTX_CONTROL=true`: the same 1.5k prompt at 2048, 16384, 2048
 // (separates the context allocation from heat).
 const _control = bool.fromEnvironment('CTX_CONTROL');
+// `--dart-define=CTX_MIN=true`: minimum device (6 GB RAM), 4096 only.
+const _min = bool.fromEnvironment('CTX_MIN');
 const _plan = <(int, List<int>)>[
-  if (_control) ...[(2048, [1500]), (16384, [1500]), (8192, [1500]), (2048, [1500])]
+  if (_min) (4096, [1500, 3500])
+  else if (_control) ...[(2048, [1500]), (16384, [1500]), (8192, [1500]), (2048, [1500])]
   else ...[(2048, [1500]), (4096, [1500, 3500]), (8192, [1500, 3500, 7500]), (16384, [1500, 12000])],
 ];
 
