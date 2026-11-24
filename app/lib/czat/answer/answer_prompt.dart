@@ -8,9 +8,10 @@ import '../retrieval/retriever.dart';
 const int kMaxPromptChunks = 4;
 
 /// Context size the on-device model is loaded with: prompt + answer must fit
-/// in it. 2048 is also the most Gemma 4 handles at float16 on Android GPUs
-/// (LiteRT-LM #4001), should a build switch the backend to the GPU.
-const int kModelContextTokens = 2048;
+/// in it. 4096 decided (docs/04-context/budget-4096.md): measured 2.9 GB and
+/// ~7.7 s TTFT on a Pixel 9. The GPU float16 2k limit (LiteRT-LM #4001) does
+/// not apply to the CPU backend we run.
+const int kModelContextTokens = 4096;
 
 /// Tokens reserved for the answer: 6 items of <= 120 characters plus the JSON
 /// around them and the (long) source ids.

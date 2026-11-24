@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../paczki/pack.dart' show modelPackFileName;
 import '../answer/answer_prompt.dart' show kModelContextTokens;
 import '../../paczki/pack_dir.dart';
+import 'live_conversation.dart';
 import 'llm_engine.dart';
 
 // Backend of the on-device model. CPU by default: on the demo phone (Galaxy
@@ -48,6 +49,11 @@ Future<List<String>> defaultModelDirs() async {
 abstract class EdgeRuntime {
   Future<void> load(String modelPath);
   Stream<String> run(LlmRequest req);
+
+  /// Whether the last [run] continued the live conversation (true), opened
+  /// it (false), or was one-shot (null).
+  bool? get lastReused;
+
   Future<void> stop();
   Future<void> close();
 }
@@ -61,8 +67,24 @@ class FlutterEdgeAiRuntime implements EdgeRuntime {
   final List<InferenceEngineProvider> inferenceEngines;
 
   InferenceModel? _model;
+
+  /// The chat generating right now (live or one-shot), for [stop].
   InferenceChat? _chat;
+
   bool _stopped = false;
+
+  /// The one live conversation (D7).
+  late final LiveConversation<InferenceChat> _live = LiveConversation(
+    open: (req) => _open(_model!, req, null),
+    send: _send,
+    close: (chat) => chat.close(),
+    isStopped: () => _stopped,
+  );
+
+  bool _lastWasLive = false;
+
+  @override
+  bool? get lastReused => _lastWasLive ? _live.lastReused : null;
 
   @override
   Future<void> load(String modelPath) async {
@@ -73,6 +95,9 @@ class FlutterEdgeAiRuntime implements EdgeRuntime {
     ).fromFile(modelPath).install();
     // Context size, not output size. The prompt builder keeps prompt +
     // answer inside it (a smaller context also loads and prefills faster).
+    // The XNNPACK weight cache needs no setting here: flutter_edge_ai_litertlm
+    // passes the app support directory as LiteRT-LM's cacheDir by default
+    // (LiteRtLmEngineHost.cacheDir).
     _model = await FlutterEdgeAi.getActiveModel(
       maxTokens: kModelContextTokens,
       preferredBackend: _backendDefine == 'gpu' ? PreferredBackend.gpu : PreferredBackend.cpu,
@@ -80,6 +105,9 @@ class FlutterEdgeAiRuntime implements EdgeRuntime {
     );
   }
 
+  // A fresh chat cannot be given prior assistant turns: the .litertlm session
+  // buffers every addQuery as raw text of ONE user message (its
+  // ConversationConfig has no initialMessages), so history is flattened.
   static String _flatten(List<LlmMessage> messages) {
     if (messages.length == 1) return messages.single.content;
     return messages
@@ -99,11 +127,32 @@ class FlutterEdgeAiRuntime implements EdgeRuntime {
   }
 
   @override
-  Stream<String> run(LlmRequest req) async* {
+  Stream<String> run(LlmRequest req) {
     final model = _model;
-    if (model == null) throw const LlmError('Edge model not loaded');
+    if (model == null) return Stream.error(const LlmError('Edge model not loaded'));
     _stopped = false;
+    _lastWasLive = isLiveRequest(req);
+    return _lastWasLive ? _live.run(req) : _runOneShot(model, req);
+  }
 
+  Stream<String> _send(InferenceChat chat, List<LlmMessage> fresh) async* {
+    _chat = chat;
+    try {
+      await chat.addQuery(Message.text(text: _flatten(fresh), isUser: true));
+      await for (final r in chat.generateChatResponseAsync()) {
+        if (_stopped) break;
+        if (r is TextResponse && r.token.isNotEmpty) yield r.token;
+      }
+    } finally {
+      _chat = null;
+    }
+  }
+
+  /// JSON and id-less requests: a chat of their own, closed after the reply.
+  /// The live chat stays open: the model allows several sessions (no
+  /// maxConcurrentSessions cap), though on Android CPU they share one native
+  /// conversation, so the live chat's next turn is replayed by the package.
+  Stream<String> _runOneShot(InferenceModel model, LlmRequest req) async* {
     ResponseFormat? format;
     if (req.jsonSchema != null) {
       format = ResponseFormat.jsonSchema(req.jsonSchema!);
@@ -117,15 +166,9 @@ class FlutterEdgeAiRuntime implements EdgeRuntime {
       // Fallback path of lokalne-ai.md: schema is described in the prompt.
       chat = await _open(model, req, null);
     }
-    _chat = chat;
     try {
-      await chat.addQuery(Message.text(text: _flatten(req.messages), isUser: true));
-      await for (final r in chat.generateChatResponseAsync()) {
-        if (_stopped) break;
-        if (r is TextResponse && r.token.isNotEmpty) yield r.token;
-      }
+      yield* _send(chat, req.messages);
     } finally {
-      _chat = null;
       await chat.close();
     }
   }
@@ -139,6 +182,7 @@ class FlutterEdgeAiRuntime implements EdgeRuntime {
   @override
   Future<void> close() async {
     await stop();
+    await _live.closeChat();
     await _model?.close();
     _model = null;
   }
@@ -206,8 +250,10 @@ class EdgeAiEngine implements LlmEngine {
     _cancelled = false;
     final timer = LlmTimer('edge');
     var cancelled = false;
+    var ran = false;
     try {
       await warmUp();
+      ran = true;
       final it = StreamIterator<String>(_runtime.run(req));
       try {
         while (true) {
@@ -235,7 +281,10 @@ class EdgeAiEngine implements LlmEngine {
         throw LlmError(e.toString());
       }
     } finally {
-      final timing = timer.finish(cancelled: cancelled || _cancelled);
+      final timing = timer.finish(
+        cancelled: cancelled || _cancelled,
+        reused: ran ? _runtime.lastReused : null,
+      );
       _lastTiming = timing;
       onTiming?.call(timing);
     }

@@ -65,6 +65,7 @@ class LlmTiming {
     required this.done,
     required this.tokenCount,
     this.cancelled = false,
+    this.reused,
   });
 
   final DateTime requestStart;
@@ -73,6 +74,10 @@ class LlmTiming {
   final int tokenCount;
   final bool cancelled;
 
+  /// Edge only: whether the live conversation was continued (true) or
+  /// (re)opened (false). Null for one-shot requests and other engines.
+  final bool? reused;
+
   Duration? get timeToFirstToken => firstToken?.difference(requestStart);
   Duration get total => done.difference(requestStart);
 
@@ -80,6 +85,7 @@ class LlmTiming {
   String toString() =>
       'ttft=${timeToFirstToken?.inMilliseconds ?? '-'}ms '
       'total=${total.inMilliseconds}ms tokens=$tokenCount'
+      '${reused == null ? '' : ' reused=$reused'}'
       '${cancelled ? ' cancelled' : ''}';
 }
 
@@ -105,13 +111,14 @@ class LlmTimer {
     _tokens++;
   }
 
-  LlmTiming finish({bool cancelled = false}) {
+  LlmTiming finish({bool cancelled = false, bool? reused}) {
     final timing = LlmTiming(
       requestStart: _start,
       firstToken: _first,
       done: _clock(),
       tokenCount: _tokens,
       cancelled: cancelled,
+      reused: reused,
     );
     if (!_finished) {
       _finished = true;
