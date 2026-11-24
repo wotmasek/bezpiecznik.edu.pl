@@ -98,6 +98,27 @@ class LiveConversation<C extends Object> {
     }
   }
 
+  /// Opens the chat for [req] (system prompt, temperature, maxTokens; its
+  /// messages are ignored) before the first turn, unless an open chat already
+  /// matches. Nothing is read, so the next [run] of the same chat continues
+  /// it with its full message list.
+  Future<void> prepare(LlmRequest req) async {
+    if (_chat != null &&
+        _read.isEmpty &&
+        req.conversationId == _id &&
+        req.systemPrompt == _systemPrompt &&
+        req.temperature == _temperature &&
+        req.maxTokens == _maxTokens) {
+      return;
+    }
+    await closeChat();
+    _chat = await open(req);
+    _id = req.conversationId;
+    _systemPrompt = req.systemPrompt;
+    _temperature = req.temperature;
+    _maxTokens = req.maxTokens;
+  }
+
   /// Closes the open chat, if any; the next [run] reopens.
   Future<void> closeChat() async {
     final chat = _chat;
