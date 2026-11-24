@@ -49,6 +49,7 @@ class _ProfileFormState extends State<ProfileForm> {
   late TextEditingController _floor;
   bool? _elevator;
   late List<_ContactDraft> _contacts;
+  late AddressForm _address;
 
   @override
   void initState() {
@@ -66,6 +67,7 @@ class _ProfileFormState extends State<ProfileForm> {
     _notes = TextEditingController(text: p.notes ?? '');
     _floor = TextEditingController(text: p.home.floor?.toString() ?? '');
     _elevator = p.home.elevator;
+    _address = p.address;
     _contacts = [for (final c in p.iceContacts) _ContactDraft(c.name, c.phone)];
   }
 
@@ -145,6 +147,7 @@ class _ProfileFormState extends State<ProfileForm> {
       iceContacts: contacts,
       pets: _pets,
       notes: _notes.text.trim().isEmpty ? null : _notes.text.trim(),
+      address: _address,
     );
   }
 
@@ -202,6 +205,21 @@ class _ProfileFormState extends State<ProfileForm> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        _section('Jak mam się do Ciebie zwracać?', LucideIcons.messageCircle, [
+          Wrap(
+            spacing: context.bz.space2,
+            runSpacing: context.bz.space2,
+            children: [
+              for (final a in AddressForm.values)
+                BzChip(
+                  key: Key('address-${a.name}'),
+                  label: a.label,
+                  selected: _address == a,
+                  onChanged: (_) => _changed(() => _address = a),
+                ),
+            ],
+          ),
+        ]),
         _section('Kto mieszka w domu?', LucideIcons.users, [
           for (final g in AgeGroup.values)
             ConstrainedBox(
