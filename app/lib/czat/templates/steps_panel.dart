@@ -65,6 +65,7 @@ class _StepsPanelViewState extends State<StepsPanelView> {
                     footnote: footnoteAfter(scope.footnotes, scope.answer, items, i, shown: shown),
                     onFootnote: scope.onShowSources,
                 check: items[i].check,
+                unsourced: items[i].unsourced,
                   ),
                   if (items[i].cardLinkLabel != null && items[i].cardLinkId != null)
                     CardLinkButton(label: items[i].cardLinkLabel!, cardId: items[i].cardLinkId!, variant: variant),
