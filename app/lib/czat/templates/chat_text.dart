@@ -50,6 +50,7 @@ class ChatTextView extends StatelessWidget {
                         child: FootnoteMark(number: n, onTap: scope.onShowSources),
                       ),
                     ),
+                  if (items[i].check) checkSourceSpan(context),
                 ],
               ],
             ),

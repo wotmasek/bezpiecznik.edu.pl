@@ -56,6 +56,15 @@ class MdListItem extends StatelessWidget {
   }
 }
 
+/// Caption after an item whose number is not in its cited fragment.
+const String checkSourceCaption = 'sprawdź w źródle';
+
+/// The quiet [checkSourceCaption] span.
+TextSpan checkSourceSpan(BuildContext context) {
+  final t = context.bz;
+  return TextSpan(text: ' · $checkSourceCaption', style: t.caption.copyWith(color: t.ink300));
+}
+
 /// Item text with an optional footnote pill at its end.
 class MdItemText extends StatelessWidget {
   const MdItemText({
@@ -64,12 +73,16 @@ class MdItemText extends StatelessWidget {
     this.footnote,
     this.onFootnote,
     this.style,
+    this.check = false,
   });
 
   final String text;
   final int? footnote;
   final VoidCallback? onFootnote;
   final TextStyle? style;
+
+  /// Adds the [checkSourceCaption] after the text.
+  final bool check;
 
   @override
   Widget build(BuildContext context) {
@@ -87,6 +100,7 @@ class MdItemText extends StatelessWidget {
                 child: FootnoteMark(number: n, onTap: onFootnote),
               ),
             ),
+          if (check) checkSourceSpan(context),
         ],
       ),
       style: style ?? t.chat.copyWith(color: t.ink100),

@@ -118,6 +118,14 @@ List<({String text, String? id})> citedSegments(String text, List<KbChunk> chunk
   return out;
 }
 
+/// Numbers of [text] (digits, `1,5` == `1.5`) missing from the cited chunk.
+bool numberNotInSource(String text, KbChunk? c) {
+  if (c == null) return false;
+  String norm(String s) => s.replaceAll(',', '.');
+  final src = norm(c.original ?? c.text) + norm(c.text);
+  return RegExp(r'\d+(?:[.,]\d+)?').allMatches(text).any((m) => !src.contains(norm(m[0]!)));
+}
+
 /// The answer from the model's free markdown (citations.md): a numbered list
 /// is a `steps` panel, a `- ` list a `bullets` panel, a paragraph chat text;
 /// `[n]` becomes the source of snippet n. `call` goes first on [risk]; a
@@ -138,11 +146,16 @@ AssistantAnswer buildMarkdownAnswer(
     plain.clear();
   }
 
+  final byId = {for (final c in chunks) c.id: c};
+  // Stretch of citations.md: a number not in the cited chunk is marked, not deleted.
+  bool check(String t, String? id) => id != null && numberNotInSource(t, byId[id]);
+
   Map<String, Object?> item(String t) {
     final segs = citedSegments(t, chunks);
     final id = segs.map((s) => s.id).whereType<String>().firstOrNull;
     if (id != null) used.add(id);
-    return {'text': segs.map((s) => s.text).join().trim(), 'source_id': ?id};
+    final text = segs.map((s) => s.text).join().trim();
+    return {'text': text, 'source_id': ?id, if (check(text, id)) 'check': true};
   }
 
   // Placeholders the model copies from the prompt ("[n]", "[Profil domu]").
@@ -182,7 +195,11 @@ AssistantAnswer buildMarkdownAnswer(
           'text': segs.map((s) => s.text).join().trim(),
           'items': [
             for (final (i, s) in segs.indexed)
-              {'text': i == 0 ? s.text.trimLeft() : s.text, 'source_id': ?s.id},
+              {
+                'text': i == 0 ? s.text.trimLeft() : s.text,
+                'source_id': ?s.id,
+                if (check(s.text, s.id)) 'check': true,
+              },
           ],
         });
     }

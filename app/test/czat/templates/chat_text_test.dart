@@ -66,7 +66,7 @@ void main() {
           'text': 'Trzy litry wody. Nie wchodź do windy.',
           'items': [
             {'text': 'Trzy litry wody.', 'source_id': 'a'},
-            {'text': ' Nie wchodź do windy.', 'source_id': 'b'},
+            {'text': ' Nie wchodź do windy.', 'source_id': 'b', 'check': true},
           ],
         },
       ],
@@ -80,5 +80,6 @@ void main() {
     expect(find.byType(FootnoteMark), findsNWidgets(2));
     expect(find.text(sourcesPillLabel(2)), findsOneWidget);
     expect(find.text(chatTextLabel), findsNothing);
+    expect(find.textContaining(checkSourceCaption, findRichText: true), findsOneWidget);
   });
 }
