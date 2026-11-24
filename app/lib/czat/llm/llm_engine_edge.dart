@@ -145,7 +145,21 @@ class FlutterEdgeAiRuntime implements EdgeRuntime {
   @override
   Future<void> prepare(LlmRequest req) async {
     if (_model == null) throw const LlmError('Edge model not loaded');
-    if (isLiveRequest(req)) await _live.prepare(req);
+    if (!isLiveRequest(req)) return;
+    await _live.prepare(req);
+    // The package has no prefill call: a hidden one-token turn makes the
+    // engine read the system prompt now, not at the first question.
+    // ponytail: leaves "(start)" + one token in the chat history; a real
+    // prefill API (LiteRT-LM prefillPrefaceOnInit) would avoid it.
+    await _live.prime((chat) async {
+      await chat.addQuery(Message.text(text: '(Początek rozmowy. Odpowiedz jednym słowem: Gotowe.)', isUser: true));
+      await for (final r in chat.generateChatResponseAsync()) {
+        if (r is TextResponse && r.token.isNotEmpty) {
+          await chat.stopGeneration();
+          break;
+        }
+      }
+    });
   }
 
   Stream<String> _send(InferenceChat chat, List<LlmMessage> fresh) async* {
