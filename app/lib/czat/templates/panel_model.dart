@@ -164,7 +164,7 @@ sealed class ChatPanel {
         case 'chat_text':
           final text = _str(map['text']);
           if (text == null || text.trim().isEmpty) return UnknownPanel(type, map);
-          return ChatTextPanel(text, map);
+          return ChatTextPanel(text, map, _items(map['items']));
         case 'cpr':
           return CprPanel._parse(map);
         case 'map':
@@ -379,12 +379,15 @@ class NoSourcePanel extends ChatPanel {
   String get type => 'no_source';
 }
 
-/// `chat_text`: small talk / calming reply, not from the guides.
-/// JSON: `{"type":"chat_text","text":"..."}`.
+/// `chat_text`: chat text (talk, or a paragraph citing the guides).
+/// JSON: `{"type":"chat_text","text":"...","items":[{"text","source_id"}]?}`.
+/// [items], when present, are the paragraph's sentences with their sources
+/// (footnotes); [text] is then their plain join.
 class ChatTextPanel extends ChatPanel {
-  const ChatTextPanel(this.text, [Map<String, Object?> raw = const {}]) : super(raw);
+  const ChatTextPanel(this.text, [Map<String, Object?> raw = const {}, this.items = const []]) : super(raw);
 
   final String text;
+  final List<PanelItem> items;
 
   @override
   String get type => 'chat_text';

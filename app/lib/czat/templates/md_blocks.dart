@@ -164,6 +164,7 @@ class Footnotes {
         StepsPanel() => p.itemsFor(variant),
         BulletsPanel() => p.items,
         TodoPanel() => p.items,
+        ChatTextPanel() => p.items,
         _ => const <PanelItem>[],
       };
       for (final it in items) {
