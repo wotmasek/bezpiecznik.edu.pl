@@ -123,7 +123,10 @@ bool numberNotInSource(String text, KbChunk? c) {
   if (c == null) return false;
   String norm(String s) => s.replaceAll(',', '.');
   final src = norm(c.original ?? c.text) + norm(c.text);
-  return RegExp(r'\d+(?:[.,]\d+)?').allMatches(text).any((m) => !src.contains(norm(m[0]!)));
+  // Emergency and help-line numbers are not facts from a page (phone test:
+  // "Zadzwoń pod 112" got "sprawdź w źródle").
+  final t = text.replaceAll(RegExp(r'\b(?:112|116\s?123|116\s?111|997|998|999)\b'), '');
+  return RegExp(r'\d+(?:[.,]\d+)?').allMatches(t).any((m) => !src.contains(norm(m[0]!)));
 }
 
 /// The answer from the model's free markdown (citations.md): a numbered list

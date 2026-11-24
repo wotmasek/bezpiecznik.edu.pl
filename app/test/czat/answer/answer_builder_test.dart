@@ -153,4 +153,10 @@ void main() {
       expect(cleanAnswerText('Nie rozumiem pytania.'), 'Nie rozumiem pytania.');
     });
   });
+
+  test('emergency numbers are never "sprawdź w źródle"', () {
+    final c = chunk('x', 'Bądź czujny.');
+    expect(numberNotInSource('Zadzwoń pod 112 albo 116 123.', c), isFalse);
+    expect(numberNotInSource('Weź 5 litrów.', c), isTrue);
+  });
 }
