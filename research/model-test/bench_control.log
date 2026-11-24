@@ -1,0 +1,126 @@
+Resolving dependencies...
+Downloading packages...
+  cross_file 0.3.5+5 (0.4.0 available)
+  cupertino_icons 1.0.9 (2.0.0 available)
+  geolocator 14.0.1 (14.1.2 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  test_api 0.7.14 (0.7.15 available)
+  vector_math 2.4.3 (2.4.4 available)
+Got dependencies!
+6 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading /home/weak/Dokumenty/bezpiecznik/Bezpiecznik-redesign/app/integration_test/ctx_bench_test.dart
+Running Gradle task 'assembleDebug'...                          
+WARNING: Your app uses the following plugins that apply Kotlin Gradle Plugin (KGP): flutter_tts
+Future versions of Flutter will fail to build if your app uses plugins that apply KGP.
+
+Please check the changelogs of these plugins and upgrade to a version that supports Built-in Kotlin.
+If no such version exists, report the issue to the plugin. If necessary, here is a guide on filing
+an issue against a plugin: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-app-developers#report-incompatible-kotlin-gradle-plugin-usage-to-plugin-authors
+
+If you are a plugin author, please migrate your plugin to Built-in Kotlin using this guide: https://docs.flutter.dev/release/breaking-changes/migrate-to-built-in-kotlin/for-plugin-authors
+Running Gradle task 'assembleDebug'...                             14,1s
+✓ Built build/app/outputs/flutter-apk/app-debug.apk
+Installing build/app/outputs/flutter-apk/app-debug.apk...          12,5s
+00:00 +0: context benchmark
+[ModelManager] restored active inference model: gemma-4-E2B-it.litertlm
+UnifiedModelManager initialized
+ℹ️  Already installed: gemma-4-E2B-it.litertlm
+✅ Set active inference model: gemma-4-E2B-it
+✅ Inference model installed and set as active: gemma-4-E2B-it
+UnifiedModelManager: Model gemma-4-E2B-it installed: true
+Using unified model file: /storage/emulated/0/Android/data/pl.edu.bezpiecznik.bezpiecznik/files/gemma-4-E2B-it.litertlm
+[LiteRtLmFfi/perf] libraries loaded on a spawned isolate: 50ms
+[LiteRtLmFfi] Loading native libraries...
+[LiteRtLmFfi/perf] _ensureBindings total: 11ms
+[LiteRtLmFfi] Libraries loaded
+[LiteRtLmFfi/perf] _ensureBindings: 25ms
+[LiteRtLmFfi] Creating engine from /storage/emulated/0/Android/data/pl.edu.bezpiecznik.bezpiecznik/files/gemma-4-E2B-it.litertlm (backend=cpu, maxTokens=2048) ...
+[LiteRtLmFfi/perf] === START litert_lm_engine_create (native — settings + model load + accelerator init + KV cache prefill) ===
+[LiteRtLmFfi/perf] === END litert_lm_engine_create: 800ms (includes isolate spawn ~50-200ms and the settings) ===
+[LiteRtLmFfi] litert_lm_engine_create took 800ms
+[LiteRtLmFfi] bundle sampler: none
+[LiteRtLmFfi/perf] initialize() total: 902ms
+[LiteRtLmFfi] Engine initialized successfully
+[LiteRtLmEngine] open sessions: virtual conversations on cpu (android_arm64); linear attention state: false
+CTX: t=1795469022641 ctx=2048 load_ms=1643 tokens_per_char=0.307
+CTX: t=1795469022644 ctx=2048 target=1500 prompt_tokens=1595 start
+[transformToChatPrompt] modelType=ModelType.gemma4, fileType=ModelFileType.litertlm, messageType=MessageType.text, isUser=true
+[transformToChatPrompt] Using _formatToolResponseContent, result length=5078
+Download-temp reclaim: kept 0, reclaimed 0 (#383)
+[FfiInferenceModelSession/perf] time-to-first-chunk (prefill): 6391ms
+[FfiInferenceModelSession/perf] generation total: 15669ms (prefill 6391ms + decode 9278ms over 160 chunks, ~17.1 chunks/sec)
+CTX: t=1795469038331 ctx=2048 target=1500 prompt_tokens=1595 ttft_ms=6403 total_ms=15681 out_tokens=160 prefill_tps=249 decode_tps=17.1 needle=true answer=**Hasło do skrytki w piwnicy:** ZIELONY-47 /  / **Trzy krótkie punkty o tekście:** /  / 1. **Postępowanie przy oparzeniach:** Opisane są kroki postępowania w przypadku oparzeń (wezwanie pomocy, chłodzenie, opatrywanie, m
+[LiteRtLmFfi] Conversation closed
+[LiteRtLmFfi] Engine deleted
+UnifiedModelManager: Model gemma-4-E2B-it installed: true
+Using unified model file: /storage/emulated/0/Android/data/pl.edu.bezpiecznik.bezpiecznik/files/gemma-4-E2B-it.litertlm
+[LiteRtLmFfi] Loading native libraries...
+[LiteRtLmFfi/perf] _ensureBindings total: 4ms
+[LiteRtLmFfi] Libraries loaded
+[LiteRtLmFfi/perf] _ensureBindings: 5ms
+[LiteRtLmFfi] Creating engine from /storage/emulated/0/Android/data/pl.edu.bezpiecznik.bezpiecznik/files/gemma-4-E2B-it.litertlm (backend=cpu, maxTokens=16384) ...
+[LiteRtLmFfi/perf] === START litert_lm_engine_create (native — settings + model load + accelerator init + KV cache prefill) ===
+[LiteRtLmFfi/perf] === END litert_lm_engine_create: 851ms (includes isolate spawn ~50-200ms and the settings) ===
+[LiteRtLmFfi] litert_lm_engine_create took 851ms
+[LiteRtLmFfi] bundle sampler: none
+[LiteRtLmFfi/perf] initialize() total: 868ms
+[LiteRtLmFfi] Engine initialized successfully
+[LiteRtLmEngine] open sessions: virtual conversations on cpu (android_arm64); linear attention state: false
+CTX: t=1795469040343 ctx=16384 load_ms=1687 tokens_per_char=0.307
+CTX: t=1795469040347 ctx=16384 target=1500 prompt_tokens=1595 start
+[transformToChatPrompt] modelType=ModelType.gemma4, fileType=ModelFileType.litertlm, messageType=MessageType.text, isUser=true
+[transformToChatPrompt] Using _formatToolResponseContent, result length=5078
+[FfiInferenceModelSession/perf] time-to-first-chunk (prefill): 24276ms
+[FfiInferenceModelSession/perf] generation total: 49319ms (prefill 24276ms + decode 25043ms over 160 chunks, ~6.3 chunks/sec)
+CTX: t=1795469089671 ctx=16384 target=1500 prompt_tokens=1595 ttft_ms=24278 total_ms=49321 out_tokens=160 prefill_tps=66 decode_tps=6.3 needle=true answer=**Hasło do skrytki w piwnicy:** ZIELONY-47 /  / **Trzy krótkie punkty o tekście:** /  / 1. **Postępowanie przy oparzeniach:** Opisane są kroki postępowania w przypadku oparzeń (wezwanie pomocy, chłodzenie, opatrywanie, m
+[LiteRtLmFfi] Conversation closed
+[LiteRtLmFfi] Engine deleted
+UnifiedModelManager: Model gemma-4-E2B-it installed: true
+Using unified model file: /storage/emulated/0/Android/data/pl.edu.bezpiecznik.bezpiecznik/files/gemma-4-E2B-it.litertlm
+[LiteRtLmFfi] Loading native libraries...
+[LiteRtLmFfi/perf] _ensureBindings total: 11ms
+[LiteRtLmFfi] Libraries loaded
+[LiteRtLmFfi/perf] _ensureBindings: 12ms
+[LiteRtLmFfi] Creating engine from /storage/emulated/0/Android/data/pl.edu.bezpiecznik.bezpiecznik/files/gemma-4-E2B-it.litertlm (backend=cpu, maxTokens=8192) ...
+[LiteRtLmFfi/perf] === START litert_lm_engine_create (native — settings + model load + accelerator init + KV cache prefill) ===
+[LiteRtLmFfi/perf] === END litert_lm_engine_create: 1554ms (includes isolate spawn ~50-200ms and the settings) ===
+[LiteRtLmFfi] litert_lm_engine_create took 1554ms
+[LiteRtLmFfi] bundle sampler: none
+[LiteRtLmFfi/perf] initialize() total: 1574ms
+[LiteRtLmFfi] Engine initialized successfully
+[LiteRtLmEngine] open sessions: virtual conversations on cpu (android_arm64); linear attention state: false
+CTX: t=1795469093231 ctx=8192 load_ms=2582 tokens_per_char=0.307
+CTX: t=1795469093235 ctx=8192 target=1500 prompt_tokens=1595 start
+[transformToChatPrompt] modelType=ModelType.gemma4, fileType=ModelFileType.litertlm, messageType=MessageType.text, isUser=true
+[transformToChatPrompt] Using _formatToolResponseContent, result length=5078
+[FfiInferenceModelSession/perf] time-to-first-chunk (prefill): 16935ms
+[FfiInferenceModelSession/perf] generation total: 34319ms (prefill 16935ms + decode 17384ms over 160 chunks, ~9.1 chunks/sec)
+CTX: t=1795469127566 ctx=8192 target=1500 prompt_tokens=1595 ttft_ms=16942 total_ms=34325 out_tokens=160 prefill_tps=94 decode_tps=9.1 needle=true answer=**Hasło do skrytki w piwnicy:** ZIELONY-47 /  / **Trzy krótkie punkty o tekście:** /  / 1. **Postępowanie przy oparzeniach:** Opisane są kroki postępowania w przypadku oparzeń (wezwanie pomocy, chłodzenie, opatrywanie, m
+[LiteRtLmFfi] Conversation closed
+[LiteRtLmFfi] Engine deleted
+UnifiedModelManager: Model gemma-4-E2B-it installed: true
+Using unified model file: /storage/emulated/0/Android/data/pl.edu.bezpiecznik.bezpiecznik/files/gemma-4-E2B-it.litertlm
+[LiteRtLmFfi] Loading native libraries...
+[LiteRtLmFfi/perf] _ensureBindings total: 4ms
+[LiteRtLmFfi] Libraries loaded
+[LiteRtLmFfi/perf] _ensureBindings: 5ms
+[LiteRtLmFfi] Creating engine from /storage/emulated/0/Android/data/pl.edu.bezpiecznik.bezpiecznik/files/gemma-4-E2B-it.litertlm (backend=cpu, maxTokens=2048) ...
+[LiteRtLmFfi/perf] === START litert_lm_engine_create (native — settings + model load + accelerator init + KV cache prefill) ===
+[LiteRtLmFfi/perf] === END litert_lm_engine_create: 1281ms (includes isolate spawn ~50-200ms and the settings) ===
+[LiteRtLmFfi] litert_lm_engine_create took 1281ms
+[LiteRtLmFfi] bundle sampler: none
+[LiteRtLmFfi/perf] initialize() total: 1295ms
+[LiteRtLmFfi] Engine initialized successfully
+[LiteRtLmEngine] open sessions: virtual conversations on cpu (android_arm64); linear attention state: false
+CTX: t=1795469130710 ctx=2048 load_ms=2379 tokens_per_char=0.307
+CTX: t=1795469130714 ctx=2048 target=1500 prompt_tokens=1595 start
+[transformToChatPrompt] modelType=ModelType.gemma4, fileType=ModelFileType.litertlm, messageType=MessageType.text, isUser=true
+[transformToChatPrompt] Using _formatToolResponseContent, result length=5078
+[FfiInferenceModelSession/perf] time-to-first-chunk (prefill): 11696ms
+[FfiInferenceModelSession/perf] generation total: 28606ms (prefill 11696ms + decode 16910ms over 160 chunks, ~9.4 chunks/sec)
+CTX: t=1795469159323 ctx=2048 target=1500 prompt_tokens=1595 ttft_ms=11699 total_ms=28608 out_tokens=160 prefill_tps=136 decode_tps=9.4 needle=true answer=**Hasło do skrytki w piwnicy:** ZIELONY-47 /  / **Trzy krótkie punkty o tekście:** /  / 1. **Postępowanie przy oparzeniach:** Opisane są kroki postępowania w przypadku oparzeń (wezwanie pomocy, chłodzenie, opatrywanie, m
+[LiteRtLmFfi] Conversation closed
+[LiteRtLmFfi] Engine deleted
+02:19 +1: (tearDownAll)
+02:19 +1: All tests passed!

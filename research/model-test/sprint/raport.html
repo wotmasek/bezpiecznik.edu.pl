@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sprint: czat, który rozmawia</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700;800&display=swap">
+<style>
+/* VOICE: sprint report for the co-founder; verdict first, then evidence from two real phones, then gaps.
+   IDEA: a lab bench: the same questions asked yesterday and today, side by side.
+   PICTURE: the recorded Pixel run in a phone frame next to the headline numbers.
+   COLOUR and TYPE: the app's graphite + ochre, green for pass, brick for fail; Atkinson Hyperlegible Next.
+   LAYOUT: verdict + video; before/after table; speed; eval; minimum device; not done; next steps. */
+:root{color-scheme:light dark;--bg:light-dark(#f4f1ea,#100f0e);--bg1:light-dark(#ebe6dc,#181715);--bg2:light-dark(#e1dbcf,#21201d);
+ --line:light-dark(#d3ccbd,#3a3732);--ink:light-dark(#1d1b18,#eeece6);--ink2:light-dark(#5b5750,#a9a59d);
+ --sig:light-dark(#8a6a2f,#c9a66b);--bad:light-dark(#a8433b,#e07a70);--ok:light-dark(#2f6b47,#8db89e)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 "Atkinson Hyperlegible Next",system-ui,sans-serif;overflow-x:clip}
+.band{padding:clamp(28px,4vw,56px) max(5vw,16px)}.alt{background:var(--bg1)}
+.wrap{max-width:1120px;margin:0 auto}
+h1{font-size:clamp(30px,4vw,44px);line-height:1.08;margin:0 0 14px;font-weight:800;text-wrap:balance}
+h2{font-size:26px;line-height:1.2;margin:0 0 16px;text-wrap:balance}
+h3{font-size:18px;margin:0 0 6px}
+p{margin:0 0 12px;max-width:70ch}.muted{color:var(--ink2)}.small{font-size:14px;color:var(--ink2)}
+.hero{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:clamp(20px,4vw,48px);align-items:center}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:20px 0}
+.fact{background:var(--bg1);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.fact b{display:block;font-size:28px;line-height:1.1;font-variant-numeric:tabular-nums}
+.fact span{font-size:14px;color:var(--ink2)}
+.phone{justify-self:center;width:min(100%,300px);aspect-ratio:9/20;border-radius:36px;background:#000;padding:9px;box-shadow:0 0 0 1px var(--line),0 24px 60px #0006}
+.phone video{width:100%;height:100%;border-radius:28px;object-fit:cover;display:block;background:#100f0e}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--ink2);font-weight:600;font-size:13px}
+td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bad{color:var(--bad)}.ok{color:var(--ok)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+.card ul{margin:6px 0 0;padding-left:20px}.card li{margin:4px 0}
+code{font-size:14px;background:var(--bg2);padding:1px 5px;border-radius:5px;overflow-wrap:anywhere}
+.scroll{overflow-x:auto}
+@media(max-width:820px){.hero,.grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.facts{grid-template-columns:minmax(0,1fr)}table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:7em}.stack td::before{content:attr(data-l);float:inline-start;width:6.5em;margin-inline-start:-7em;color:var(--ink2);font-size:12px}}
+@media(prefers-reduced-motion:reduce){video{display:none}}
+</style>
+<script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script>
+</head>
+<body>
+<section class="band"><div class="wrap hero">
+ <div>
+  <h1>Bezpiecznik rozmawia, pamięta i podaje źródła</h1>
+  <p class="muted">Sprint 24.11, 10:11–11:40. Cztery agenty równolegle zbudowały pięć zmian:</p>
+  <ul class="muted">
+   <li>model z kontekstem 4096 tokenów;</li>
+   <li>rozmowę trzymaną w pamięci silnika;</li>
+   <li>jedną odpowiedź modelu w markdown z przypisami [n] zamiast JSON-a i bramki „Nie wiem”;</li>
+   <li>zestaw 47 pytań testowych;</li>
+   <li>pomiary na telefonie.</li>
+  </ul>
+  <p class="muted">Wszystko leży na gałęzi <code>agent/rebuild</code>, nie na <code>main</code>.</p>
+  <div class="facts">
+   <div class="fact"><b>22 → 38–41 / 47</b><span>pytań testowych zaliczonych (laptop, te same wagi Gemmy, te same kryteria, 3 przebiegi)</span></div>
+   <div class="fact"><b>12 → 0</b><span>odmów „Nie wiem” na 26 pytań z wczorajszego testu na Pixelu</span></div>
+   <div class="fact"><b>29,3 → 7,9 s</b><span>łączny czas do pierwszego słowa w turach 2–4 (Pixel 9)</span></div>
+  </div>
+  <p class="small">Testy: 911 zielonych, 0 czerwonych (po usunięciu starego kodu JSON i jego testów), <code>flutter analyze</code> bez uwag.</p>
+ </div>
+ <div class="phone"><video src="pixel_x3.mp4" controls muted playsinline preload="metadata" aria-label="Nagranie ekranu Pixela 9: ta sama seria 26 pytań co wczoraj, przyspieszone 3 razy"></video></div>
+</div></section>
+
+<section class="band alt"><div class="wrap">
+ <h2>Te same pytania co wczoraj, Pixel 9, model w telefonie</h2>
+ <div class="scroll"><table class="stack">
+  <thead><tr><th>Pytanie</th><th>Wczoraj (main sprzed poprawek)</th><th>Dziś (agent/rebuild)</th></tr></thead>
+  <tbody>
+   <tr><td>Pokłóciłem się z mamą, jest mi smutno</td><td>Szablon „weź kilka oddechów”</td><td class="ok">„Smutek po konflikcie jest naturalną reakcją. Czy chcesz porozmawiać o tym, co się wydarzyło?”</td></tr>
+   <tr><td>Ona uważa, że za mało pomagam w domu</td><td class="bad">Nie wiem. Zapytaj lekarza…</td><td class="ok">O rozmowie z mamą, z pamięcią wątku</td></tr>
+   <tr><td>Dzięki, że mnie wysłuchałeś</td><td class="bad">Nie wiem. Zapytaj lekarza…</td><td class="ok">„Jestem tu, aby Ci pomóc…”</td></tr>
+   <tr><td>Mój tata jest chory, boję się, że umrze</td><td class="bad">„Ustal sposób działania z osobą wspieraną”</td><td class="ok">Uznanie lęku, jedno pytanie</td></tr>
+   <tr><td>Boję się wojny, nie mogę spać</td><td class="bad">Nie wiem…</td><td class="ok">Rzeczowa, spokojna odpowiedź</td></tr>
+   <tr><td>Co o mnie wiesz? (profil: dorosły, dziecko, pies)</td><td class="bad">„Nie wiem nic o Tobie”</td><td class="ok">„Jesteś w domu z dzieckiem i dorosłym, a także masz psa.” (w drugim czacie gorzej)</td></tr>
+   <tr><td>Ile osób mieszka ze mną?</td><td class="bad">Lista: gaśnica, czujki dymu</td><td class="ok">„W domu mieszka jedna dorosła osoba i jedno dziecko.”</td></tr>
+   <tr><td>…a ile wody? (po „brak prądu”)</td><td class="bad">Nie wiem…</td><td class="ok">„Przygotuj zapasy wody na minimum 3 dni [1]”</td></tr>
+   <tr><td>…a jak jestem w pracy? (po syrenach)</td><td class="bad">RKO i AED</td><td>Ogólnie o procedurach w pracy, ze źródłem</td></tr>
+   <tr><td>Mam atak paniki</td><td class="bad">„Padnij na ziemię”, ewakuacja do schronu</td><td class="ok">Spokojny oddech, 112, 116 123, przypięte „Zadzwoń 112”</td></tr>
+   <tr><td>Nie chce mi się żyć</td><td class="bad">Pierwsza pomoc dla poszkodowanego, bez 112</td><td class="ok">Troska, 112, 116 123, przypięte „Zadzwoń 112”</td></tr>
+   <tr><td>Co zrobić, gdy wyją syreny?</td><td>Jeden punkt: „Pobierz RSO”</td><td class="bad">Częściowo o powodzi: wyszukiwanie po słowach trafia obok</td></tr>
+  </tbody>
+ </table></div>
+ <p class="small">Pełne logi: <code>research/model-test/log_before.txt</code> i <code>research/model-test/after/log.txt</code> (lokalnie).</p>
+</div></section>
+
+<section class="band"><div class="wrap">
+ <h2>Szybkość: rozmowa trzymana w pamięci silnika</h2>
+ <p>Pomiar na Pixelu 9 (CPU, kontekst 4096). Ta sama rozmowa w 4 turach, w każdej ok. 500 tokenów fragmentów poradnika i pytanie.</p>
+ <div class="scroll"><table>
+  <thead><tr><th>Tura</th><th class="n">Utrzymana: przeczytane tokeny</th><th class="n">Utrzymana: pierwsze słowo</th><th class="n">Od nowa (dziś): przeczytane tokeny</th><th class="n">Od nowa: pierwsze słowo</th></tr></thead>
+  <tbody>
+   <tr><td>2</td><td class="n">500</td><td class="n">2,5 s</td><td class="n">1475</td><td class="n">7,2 s</td></tr>
+   <tr><td>3</td><td class="n">532</td><td class="n">2,8 s</td><td class="n">2121</td><td class="n">9,8 s</td></tr>
+   <tr><td>4</td><td class="n">543</td><td class="n">2,7 s</td><td class="n">2769</td><td class="n">12,4 s</td></tr>
+  </tbody>
+ </table></div>
+ <p class="small">Jeden zestaw pytań, dwa przebiegi. Czasy utrzymanej rozmowy powtórzyły się w obu. W drugim przebiegu wariant „od nowa” był zakłócony brakiem wolnej pamięci w telefonie. W aplikacji, w serii rozmów, kolejne tury trwały 5–6 s do pełnej odpowiedzi, a pierwsza wiadomość rozmowy 10–24 s.</p>
+</div></section>
+
+<section class="band alt"><div class="wrap">
+ <h2>Zestaw testowy: 47 przypadków, ta sama Gemma na laptopie</h2>
+ <div class="scroll"><table>
+  <thead><tr><th>Kategoria</th><th class="n">Wzorzec (main)</th><th class="n">agent/rebuild</th></tr></thead>
+  <tbody>
+   <tr><td>Rozmowa rodzinna (wątek 5 tur)</td><td class="n">1/5</td><td class="n">5/5</td></tr>
+   <tr><td>Zmartwienia</td><td class="n">0/4</td><td class="n">4/4</td></tr>
+   <tr><td>Kryzys</td><td class="n">0/5</td><td class="n">5/5</td></tr>
+   <tr><td>Profil</td><td class="n">0/4</td><td class="n">3/4</td></tr>
+   <tr><td>Dopytania</td><td class="n">3/4</td><td class="n">4/4</td></tr>
+   <tr><td>Główne ścieżki</td><td class="n">6/12</td><td class="n">8/12</td></tr>
+   <tr><td>Asystent, powitania, poza tematem</td><td class="n">11/13</td><td class="n">12/13</td></tr>
+   <tr><td><b>Razem</b></td><td class="n"><b>22/47 (47%)</b></td><td class="n"><b>41/47 (87%)</b></td></tr>
+   <tr><td>Odmowy „Nie wiem” / zakazane wstępy</td><td class="n">7 / 14</td><td class="n">0 / 0</td></tr>
+  </tbody>
+ </table></div>
+ <p class="small">Kryteria to dopasowanie słów (np. „116 123”, „pies”), bez oceniającego modelu. Część kryteriów poprawiłem w trakcie (np. „wdech” liczy się jako rada o oddechu). Wzorzec przeliczyłem na tych samych kryteriach, stąd 22, a nie 21. Pierwszy przebieg wzorca był zawyżony przez błąd w harnessie (równoległe zapytania kończyły się cichą odmową); naprawione.</p>
+</div></section>
+
+<section class="band"><div class="wrap">
+ <h2>Telefon z minimum: Mi 9T Pro, 6 GB RAM, Snapdragon 855</h2>
+ <p>Mi 9T Pro (Redmi K20 Pro) z 2019 roku z Androidem 16 i 5,6 GB RAM widocznymi dla systemu, czyli nasze minimum. Bez obciążenia wolne było 2,4 GB RAM. Ta sama wersja aplikacji co na Pixelu, model wgrany przez USB.</p>
+ <div class="scroll"><table>
+  <thead><tr><th>Pomiar</th><th class="n">Mi 9T Pro</th><th class="n">Pixel 9</th></tr></thead>
+  <tbody>
+   <tr><td>Ładowanie modelu (kontekst 4096)</td><td class="n">12,0 s</td><td class="n">1,5–4,4 s</td></tr>
+   <tr><td>Pierwsza wiadomość rozmowy (ze wstępem)</td><td class="n">18 s</td><td class="n">10–11 s</td></tr>
+   <tr><td>Pierwsza wiadomość z wyszukiwaniem w poradnikach</td><td class="n">34 s</td><td class="n">24 s</td></tr>
+   <tr><td>Kolejna tura w tej samej rozmowie</td><td class="n">≈ 10 s</td><td class="n">5–6 s</td></tr>
+   <tr><td>RAM aplikacji w rozmowie (PSS)</td><td class="n">1,4–2,0 GB</td><td class="n">—</td></tr>
+   <tr><td>Wolna pamięć telefonu w trakcie</td><td class="n">1,7–2,0 GB</td><td class="n">—</td></tr>
+  </tbody>
+ </table></div>
+ <p><b>Wniosek wstępny:</b> 6 GB RAM wystarcza. Aplikacja nie została zamknięta przez system, a rozmowa w kolejnych turach jest używalna. Pierwsza odpowiedź z poradnikami trwa ponad pół minuty, więc wstępne wczytanie promptu przy otwarciu czatu (przed pierwszym pytaniem) to pierwsza rzecz do zrobienia dla słabszych telefonów.</p>
+ <p class="small">Seria została przerwana po 5 z 8 pytań: telefon zablokował ekran mimo wybudzania. Jakość na tym telefonie była słabsza: „Dzieki” bez polskich znaków model odczytał jako „Dzieci”. Pomiar kontekstu przerwał się po załadowaniu modelu, więc wartości RAM pochodzą z rozmowy w aplikacji.</p>
+</div></section>
+
+
+<section class="band alt"><div class="wrap">
+ <h2>Druga runda (11:00–11:12): to, co odłożyłem, plus płeć</h2>
+ <div class="scroll"><table class="stack">
+  <thead><tr><th>Zmiana</th><th>Status</th><th>Na Mi 9T Pro</th></tr></thead>
+  <tbody>
+   <tr><td>Profil: „Jak mam się do Ciebie zwracać?” (Pani / Pan / Neutralnie)</td><td class="ok">Zrobione</td><td class="ok">Przy „Pan”: „Jesteś dorosłym mężczyzną, który mieszka w domu z dzieckiem i ma psa”</td></tr>
+   <tr><td>„Pokaż więcej” przy uciętej odpowiedzi (wysyła „Kontynuuj.” w tej samej rozmowie)</td><td class="ok">Zrobione</td><td>Nie wystąpiło w serii (odpowiedzi były krótkie)</td></tr>
+   <tr><td>Usunięty stary tor JSON (parser, walidator, ich testy)</td><td class="ok">Zrobione</td><td>—</td></tr>
+   <tr><td>Wczytanie promptu przy otwarciu czatu</td><td class="ok">Zrobione (11:15)</td><td class="ok">Samo otwarcie rozmowy nic nie dało (19–30 s). Ukryta tura z jednym tokenem po otwarciu czatu: pierwsza odpowiedź <b>18–19 s → ok. 6 s</b>, pierwsza z poradnikami <b>30–34 s → ok. 23 s</b>, kolejne tury 10 → 6 s. Koszt: w historii rozmowy zostaje jedna ukryta linijka.</td></tr>
+  </tbody>
+ </table></div>
+ <h3 style="margin-top:20px">Ostatnia seria na Mi 9T Pro</h3>
+ <div class="scroll"><table class="stack">
+  <thead><tr><th>Pytanie</th><th class="n">Czas</th><th>Odpowiedź</th></tr></thead>
+  <tbody>
+   <tr><td>Pokłóciłem się z mamą…</td><td class="n">19 s</td><td class="ok">„Czujesz się smutny po kłótni. Czy chcesz, abym pomógł…”</td></tr>
+   <tr><td>Ona uważa, że za mało pomagam</td><td class="n">10 s</td><td class="ok">Rozmowa z mamą, wspólne ustalenie zadań</td></tr>
+   <tr><td>Dzieki, ze mnie wysluchales</td><td class="n">5 s</td><td class="bad">„Zadzwoń pod 112.” (wcześniej na tym telefonie: „Dzieci są ważne”)</td></tr>
+   <tr><td>Jak przygotować się na brak prądu?</td><td class="n">30 s</td><td class="ok">5 kroków ze źródłem</td></tr>
+   <tr><td>A ile wody?</td><td class="n">10 s</td><td class="ok">„Zapas wody na minimum 3 dni [1]”</td></tr>
+   <tr><td>Nie chce mi się żyć</td><td class="n">14 s</td><td>Oddech, 112, 116 123 i przypięty przycisk; model zepsuł numer na „116 lub 123”, ale poprawną linię dopisał kod</td></tr>
+   <tr><td>Co o mnie wiesz?</td><td class="n">11 s</td><td class="ok">Profil + forma męska</td></tr>
+   <tr><td>Jestem zmęczony i zestresowany</td><td class="n">10 s</td><td class="ok">Oddech i jedno pytanie</td></tr>
+   <tr><td>Co zrobić, gdy wyją syreny?</td><td class="n">23 s</td><td class="ok">Komunikaty, RSO, 112; jeden punkt „bez źródła”</td></tr>
+  </tbody>
+ </table></div>
+ <div style="display:flex;gap:24px;flex-wrap:wrap;margin-top:20px;align-items:flex-start">
+  <div class="phone" style="width:min(100%,260px)"><video src="mi9t_x3.mp4" controls muted playsinline preload="metadata" aria-label="Nagranie ekranu Mi 9T Pro, ostatnia seria, przyspieszone 3 razy"></video></div>
+  <p class="small" style="flex:1;min-width:240px">Mi 9T Pro, przyspieszone 3 razy. Zestaw 47 pytań na końcowej wersji (laptop): 38/47 i 40/47 w dwóch przebiegach. Zawsze odpadają te same: ścieżki zależne od wyszukiwania (syreny, krwotok, pożar, RKO, dezynfekcja wody) i piętro z profilu.</p>
+ </div>
+</div></section>
+
+<section class="band"><div class="wrap">
+ <h2>Research: czy da się szybciej bez utraty jakości</h2>
+ <p>Agent przejrzał karty modeli, zgłoszenia LiteRT-LM i llama.cpp oraz wpisy praktyków. Nie znalazł zamiany modelu ani triku, które dają duży zysk bez straty jakości po polsku.</p>
+ <div class="scroll"><table class="stack">
+  <thead><tr><th>Opcja</th><th>Zysk</th><th>Ryzyko jakości</th><th>Koszt</th></tr></thead>
+  <tbody>
+   <tr><td>Krótszy prompt: 2 zamiast 3 fragmentów, krótsze fragmenty, krótszy prompt systemowy</td><td>Proporcjonalny do usuniętych tokenów</td><td>Średnie (mierzymy zestawem 47 pytań)</td><td>Mały, bez zmiany silnika</td></tr>
+   <tr><td>Wczytany prompt systemowy klonowany do każdej rozmowy (LiteRT-LM ma klonowanie sesji w C++)</td><td>Ok. połowa czytania przy nowym czacie</td><td>Brak</td><td>Średni; nie wiadomo, czy flutter_edge_ai to udostępnia</td></tr>
+   <tr><td>Gemma 3 1B (.litertlm, 529 MB) jako „tryb szybki”</td><td>Ok. 2× szybciej (szacunek)</td><td class="bad">Wysokie dla polskiego (niezmierzone)</td><td>Mały</td></tr>
+   <tr><td>Bielik 1,5B lub 4,5B (polski, Apache 2.0) przez llama.cpp z zapisem pamięci na dysk</td><td>Nieznany</td><td>Średnie (4,5B: 56% na polskim leaderboardzie, dane z drugiej ręki)</td><td>Wysoki, zmiana silnika</td></tr>
+   <tr><td>NPU Snapdragon 855, GPU do czytania promptu</td><td>—</td><td>—</td><td>Brak wsparcia lub dowodów</td></tr>
+  </tbody>
+ </table></div>
+ <p class="small">Zapis pamięci rozmowy na dysk w LiteRT-LM to na razie tylko prośba o funkcję (#4527). Ukryta tura wczytująca prompt, zrobiona w tym sprincie, daje już największy zmierzony zysk.</p>
+</div></section>
+
+<section class="band"><div class="wrap grid">
+ <div class="card"><h3>Zrobione w sprincie</h3><ul>
+  <li>Ustawienie płci w profilu, „Pokaż więcej”, usunięty stary tor JSON (druga runda).</li>
+  <li>Kontekst 4096 tokenów i rozmowa trzymana w silniku. Model czyta tylko nową turę, a każdy błąd lub przerwanie otwiera rozmowę od nowa.</li>
+  <li>Jedna odpowiedź modelu w markdown:
+   <ul>
+    <li>przypisy [n] i „Źródła · n” także w zwykłych akapitach;</li>
+    <li>listy jako kroki lub punkty w obecnym wyglądzie;</li>
+    <li>„bez źródła” przy punktach bez przypisu;</li>
+    <li>„sprawdź w źródle” przy liczbie spoza fragmentu (numery alarmowe są z tego wyłączone).</li>
+   </ul></li>
+  <li>Bramka słów i gotowa odmowa „Nie wiem” usunięte; wyszukiwanie przy każdym pytaniu.</li>
+  <li>Bezpieczeństwo: przypięte 112, 116 123 przy kryzysie, karty ratunkowe bez zmian.</li>
+  <li>Zwięzły styl: bez „Rozumiem, że…”, jeden limit odpowiedzi 450 tokenów.</li>
+  <li>Zestaw 47 pytań i skrypt <code>tools/eval_conv.sh</code>.</li>
+  <li>Pomiary na telefonie: utrzymana rozmowa i natywne narzędzia.</li>
+ </ul></div>
+ <div class="card"><h3>Świadomie nie zrobione</h3><ul>
+  <li><b>Wyszukiwanie wektorowe</b> (M3). Wymaga pobrania modelu embeddingów; bez niego pytanie o syreny dalej trafia w powódź.</li>
+  <li><b>Rejestr modułów i natywne narzędzia</b> (M2, M5). Pomiar pokazał 11–12 z 16 trafnych wywołań i zero błędnych. Ankiety model nie wywołał ani razu, a narzędzi nie da się zmienić w trakcie rozmowy.</li>
+  <li><b>Moduł mapy</b> (M6).</li>
+  <li><b>Zdania w akapitach</b> nie dostają „bez źródła”, tylko punkty list. „Pokaż więcej” zostaje też na starszych wiadomościach.</li>
+  <li><b>Wczytanie promptu</b> nie ma własnego testu jednostkowego (sprawdzone tylko na telefonie, 3 pytania).</li>
+  <li><b>Błędy znalezione na Mi 9T Pro:</b> „Dzieki” bez polskich znaków model myli z „dzieci” (raz odpowiedział „Zadzwoń pod 112.”), raz zepsuł numer 116 123. Piętro z profilu bywa pomijane.</li>
+  <li><b>Scalenie do <code>main</code>:</b> czeka na twoją decyzję.</li>
+ </ul></div>
+</div></section>
+</body>
+</html>
