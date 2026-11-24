@@ -119,6 +119,20 @@ class LiveConversation<C extends Object> {
     _maxTokens = req.maxTokens;
   }
 
+  /// Runs [f] on the open, still unused chat (a hidden warm-up turn that makes
+  /// the engine read the system prompt). Not recorded as read: the next [run]
+  /// still continues this chat. Any error closes the chat.
+  Future<void> prime(Future<void> Function(C chat) f) async {
+    final chat = _chat;
+    if (chat == null || _read.isNotEmpty) return;
+    try {
+      await f(chat);
+    } catch (_) {
+      await closeChat();
+      rethrow;
+    }
+  }
+
   /// Closes the open chat, if any; the next [run] reopens.
   Future<void> closeChat() async {
     final chat = _chat;
