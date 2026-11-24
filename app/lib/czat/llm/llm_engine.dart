@@ -159,6 +159,11 @@ abstract class LlmEngine {
   /// Prepares the engine (loads the model). Safe to call repeatedly.
   Future<void> warmUp();
 
+  /// Gets ready for [req]'s conversation before its first turn (edge: loads
+  /// the model and opens the live chat for its system prompt). No-op for
+  /// engines without a live conversation. May throw; callers swallow.
+  Future<void> prepare(LlmRequest req);
+
   /// Streams text chunks as they are generated. Cancelling via [cancel] or the
   /// subscription ends the stream without an error. Errors are [LlmException]s.
   Stream<String> generate(LlmRequest req);

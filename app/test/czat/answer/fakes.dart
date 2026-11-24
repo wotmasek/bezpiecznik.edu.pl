@@ -63,6 +63,15 @@ class FakeEngine implements LlmEngine {
   @override
   Future<void> warmUp() async {}
 
+  final List<LlmRequest> prepared = [];
+  Object? prepareError;
+
+  @override
+  Future<void> prepare(LlmRequest req) async {
+    prepared.add(req);
+    if (prepareError != null) throw prepareError!;
+  }
+
   @override
   Future<void> dispose() async {}
 

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'dart:io';
 
 import 'package:flutter_edge_ai/flutter_edge_ai.dart';
@@ -49,6 +50,9 @@ Future<List<String>> defaultModelDirs() async {
 abstract class EdgeRuntime {
   Future<void> load(String modelPath);
   Stream<String> run(LlmRequest req);
+
+  /// Opens the live chat for [req] without a turn (see LiveConversation.prepare).
+  Future<void> prepare(LlmRequest req);
 
   /// Whether the last [run] continued the live conversation (true), opened
   /// it (false), or was one-shot (null).
@@ -133,6 +137,15 @@ class FlutterEdgeAiRuntime implements EdgeRuntime {
     _stopped = false;
     _lastWasLive = isLiveRequest(req);
     return _lastWasLive ? _live.run(req) : _runOneShot(model, req);
+  }
+
+  // LiteRT-LM's createConversation may prefill the preface (system
+  // instruction) natively; the package exposes no explicit prefill, so this
+  // is the most that can be done without a throwaway turn.
+  @override
+  Future<void> prepare(LlmRequest req) async {
+    if (_model == null) throw const LlmError('Edge model not loaded');
+    if (isLiveRequest(req)) await _live.prepare(req);
   }
 
   Stream<String> _send(InferenceChat chat, List<LlmMessage> fresh) async* {
@@ -245,8 +258,30 @@ class EdgeAiEngine implements LlmEngine {
     }
   }
 
+  /// The running [prepare]; [generate] waits for it (one request at a time).
+  Future<void>? _preparing;
+
+  @override
+  Future<void> prepare(LlmRequest req) {
+    final sw = Stopwatch()..start();
+    final f = _preparing = () async {
+      await warmUp();
+      await _runtime.prepare(req);
+    }();
+    return f.whenComplete(() {
+      if (identical(_preparing, f)) _preparing = null;
+      developer.log('edge prepare_ms=${sw.elapsedMilliseconds}', name: 'llm');
+    });
+  }
+
   @override
   Stream<String> generate(LlmRequest req) async* {
+    final preparing = _preparing;
+    if (preparing != null) {
+      try {
+        await preparing;
+      } catch (_) {}
+    }
     _cancelled = false;
     final timer = LlmTimer('edge');
     var cancelled = false;

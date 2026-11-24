@@ -55,6 +55,9 @@ class HostLlmEngine implements LlmEngine {
   @override
   Future<void> warmUp() async {}
 
+  @override
+  Future<void> prepare(LlmRequest req) async {}
+
   /// Builds the JSON body; exposed for tests.
   Map<String, Object?> buildBody(LlmRequest req) {
     final messages = <Map<String, String>>[

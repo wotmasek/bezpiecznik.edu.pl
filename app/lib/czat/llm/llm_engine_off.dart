@@ -6,6 +6,9 @@ class OffEngine implements LlmEngine {
   Future<void> warmUp() async {}
 
   @override
+  Future<void> prepare(LlmRequest req) async {}
+
+  @override
   Stream<String> generate(LlmRequest req) => Stream<String>.error(const LlmDisabled());
 
   @override

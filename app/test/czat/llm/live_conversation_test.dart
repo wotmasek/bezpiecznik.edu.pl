@@ -41,6 +41,29 @@ LlmRequest live(List<LlmMessage> messages, {String id = 'c1', String system = 'S
     LlmRequest(conversationId: id, systemPrompt: system, messages: messages, maxTokens: max);
 
 void main() {
+  test('prepare opens the chat early; the first turn continues it with only the question', () async {
+    final h = _Harness();
+    await h.live.prepare(live(const []));
+    expect(h.opened, hasLength(1));
+    expect(h.opened.single.sent, isEmpty);
+    await h.live.prepare(live(const [])); // already prepared: no reopen
+    expect(h.opened, hasLength(1));
+
+    await h.live.run(live([u1])).drain<void>();
+    expect(h.live.lastReused, true);
+    expect(h.opened, hasLength(1));
+    expect(h.opened.single.sent.single.map((m) => m.content), ['Pytanie 1']);
+  });
+
+  test('prepare for another chat closes the open one', () async {
+    final h = _Harness();
+    await h.live.run(live([u1])).drain<void>();
+    await h.live.prepare(live(const [], id: 'c2'));
+    expect(h.opened.first.closed, true);
+    await h.live.run(live([u1], id: 'c2')).drain<void>();
+    expect(h.live.lastReused, true);
+  });
+
   test('continues the open chat when its history is a prefix: only new messages', () async {
     final h = _Harness();
     expect(await h.live.run(live([u1])).join(), 'Odpowiedź');

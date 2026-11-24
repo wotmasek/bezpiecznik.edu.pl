@@ -86,6 +86,21 @@ class PipelineAnswerService implements AnswerService {
   /// Transcript of [chatId] as the next request will see it (tests).
   List<LlmMessage> transcriptOf(String chatId) => List.unmodifiable(_transcripts[chatId] ?? const []);
 
+  /// Reads [chatId]'s system prompt into the model before its first question
+  /// (fire-and-forget; never throws). The prompt is stored, so the first
+  /// turn sends the identical one and continues the prepared chat.
+  Future<void> warmUp(String chatId) async {
+    try {
+      if (_transcripts.containsKey(chatId) || await _noAiMode()) return;
+      final system = _systems[chatId] ??= answerSystemPrompt(profile: await _profile());
+      final sw = Stopwatch()..start();
+      await engine.prepare(buildAnswerRequest(system: system, messages: const [], chatId: chatId));
+      onLog?.call('prepare_ms=${sw.elapsedMilliseconds}');
+    } catch (e) {
+      onLog?.call('prepare failed: $e');
+    }
+  }
+
   @override
   Stream<AnswerEvent> answer(String question, ChatContext ctx) {
     final run = _Run(engine);
