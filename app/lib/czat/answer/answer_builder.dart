@@ -266,7 +266,9 @@ AssistantAnswer buildRefusal(NoSourceKind kind, {bool risk = false}) {
 /// - a leading "Rozumiem, że …" / "Oczywiście, …" opener is dropped and the
 ///   rest of the sentence kept ("Rozumiem, że czujesz lęk" -> "Czujesz lęk").
 String cleanAnswerText(String text) {
-  var t = text.replaceAll(RegExp(r'\s*\[(?:n|[^\]\d]{2,40})\]'), '');
+  // "[Poradnik 1]", "[Źródło 2]" -> "[1]", "[2]".
+  var t = text.replaceAllMapped(RegExp(r'\[[^\]\d]{2,30}?\s*(\d+)\]'), (m) => '[${m[1]}]');
+  t = t.replaceAll(RegExp(r'\s*\[(?:n|[^\]\d]{2,40})\]'), '');
   final opener = RegExp(r'^\s*(?:Rozumiem|Oczywiście|Jasne|Świetne pytanie|Dobre pytanie)[,!.]?\s*(?:że\s+)?', caseSensitive: false);
   final m = opener.firstMatch(t);
   if (m != null && m.end < t.length) {

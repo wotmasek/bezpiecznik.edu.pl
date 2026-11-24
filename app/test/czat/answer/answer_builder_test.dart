@@ -132,6 +132,7 @@ void main() {
     });
     test('removes invented word citations, keeps numeric ones', () {
       expect(cleanAnswerText('Zostań w domu [Poradnik]. Woda [2].'), 'Zostań w domu. Woda [2].');
+      expect(cleanAnswerText('Gotuj wodę [Poradnik 1].'), 'Gotuj wodę [1].');
     });
     test('leaves "Rozumiem" inside a sentence alone', () {
       expect(cleanAnswerText('Nie rozumiem pytania.'), 'Nie rozumiem pytania.');
