@@ -84,4 +84,49 @@ void main() {
     expect(last!.notes, 'Astma');
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('tapping an address chip reports the choice', (tester) async {
+    tester.view.physicalSize = const Size(800, 3000);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    HouseholdProfile? last;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildBzTheme(),
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: ProfileForm(
+              initial: HouseholdProfile.empty,
+              onChanged: (p) => last = p,
+            ),
+          ),
+        ),
+      ),
+    );
+    expect(find.text('Jak mam się do Ciebie zwracać?'), findsOneWidget);
+    expect(
+      tester.getSemantics(find.byKey(const Key('address-neutral'))),
+      matchesSemantics(
+        label: 'Neutralnie',
+        isButton: true,
+        hasSelectedState: true,
+        isSelected: true,
+      ),
+    );
+    await tester.tap(find.byKey(const Key('address-female')));
+    await tester.pump();
+    expect(last?.address, AddressForm.female);
+    expect(
+      tester.getSemantics(find.byKey(const Key('address-female'))),
+      matchesSemantics(
+        label: 'Pani',
+        isButton: true,
+        hasSelectedState: true,
+        isSelected: true,
+      ),
+    );
+    await tester.tap(find.byKey(const Key('address-male')));
+    await tester.pump();
+    expect(last?.address, AddressForm.male);
+  });
 }
