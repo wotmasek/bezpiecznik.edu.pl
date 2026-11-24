@@ -86,10 +86,14 @@ class SourceRecord {
 
 /// One element of `steps` / `bullets`.
 class PanelItem {
-  const PanelItem({required this.text, this.sourceId, this.kitId, this.cardLinkLabel, this.cardLinkId});
+  const PanelItem({required this.text, this.sourceId, this.kitId, this.cardLinkLabel, this.cardLinkId, this.check = false});
 
   final String text;
   final String? sourceId;
+
+  /// A number in [text] is not in the cited fragment: shown with a quiet
+  /// "sprawdź w źródle" caption (JSON `"check": true`).
+  final bool check;
 
   /// `bullets` + `checkable`: id of the thing in the profile (`supplies.kit[].id`).
   final String? kitId;
@@ -164,7 +168,7 @@ sealed class ChatPanel {
         case 'chat_text':
           final text = _str(map['text']);
           if (text == null || text.trim().isEmpty) return UnknownPanel(type, map);
-          return ChatTextPanel(text, map);
+          return ChatTextPanel(text, map, _items(map['items']));
         case 'cpr':
           return CprPanel._parse(map);
         case 'map':
@@ -379,12 +383,15 @@ class NoSourcePanel extends ChatPanel {
   String get type => 'no_source';
 }
 
-/// `chat_text`: small talk / calming reply, not from the guides.
-/// JSON: `{"type":"chat_text","text":"..."}`.
+/// `chat_text`: chat text (talk, or a paragraph citing the guides).
+/// JSON: `{"type":"chat_text","text":"...","items":[{"text","source_id"}]?}`.
+/// [items], when present, are the paragraph's sentences with their sources
+/// (footnotes); [text] is then their plain join.
 class ChatTextPanel extends ChatPanel {
-  const ChatTextPanel(this.text, [Map<String, Object?> raw = const {}]) : super(raw);
+  const ChatTextPanel(this.text, [Map<String, Object?> raw = const {}, this.items = const []]) : super(raw);
 
   final String text;
+  final List<PanelItem> items;
 
   @override
   String get type => 'chat_text';
@@ -720,6 +727,7 @@ List<PanelItem> _items(Object? v) {
       kitId: _str(e['kit_id']),
       cardLinkLabel: link is Map ? _str(link['label']) : null,
       cardLinkId: link is Map ? _str(link['card_id']) : null,
+      check: e['check'] == true,
     ));
   }
   return out;

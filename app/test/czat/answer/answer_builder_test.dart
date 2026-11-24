@@ -89,4 +89,39 @@ void main() {
     );
     expect([for (final p in a.panels) p.type], ['call', 'steps']);
   });
+
+  group('markdown answer', () {
+    final c1 = chunk('c1', 'Uciskaj klatkę piersiową 30 razy, potem 2 oddechy.');
+    final c2 = chunk('c2', 'Zapas wody: 1,5 litra na osobę.');
+
+    test('a number missing from the cited chunk is marked, not deleted', () {
+      final a = buildMarkdownAnswer(
+        '1. Uciskaj 30 razy [1].\n2. Uciskaj 100 razy na minutę [1].\n3. Wypij 1.5 litra [2].',
+        [c1, c2],
+        risk: false,
+      );
+      final items = (a.panels.single as StepsPanel).items;
+      expect([for (final i in items) i.check], [false, true, false]);
+      expect(items[1].text, 'Uciskaj 100 razy na minutę.');
+    });
+
+    test('a paragraph sentence is marked too; uncited numbers are not checked', () {
+      final a = buildMarkdownAnswer('Uciskaj 50 razy [1]. Dzwoń pod 112.', [c1], risk: false);
+      final p = a.panels.single as ChatTextPanel;
+      expect([for (final i in p.items) (i.sourceId, i.check)], [('c1', true), (null, false)]);
+    });
+
+    test('risk never gets a form or todo; crisis adds 116 123 and the call panel', () {
+      final r = buildMarkdownAnswer('- Spakuj wodę [1]', [c2], risk: true);
+      expect([for (final p in r.panels) p.type], ['call', 'bullets']);
+      final c = buildMarkdownAnswer('Jestem tu. Czy jesteś w bezpiecznym miejscu?', const [], risk: false, crisis: true);
+      expect(c.panels.first, isA<CallPanel>());
+      expect((c.panels.last as ChatTextPanel).text, contains('116 123'));
+    });
+
+    test('placeholders copied from the prompt are removed', () {
+      final a = buildMarkdownAnswer('Masz psa [Profil domu]. Tak [n].', const [], risk: false);
+      expect((a.panels.single as ChatTextPanel).text, 'Masz psa. Tak.');
+    });
+  });
 }

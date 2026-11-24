@@ -3,6 +3,7 @@ library;
 
 import 'conversation.dart';
 import '../retrieval/retriever.dart';
+import '../templates/md_text.dart' show MdKind, parseMd;
 import '../templates/panel_model.dart';
 
 /// How many chunks the quote fallback shows.
@@ -80,6 +81,135 @@ AssistantAnswer buildModelAnswer(
   return AssistantAnswer.fromJson({
     'origin': 'ai',
     'panels': _withCall(panels, risk),
+    'sources': {
+      for (final c in chunks)
+        if (used.contains(c.id)) c.id: _sourceJson(c),
+    },
+  });
+}
+
+/// `[1]`, `[1, 2]`, `[1][2]` with the punctuation right after it.
+final _cite = RegExp(r'\s*((?:\[\s*\d+(?:\s*,\s*\d+)*\s*\]\s*)+)([.,;:!?]*)');
+
+/// Sentences of [text] split at its citations: each segment ends where a
+/// citation stood (marker removed, punctuation kept) and carries the chunk
+/// id of the first valid snippet number; unknown numbers are dropped.
+List<({String text, String? id})> citedSegments(String text, List<KbChunk> chunks) {
+  String? idOf(String marks) {
+    for (final m in RegExp(r'\d+').allMatches(marks)) {
+      final n = int.parse(m[0]!);
+      if (n >= 1 && n <= chunks.length) return chunks[n - 1].id;
+    }
+    return null;
+  }
+
+  final out = <({String text, String? id})>[];
+  var last = 0;
+  for (final m in _cite.allMatches(text)) {
+    final seg = text.substring(last, m.start) + m[2]!;
+    final id = idOf(m[1]!);
+    last = m.end;
+    if (seg.trim().isEmpty) continue;
+    out.add((text: seg, id: id));
+  }
+  if (last < text.length && text.substring(last).trim().isNotEmpty) {
+    out.add((text: text.substring(last), id: null));
+  }
+  return out;
+}
+
+/// Numbers of [text] (digits, `1,5` == `1.5`) missing from the cited chunk.
+bool numberNotInSource(String text, KbChunk? c) {
+  if (c == null) return false;
+  String norm(String s) => s.replaceAll(',', '.');
+  final src = norm(c.original ?? c.text) + norm(c.text);
+  return RegExp(r'\d+(?:[.,]\d+)?').allMatches(text).any((m) => !src.contains(norm(m[0]!)));
+}
+
+/// The answer from the model's free markdown (citations.md): a numbered list
+/// is a `steps` panel, a `- ` list a `bullets` panel, a paragraph chat text;
+/// `[n]` becomes the source of snippet n. `call` goes first on [risk]; a
+/// [crisis] reply always carries the 116 123 / 112 line. Never a form/todo.
+AssistantAnswer buildMarkdownAnswer(
+  String text,
+  List<KbChunk> chunks, {
+  required bool risk,
+  bool crisis = false,
+}) {
+  final panels = <Map<String, Object?>>[];
+  final used = <String>{};
+  String? title;
+  final plain = <String>[];
+  void flushPlain() {
+    if (plain.isEmpty) return;
+    panels.add({'type': 'chat_text', 'text': plain.join('\n\n')});
+    plain.clear();
+  }
+
+  final byId = {for (final c in chunks) c.id: c};
+  // Stretch of citations.md: a number not in the cited chunk is marked, not deleted.
+  bool check(String t, String? id) => id != null && numberNotInSource(t, byId[id]);
+
+  Map<String, Object?> item(String t) {
+    final segs = citedSegments(t, chunks);
+    final id = segs.map((s) => s.id).whereType<String>().firstOrNull;
+    if (id != null) used.add(id);
+    final text = segs.map((s) => s.text).join().trim();
+    return {'text': text, 'source_id': ?id, if (check(text, id)) 'check': true};
+  }
+
+  // Placeholders the model copies from the prompt ("[n]", "[Profil domu]").
+  text = text.replaceAll(RegExp(r'\s*\[(?:n|profil domu)\]', caseSensitive: false), '');
+  for (final b in parseMd(text)) {
+    switch (b.kind) {
+      case MdKind.heading:
+        flushPlain();
+        title = b.text.replaceAll('**', '');
+      case MdKind.numbered || MdKind.bullet:
+        flushPlain();
+        final type = b.kind == MdKind.numbered ? 'steps' : 'bullets';
+        final last = panels.isEmpty ? null : panels.last;
+        final it = item(b.text);
+        if ((it['text'] as String).isEmpty) continue;
+        if (last != null && last['type'] == type && title == null) {
+          (last['items']! as List).add(it);
+        } else {
+          panels.add({'type': type, 'title': title ?? '', 'items': [it]});
+          title = null;
+        }
+      case MdKind.paragraph:
+        if (title != null) {
+          plain.add('**$title**');
+          title = null;
+        }
+        final segs = citedSegments(b.text, chunks);
+        if (segs.every((s) => s.id == null)) {
+          final clean = segs.map((s) => s.text).join().trim();
+          if (clean.isNotEmpty) plain.add(clean);
+          continue;
+        }
+        flushPlain();
+        used.addAll(segs.map((s) => s.id).whereType<String>());
+        panels.add({
+          'type': 'chat_text',
+          'text': segs.map((s) => s.text).join().trim(),
+          'items': [
+            for (final (i, s) in segs.indexed)
+              {
+                'text': i == 0 ? s.text.trimLeft() : s.text,
+                'source_id': ?s.id,
+                if (check(s.text, s.id)) 'check': true,
+              },
+          ],
+        });
+    }
+  }
+  if (title != null) plain.add('**$title**');
+  if (crisis && !text.contains('116 123')) plain.add(kCrisisHelpLine);
+  flushPlain();
+  return AssistantAnswer.fromJson({
+    'origin': 'ai',
+    'panels': _withCall(panels, risk || crisis),
     'sources': {
       for (final c in chunks)
         if (used.contains(c.id)) c.id: _sourceJson(c),

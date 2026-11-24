@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:bezpiecznik/czat/answer/conversation.dart';
+import 'package:bezpiecznik/czat/answer/answer_prompt.dart';
 import 'package:bezpiecznik/czat/answer/pipeline_answer_service.dart';
 import 'package:bezpiecznik/czat/llm/llm_provider.dart';
 import 'package:bezpiecznik/czat/retrieval/kb_database.dart';
@@ -78,11 +78,11 @@ void main() {
     expect(engine.requests, isNotEmpty);
   });
 
-  test('off-topic -> one small-talk request; empty reply -> refusal', () async {
+  test('off-topic -> one request on the single prompt; empty reply -> refusal', () async {
     final engine = FakeEngine([]);
     final e = await last(container(engine), 'przepis na pierogi');
     expect((e as AnswerReady).answer.origin, AnswerOrigin.refusal);
-    expect(engine.requests.single.systemPrompt, startsWith(kChatSystemPrompt));
+    expect(engine.requests.single.systemPrompt, startsWith(kSystemPrompt.split('\n').first));
   });
 
   test('pipeline provider exists for KB questions', () async {

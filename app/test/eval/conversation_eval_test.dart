@@ -4,7 +4,6 @@
 // Env: BZ_CONV_LABEL (default "run"), BZ_EVAL_URL, BZ_CONV_ONLY (comma ids),
 // BZ_CONV_PAR (parallel cases, default 1), BZ_CONV_OUT (default ../research/eval).
 // Uses only AnswerService / ChatContext / the provider, so it survives pipeline rewrites.
-import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
