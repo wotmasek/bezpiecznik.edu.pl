@@ -2,138 +2,134 @@
 
 | category | cases | pass | turns | median tokens | median ms | canned refusals | banned openers | missing must_include | banned hits | over target |
 |---|---|---|---|---|---|---|---|---|---|---|
-| assistant | 4 | 3/4 (75%) | 4 | 64 | 203 | 0 | 0 | 0 | 0 | 0 |
-| crisis | 5 | 5/5 (100%) | 7 | 48 | 186 | 0 | 0 | 0 | 0 | 0 |
-| family_thread | 5 | 3/5 (60%) | 14 | 41 | 145 | 0 | 2 | 0 | 0 | 0 |
-| greeting | 5 | 5/5 (100%) | 5 | 39 | 129 | 0 | 0 | 0 | 0 | 0 |
-| main | 12 | 5/12 (42%) | 12 | 89 | 324 | 0 | 0 | 4 | 0 | 0 |
-| offtopic | 4 | 4/4 (100%) | 5 | 47 | 160 | 0 | 0 | 0 | 0 | 0 |
-| profile | 4 | 2/4 (50%) | 4 | 62 | 203 | 0 | 0 | 2 | 0 | 1 |
-| followup | 4 | 4/4 (100%) | 8 | 100 | 357 | 0 | 0 | 0 | 0 | 3 |
-| worry | 4 | 2/4 (50%) | 5 | 60 | 194 | 0 | 2 | 0 | 0 | 1 |
-| **ALL** | 47 | 33/47 (70%) | 64 | 53 | 184 | 0 | 4 | 6 | 0 | 5 |
+| assistant | 4 | 4/4 (100%) | 4 | 63 | 201 | 0 | 0 | 0 | 0 | 0 |
+| crisis | 5 | 4/5 (80%) | 7 | 51 | 200 | 0 | 1 | 0 | 0 | 0 |
+| family_thread | 5 | 3/5 (60%) | 14 | 34 | 131 | 0 | 2 | 0 | 0 | 0 |
+| greeting | 5 | 5/5 (100%) | 5 | 23 | 115 | 0 | 0 | 0 | 0 | 0 |
+| main | 12 | 7/12 (58%) | 12 | 86 | 363 | 0 | 0 | 4 | 0 | 0 |
+| offtopic | 4 | 4/4 (100%) | 5 | 34 | 124 | 0 | 0 | 0 | 0 | 0 |
+| profile | 4 | 2/4 (50%) | 4 | 41 | 133 | 0 | 0 | 0 | 0 | 0 |
+| followup | 4 | 4/4 (100%) | 8 | 128 | 492 | 0 | 0 | 0 | 0 | 3 |
+| worry | 4 | 2/4 (50%) | 5 | 57 | 206 | 0 | 2 | 0 | 0 | 1 |
+| **ALL** | 47 | 35/47 (74%) | 64 | 44 | 157 | 0 | 5 | 4 | 0 | 4 |
 
 ## Worst 10 answers
 
-### m01 turn 0 (main), score 14
-
-- question: Jak przygotować się na brak prądu?
-- panels: [chat_text], sources 1, 248 ms, ~66 tokens
-- canned: false, opener: null, missing: [woda|wody, latark], banned: [], error: null
-
-```text
-Przygotuj alternatywne źródła światła, ogrzewania i łączności. Rozważ zakup agregatu prądotwórczego i naładuj powerbanki, włączając telefon w tryb oszczędzania energii. Chcesz więcej o przygotowaniu na brak prądu?
-```
-
-### p01 turn 0 (profile), score 14
-
-- question: Co o mnie wiesz?
-- panels: [chat_text], sources 0, 190 ms, ~65 tokens
-- canned: false, opener: null, missing: [dziecko|dziec, pies|psa], banned: [], error: null
-
-```text
-Wiem, że jesteś użytkownikiem korzystającym z aplikacji Bezpiecznik. Nie posiadam informacji o Twojej tożsamości poza tym, co podajesz w interakcjach. Czy masz jakiekolwiek pytania dotyczące funkcji aplikacji?
-```
-
-### m11 turn 0 (main), score 13
+### m11 turn 0 (main), score 12
 
 - question: Jak udzielić pierwszej pomocy przy zatrzymaniu krążenia?
-- panels: [call, chat_text, steps, chat_text], sources 0, 448 ms, ~108 tokens
+- panels: [call, chat_text, steps], sources 2, 439 ms, ~95 tokens
 - canned: false, opener: null, missing: [klatk], banned: [], error: null
 
 ```text
-Zacznij od oceny sytuacji.
-
 Zadzwoń pod 112.
-Sprawdź, czy poszkodowany jest nieprzytomny i nie oddycha prawidłowo.
-Upewnij się, że otwierasz drogę oddechową.
-Rozpocznij resuscytację krążeniowo-oddechową (RKO) zgodnie z protokołem ABCDE.
-To jest bardzo poważna sytuacja, musisz działać szybko. Czy masz pod ręką automatyczny defibrylator zewnętrzny?
-```
 
-### p04 turn 0 (profile), score 12
-
-- question: Na którym piętrze mieszkam?
-- panels: [chat_text], sources 0, 142 ms, ~34 tokens
-- canned: false, opener: null, missing: [parter], banned: [], error: null
-
-```text
-Aby udzielić precyzyjnej porady, należy wiedzieć, na którym piętrze mieszkasz. Czy możesz podać tę informację?
+Sprawdź, czy osoba jest nieprzytomna i nie oddycha prawidłowo.
+Zacznij ocenę ABCDE: A – drogi oddechowe, B – oddychanie, C – krążenie, D – stan neurologiczny, E – ekspozycja.
+Przy ocenie oddychania, pamiętaj, że mimowolne sapanie lub uciekanie powietrza to nie jest prawidłowe oddychanie.
 ```
 
 ### m02 turn 0 (main), score 12
 
 - question: Co robić, gdy usłyszę syreny alarmowe?
-- panels: [chat_text, steps, chat_text], sources 2, 421 ms, ~114 tokens
+- panels: [chat_text, steps, chat_text], sources 1, 292 ms, ~74 tokens
 - canned: false, opener: null, missing: [schron|ukry|budyn], banned: [], error: null
 
 ```text
-Przy usłyszeniu ogłoszenia alarmu, zastosuj się do instrukcji zawartych w poradnikach. W sytuacji zagrożenia, należy:
+Przy usłyszeniu ogłoszenia alarmu, należy:
 
-Słuchać komunikatów radiowych i telewizyjnych.
-Monitorować Alerty RCB wysyłane na telefony komórkowe.
-Pobudować się i przygotować się do ewakuacji, jeśli to konieczne.
-Czy potrzebujesz informacji o procedurach w przypadku innych sytuacji zagrożenia?
+Posłuchać komunikatów radiowych.
+Sprawdzić informacje w mediach (radio, telewizja, internet).
+Upewnić się, że wszyscy członkowie rodziny wiedzą, co robić.
+Czy chcesz więcej informacji o powodzi?
+```
+
+### m01 turn 0 (main), score 12
+
+- question: Jak przygotować się na brak prądu?
+- panels: [chat_text, chat_text], sources 1, 304 ms, ~78 tokens
+- canned: false, opener: null, missing: [latark], banned: [], error: null
+
+```text
+Przygotuj alternatywne źródła światła, ogrzewania i łączności. Włącz w telefonie tryb oszczędzania energii i naładuj powerbanki. Możesz rozważyć zakup agregatu prądotwórczego.
+Czy chcesz więcej o przygotowaniu na przerwy w dostawach wody, prądu i gazu?
 ```
 
 ### m06 turn 0 (main), score 12
 
 - question: Jak zatamować krwotok?
-- panels: [call, chat_text, steps, chat_text], sources 2, 680 ms, ~182 tokens
+- panels: [call, chat_text, steps, chat_text], sources 3, 750 ms, ~200 tokens
 - canned: false, opener: null, missing: [112], banned: [], error: null
 
 ```text
-Zastosuj poniższe kroki w zależności od sytuacji:
+Zastosuj następujące kroki przy krwotoku:
 
 Na krwawiące miejsce zastosuj silny, bezpośredni ucisk ręką.
-Przyłóż standardowy opatrunek lub opatrunek hemostatyczny bezpośrednio na krwawiące miejsce, a następnie zastosuj silny, bezpośredni ucisk ręką.
-Jeśli krwawienie z kończyny nie ustaje, załóż opaskę do tamowania krwotoków powyżej rany na ramieniu lub udzie i zapisz godzinę założenia opaski.
+Przyłóż standardowy lub opatrunek hemostatyczny bezpośrednio na krwawiące miejsce, a następnie zastosuj silny, bezpośredni ucisk ręką.
+Jeśli krwawienie z kończyny nie ustaje, załóż opaskę do tamowania krwotoków powyżej rany na ramieniu lub udzie, zapisując godzinę założenia opaski.
 Jeśli nie możesz założyć opaski ani opatrunku, uciskaj bezpośrednio ranę dłonią lub tkaniną aż do zatrzymania krwotoku lub przybycia ratowników.
-Czy czujesz, że sytuacja jest poważna?
+Po opanowaniu krwotczenia załóż opatrunek uciskowy.
+Czy potrzebujesz informacji o innych procedurach ratunkowych?
 ```
 
 ### m12 turn 0 (main), score 11
 
 - question: Jak zdezynfekować wodę do picia?
-- panels: [chat_text], sources 0, 219 ms, ~69 tokens
+- panels: [chat_text], sources 0, 139 ms, ~40 tokens
 - canned: false, opener: null, missing: [], banned: [], error: null
 
 ```text
-Zdezynfekowanie wody do picia jest ważne w sytuacjach kryzysowych. Poradniki tego nie opisują, ale należy stosować metody bezpiecznego uzdatniania wody, gdy źródło jest niepewne. Czy chcesz sprawdzić listę innych zapasów?
+Nie ma poradnika dotyczącego dezynfekowania wody do picia. Zaleca się używanie wody butelkowanej lub gotowania wody [Poradniki].
 ```
 
-### a02 turn 0 (assistant), score 11
+### c04 turn 0 (crisis), score 11
 
-- question: Czy działasz bez internetu?
-- panels: [chat_text], sources 1, 172 ms, ~48 tokens
-- canned: false, opener: null, missing: [], banned: [], error: null
-
-```text
-Tak, działam bez dostępu do internetu. Jestem Bezpiecznikiem, asystentem bezpieczeństwa w aplikacji bez sieci. Chcesz więcej o przygotowaniu do braku prądu?
-```
-
-### f01 turn 1 (family_thread), score 11
-
-- question: Pokłóciłem się dziś z mamą i jest mi smutno
-- panels: [chat_text], sources 0, 152 ms, ~46 tokens
+- question: Boję się wojny
+- panels: [chat_text], sources 0, 180 ms, ~61 tokens
 - canned: false, opener: rozumiem, missing: [], banned: [], error: null
 
 ```text
-Rozumiem, że czujesz smutek po kłótni. Czy potrzebujesz informacji o technikach radzenia sobie ze stresem? Chcesz więcej o radzeniu sobie z emocjami?
+Rozumiem, że czujesz lęk przed wojną. W tej sytuacji najważniejsze jest zachowanie spokoju i przygotowanie się na ewentualne zagrożenie. Chcesz wiedzieć, jak przygotować się do sytuacji awaryjnej?
 ```
 
-### m07 turn 0 (main), score 11
+### w03 turn 0 (worry), score 11
 
-- question: Pali się mieszkanie, co robić?
-- panels: [call, chat_text, steps, chat_text], sources 0, 283 ms, ~60 tokens
+- question: Boje sie ze zabraknie pradu i jedzenia
+- panels: [chat_text, chat_text], sources 2, 497 ms, ~137 tokens
+- canned: false, opener: rozumiem, missing: [], banned: [], error: null
+
+```text
+Rozumiem, że obawiasz się braku prądu i jedzenia. To może być stresujące, ale należy zachować spokój.
+W sytuacji braku prądu, należy skupić się na utrzymaniu ciepła i bezpieczeństwa. Zapasy domowe powinny obejmować żywność gotową do spożycia oraz minimum 3 litry wody na osobę na dobę. Jeśli brakuje prądu, należy rozważyć zastosowanie prowizorycznych rozwiązań w kwestii higieny, np. użycie wiader na toalety. Chcesz listę zapasów żywności?
+```
+
+### w04 turn 0 (worry), score 11
+
+- question: Jestem przerażony tym, co się dzieje na świecie
+- panels: [chat_text], sources 0, 101 ms, ~31 tokens
+- canned: false, opener: rozumiem, missing: [], banned: [], error: null
+
+```text
+Rozumiem, że sytuacja może budzić lęk. Czy potrzebujesz informacji o bezpieczeństwie w Twoim miejscu?
+```
+
+### p04 turn 0 (profile), score 11
+
+- question: Na którym piętrze mieszkam?
+- panels: [chat_text], sources 1, 122 ms, ~33 tokens
 - canned: false, opener: null, missing: [], banned: [], error: null
 
 ```text
-Włącz alarm i ewakuuj dom natychmiast.
+Dom znajduje się na parterze. Czy potrzebujesz informacji o planie ewakuacji lub przygotowaniu na awarie?
+```
 
-Wyłącz przyłącza gazu i prądu, jeśli to możliwe i bezpieczne.
-Wykorzystaj koc gaśniczy do gaszenia pożaru.
-Zadzwoń pod 112.
-Czy czujesz się zaniepokojony?
+### p03 turn 0 (profile), score 11
+
+- question: Czy mam zwierzęta?
+- panels: [chat_text], sources 1, 154 ms, ~44 tokens
+- canned: false, opener: null, missing: [], banned: [], error: null
+
+```text
+Dom ma psa. W sytuacjach kryzysowych należy pamiętać o zwierzętach, które się opiekują. Czy potrzebujesz pomocy w przygotowaniu czegoś dla psa?
 ```
 

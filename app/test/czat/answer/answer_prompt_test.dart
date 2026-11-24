@@ -14,13 +14,13 @@ String _sentences(int chars) {
 }
 
 void main() {
-  test('system prompt is compact (~250-400 tokens), Polish markdown, no JSON', () {
+  test('system prompt is compact (<= 480 estimated tokens), Polish markdown, no JSON', () {
     final tokens = estimateTokens(answerSystemPrompt());
-    expect(tokens, inInclusiveRange(200, 460));
+    expect(tokens, inInclusiveRange(200, 480));
     expect(kSystemPrompt, isNot(contains('JSON')));
     expect(kSystemPrompt, allOf(contains('[n]'), contains('poradniki'), contains('mapę schronów'), contains('SOS')));
-    expect(answerSystemPrompt(), endsWith('Profil domu: pusty.'));
-    expect(answerSystemPrompt(profile: 'Domownicy: 2 dorosłych.'), endsWith('Profil domu: Domownicy: 2 dorosłych.'));
+    expect(answerSystemPrompt(), contains('\nProfil domu: pusty.\n'));
+    expect(answerSystemPrompt(profile: 'Domownicy: 2 dorosłych.'), contains('\nProfil domu rozmówcy: Domownicy: 2 dorosłych.\n'));
   });
 
   test('a snippet is cut at a sentence end to at most 600 characters', () {

@@ -118,13 +118,13 @@ void main() {
       expect(req.messages.first.content, 'Pytanie: Poklocilem sie z mama');
       expect(req.messages[1].role, LlmRole.assistant);
       expect(req.conversationId, 'c');
-      expect(req.systemPrompt, contains('Profil domu: Domownicy: 1 dziecko.'));
+      expect(req.systemPrompt, contains('Profil domu rozmówcy: Domownicy: 1 dziecko.'));
     });
 
     test('empty profile is said in the prompt', () async {
       final e = FakeEngine([['Ok.']]);
       await svc(e).answer('Co o mnie wiesz?', const ChatContext(chatId: 'c')).toList();
-      expect(e.requests.single.systemPrompt, endsWith('Profil domu: pusty.'));
+      expect(e.requests.single.systemPrompt, contains('Profil domu: pusty.'));
     });
 
     test('no source and the model down: the calm refusal', () async {
