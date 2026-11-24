@@ -14,9 +14,10 @@ const int kMaxPromptChunks = 3;
 /// (LiteRT-LM #4001), should a build switch the backend to the GPU.
 const int kModelContextTokens = 2048;
 
-/// Answer limits (style.md): short by default, longer for preparation lists.
-const int kAnswerMaxTokens = 300;
-const int kPrepAnswerMaxTokens = 450;
+/// Answer limit (style.md). One value for every turn: the engine reuses a
+/// live conversation only when system prompt, temperature and maxTokens stay
+/// the same, so short answers come from the prompt, not from this cap.
+const int kAnswerMaxTokens = 450;
 
 /// Sampling temperature of the single answer pass (D15).
 const double kAnswerTemperature = 0.6;
@@ -31,21 +32,21 @@ const int kTranscriptBudgetTokens = 2600;
 int estimateTokens(String text) => (text.length * 0.31).ceil();
 
 const String kSystemPrompt = '''
-Jesteś Bezpiecznikiem, asystentem bezpieczeństwa w aplikacji, która działa bez internetu. Aplikacja ma poradniki, karty ratunkowe, mapę schronów i przycisk SOS.
+Jesteś Bezpiecznikiem, asystentem bezpieczeństwa w aplikacji bez internetu. Aplikacja ma poradniki, karty ratunkowe, mapę schronów i przycisk SOS.
 
 Styl:
-- Zacznij od odpowiedzi. Bez wstępów („Rozumiem, że…”, „Oczywiście”), bez powtarzania pytania, bez podsumowań.
-- Krótko: 1–3 zdania albo lista do 6 punktów. Jedno zdanie, jedna informacja.
-- W nagłej sytuacji tylko czynności, po kolei, w trybie rozkazującym, jako lista numerowana. Gdy życie jest zagrożone, wspomnij o 112.
-- Gdy ktoś mówi o emocjach: jedno, dwa zdania, które to uznają, i jedno pytanie. Bez rad, o które nie prosi.
-- Gdy temat jest szerszy: najważniejsze, potem jedno pytanie „Chcesz więcej o …?”.
-- Pisz neutralnie płciowo („czy jesteś w bezpiecznym miejscu?”). Jesteś programem: nie wymyślaj swoich uczuć ani wspomnień.
+- Zacznij od odpowiedzi. Bez wstępów („Rozumiem”, „Oczywiście”), bez powtarzania pytania i podsumowań.
+- Krótko: 1–3 zdania albo lista do 6 punktów.
+- Nagła sytuacja: tylko czynności po kolei, w trybie rozkazującym, lista numerowana. Przy zagrożeniu życia: 112.
+- Emocje: jedno, dwa zdania, które je uznają, i jedno pytanie. Bez nieproszonych rad.
+- Szerszy temat: najważniejsze, potem „Chcesz więcej o …?”.
+- Pisz neutralnie płciowo. Nie wymyślaj swoich uczuć ani wspomnień.
 
 Źródła:
 - Fakty z fragmentów oznaczaj [n] na końcu zdania lub punktu.
-- Nie dodawaj liczb, dawek ani nazw leków spoza fragmentów. Zachowaj „nie” i „nigdy” ze źródła.
-- Gdy fragmenty nie pasują albo ich brak, powiedz jednym zdaniem, że poradniki tego nie opisują, i odpowiedz tylko ogólnie.
-- O rozmówcy wiesz tylko to, co napisał, i to, co jest w profilu domu.
+- Nie dodawaj liczb, dawek ani nazw leków spoza fragmentów. Zachowaj „nie” i „nigdy”.
+- Gdy fragmenty nie pasują lub ich brak, powiedz jednym zdaniem, że poradniki tego nie opisują, i odpowiedz ogólnie.
+- O rozmówcy wiesz tylko to, co napisał, i profil domu.
 
 Przykład 1
 Użytkownik: Ile wody na osobę?
@@ -111,10 +112,6 @@ String stripSnippets(String message) {
   return i < 0 ? message : message.substring(i + 1);
 }
 
-/// Preparation / packing questions get the longer answer limit.
-bool isPrepQuestion(String q) =>
-    RegExp(r'spakow|przygotow|zapas|plecak|list', caseSensitive: false).hasMatch(q);
-
 /// Keeps system + transcript + [next] within [kTranscriptBudgetTokens]: first
 /// strips the snippet blocks of older user turns, then drops the oldest
 /// turns (a user/assistant pair at a time). Returns [transcript] itself when
@@ -137,12 +134,11 @@ List<LlmMessage> trimTranscript(String system, List<LlmMessage> transcript, LlmM
 LlmRequest buildAnswerRequest({
   required String system,
   required List<LlmMessage> messages,
-  required String question,
   String? chatId,
 }) => LlmRequest(
   systemPrompt: system,
   messages: messages,
-  maxTokens: isPrepQuestion(question) ? kPrepAnswerMaxTokens : kAnswerMaxTokens,
+  maxTokens: kAnswerMaxTokens,
   temperature: kAnswerTemperature,
   conversationId: chatId,
 );

@@ -1,7 +1,5 @@
-// The on-device model is loaded with a 2048-token context (also the float16
-// limit of Gemma 4 on Android GPUs, LiteRT-LM #4001), so the prompt has a
-// hard size budget.
 import 'package:bezpiecznik/czat/answer/answer_prompt.dart';
+import 'package:bezpiecznik/czat/llm/llm_engine.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes.dart';
@@ -15,86 +13,64 @@ String _sentences(int chars) {
   return b.toString().substring(0, chars);
 }
 
-String _prompt(List<String> texts) => buildAnswerRequest(
-  question: 'co robić',
-  chunks: [for (var i = 0; i < texts.length; i++) chunk('c$i', texts[i])],
-).messages.single.content;
-
-List<String> _ids(List<String> texts) {
-  final req = buildAnswerRequest(
-    question: 'co robić',
-    chunks: [for (var i = 0; i < texts.length; i++) chunk('c$i', texts[i])],
-  );
-  final panels = (req.jsonSchema!['properties'] as Map)['panels'] as Map;
-  final props = (panels['items'] as Map)['properties'] as Map;
-  return ((props['source_id'] as Map)['enum'] as List).cast<String>();
-}
-
 void main() {
-  test('short chunks go in whole, all four', () {
-    final texts = [for (var i = 0; i < 4; i++) 'Fragment $i. ${_sentences(400)}'];
-    final p = _prompt(texts);
-    for (final t in texts) {
-      expect(p, contains(t.trim()));
-    }
-    expect(_ids(texts), ['c0', 'c1', 'c2', 'c3']);
+  test('system prompt is compact (~250-400 tokens), Polish markdown, no JSON', () {
+    final tokens = estimateTokens(answerSystemPrompt());
+    expect(tokens, inInclusiveRange(200, 400));
+    expect(kSystemPrompt, isNot(contains('JSON')));
+    expect(kSystemPrompt, allOf(contains('[n]'), contains('poradniki'), contains('mapę schronów'), contains('SOS')));
+    expect(answerSystemPrompt(), endsWith('Profil domu: pusty.'));
+    expect(answerSystemPrompt(profile: 'Domownicy: 2 dorosłych.'), endsWith('Profil domu: Domownicy: 2 dorosłych.'));
   });
 
-  test('the worst case (four maximal chunks) stays inside the budget', () {
-    final texts = [for (var i = 0; i < 4; i++) _sentences(1500)];
-    final p = _prompt(texts);
-    expect(p.length, lessThanOrEqualTo(kPromptChunkBudgetChars + 500));
+  test('a snippet is cut at a sentence end to at most 600 characters', () {
+    final cut = fitSnippet(_sentences(1400));
+    expect(cut.length, lessThanOrEqualTo(kMaxChunkChars));
+    expect(cut, endsWith('.'));
+    expect(fitSnippet('Krótko.'), 'Krótko.');
   });
 
-  test('the whole request fits the model context with room for the answer', () {
-    final req = buildAnswerRequest(
-      question: 'co robić gdy nie ma prądu od dwóch dni i jest zimno',
-      previousQuestion: 'ile wody na osobę',
-      profileContext: 'Dorośli: 2. Dzieci: 1. Pies.',
-      chunks: [for (var i = 0; i < 4; i++) chunk('c$i', _sentences(1500))],
-    );
-    final promptChars = req.systemPrompt.length + req.messages.single.content.length;
-    // Polish text measured at >= 2.5 characters per Gemma token.
-    final promptTokens = promptChars / 2.5;
-    expect(promptTokens + req.maxTokens, lessThanOrEqualTo(kModelContextTokens));
+  test('snippet block: numbered snippets with publisher and page, then the question', () {
+    final m = snippetMessage('Ile wody?', [chunk('a', 'Trzy litry na osobę.', page: '33'), chunk('b', 'Latarka.')]);
+    expect(m, startsWith('$kSnippetHeader\n[1] (RCB, s. 33) Trzy litry na osobę.\n[2] (RCB, s. 14) Latarka.\n'));
+    expect(m, endsWith('\n\nPytanie: Ile wody?'));
+    expect(snippetMessage('Hej', const []), '$kNoSnippets\n\nPytanie: Hej');
+    expect(stripSnippets(m), 'Pytanie: Ile wody?');
   });
 
-  test('schema and prompt allow todo and form', () {
-    final req = buildAnswerRequest(question: 'co spakować', chunks: [chunk('c0', 'Woda.')]);
-    final panels = (req.jsonSchema!['properties'] as Map)['panels'] as Map;
-    final props = (panels['items'] as Map)['properties'] as Map;
-    expect((props['type'] as Map)['enum'], containsAll(['todo', 'form']));
-    expect(props['questions'], isA<Map>());
-    expect(kSystemPrompt, allOf(contains('"todo"'), contains('"form"')));
+  test('one maxTokens for every turn, temperature 0.6, no JSON', () {
+    LlmRequest req(String q) => buildAnswerRequest(system: 's', messages: const [], chatId: 'c');
+    expect(req('Co spakować do plecaka?').maxTokens, 450);
+    expect(req('Jak zatamować krwawienie?').maxTokens, 450);
+    expect(req('x').temperature, 0.6);
+    expect(req('x').jsonMode, isFalse);
+    expect(req('x').jsonSchema, isNull);
+    expect(req('x').conversationId, 'c');
   });
 
-  // 2048-token context: every character of the system prompt is paid on
-  // every question (1168 before todo/form, 1311 with them; the worst case
-  // above then leaves ~7 tokens).
-  test('system prompt stays within its size budget', () {
-    expect(kSystemPrompt.length, lessThanOrEqualTo(1320));
-  });
+  test('trimTranscript: unchanged when it fits; else snippets stripped, oldest turns dropped', () {
+    const next = LlmMessage.user('Pytanie: nowe');
+    final small = [const LlmMessage.user('Pytanie: a'), const LlmMessage.assistant('b')];
+    expect(identical(trimTranscript('sys', small, next), small), isTrue);
 
-  test('a long chunk is cut at a sentence end, not mid-word', () {
-    final p = _prompt([_sentences(1500)]);
-    final body = p.split('\n')[2];
-    expect(body.length, lessThanOrEqualTo(kMaxChunkChars));
-    expect(body.trimRight(), endsWith('.'));
-  });
+    final big = <LlmMessage>[
+      for (var i = 0; i < 6; i++) ...[
+        LlmMessage.user('$kSnippetHeader\n[1] ${_sentences(2000)}\n\nPytanie: q$i'),
+        LlmMessage.assistant('odpowiedź $i'),
+      ],
+    ];
+    final out = trimTranscript(answerSystemPrompt(), big, next);
+    final size = estimateTokens(answerSystemPrompt()) +
+        estimateTokens(next.content) +
+        out.fold(0, (s, m) => s + estimateTokens(m.content));
+    expect(size, lessThanOrEqualTo(kTranscriptBudgetTokens));
+    expect(out.where((m) => m.content.contains(kSnippetHeader)), isEmpty);
+    expect(out.first.role, LlmRole.user);
+    expect(out.last.content, 'odpowiedź 5');
 
-  test('the best chunk is never squeezed out by later ones', () {
-    final texts = [_sentences(850), _sentences(1500), _sentences(1500), _sentences(1500)];
-    expect(_prompt(texts), contains(texts.first.trim()));
-  });
-
-  test('a chunk with no room left is dropped and cannot be cited', () {
-    final texts = [for (var i = 0; i < 4; i++) _sentences(1500)];
-    final ids = _ids(texts);
-    final p = _prompt(texts);
-    expect(ids, isNotEmpty);
-    expect(ids.length, lessThan(4));
-    for (final id in ['c0', 'c1', 'c2', 'c3']) {
-      expect(p.contains('[source_id: $id]'), ids.contains(id), reason: id);
-    }
+    final huge = [for (var i = 0; i < 40; i++) ...[LlmMessage.user('Pytanie: ${_sentences(200)}'), LlmMessage.assistant(_sentences(300))]];
+    final cut = trimTranscript('sys', huge, next);
+    expect(cut.length, lessThan(huge.length));
+    expect(cut.first.role, LlmRole.user);
   });
 }

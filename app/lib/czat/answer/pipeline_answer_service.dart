@@ -79,6 +79,10 @@ class PipelineAnswerService implements AnswerService {
   /// ponytail: in memory only, rebuilt from the chat history after a restart.
   final Map<String, List<LlmMessage>> _transcripts = {};
 
+  /// The system prompt each live chat started with: kept for the whole chat
+  /// (a profile edit applies from the next chat), so the prefix stays exact.
+  final Map<String, String> _systems = {};
+
   /// Transcript of [chatId] as the next request will see it (tests).
   List<LlmMessage> transcriptOf(String chatId) => List.unmodifiable(_transcripts[chatId] ?? const []);
 
@@ -231,7 +235,7 @@ class PipelineAnswerService implements AnswerService {
     required bool crisis,
     required _Run run,
   }) async {
-    final system = answerSystemPrompt(profile: profile);
+    final system = _systems[ctx.chatId] ?? answerSystemPrompt(profile: profile);
     // The crisis note goes with the turn, not the system prompt, so the
     // conversation prefix stays the same.
     final user = LlmMessage.user(
@@ -241,12 +245,11 @@ class PipelineAnswerService implements AnswerService {
     final req = buildAnswerRequest(
       system: system,
       messages: [...past, user],
-      question: question,
       chatId: ctx.chatId,
     );
     final String text;
     try {
-      text = (await run.collect(req)).trim();
+      text = await run.collect(req);
     } catch (e) {
       if (run.cancelled) return null;
       onLog?.call('llm unavailable: $e');
@@ -260,12 +263,14 @@ class PipelineAnswerService implements AnswerService {
       );
     }
     if (run.cancelled) return null;
-    final answer = text.isEmpty ? null : buildMarkdownAnswer(text, chunks, risk: risk, crisis: crisis);
+    final answer = text.trim().isEmpty ? null : buildMarkdownAnswer(text, chunks, risk: risk, crisis: crisis);
     if (answer == null || answer.panels.every((p) => p is CallPanel)) {
       onLog?.call('empty model output');
       return _fallback(chunks, risk: risk, crisis: crisis, offTopic: offTopic, modelOff: false);
     }
+    // Byte-for-byte the streamed text: anything else reopens the conversation.
     _transcripts[ctx.chatId] = [...past, user, LlmMessage.assistant(text)];
+    _systems[ctx.chatId] = system;
     return answer;
   }
 }

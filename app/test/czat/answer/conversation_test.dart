@@ -1,3 +1,4 @@
+import 'package:bezpiecznik/czat/answer/answer_prompt.dart';
 import 'package:bezpiecznik/czat/answer/conversation.dart';
 import 'package:bezpiecznik/czat/answer/pipeline_answer_service.dart';
 import 'package:bezpiecznik/czat/llm/llm_engine.dart';
@@ -23,35 +24,6 @@ void main() {
       }
       for (final q in ['Ktoś nie oddycha', 'pożar w bloku', 'zagrożenie życia', 'atak rakietowy']) {
         expect(isCrisis(q), isFalse, reason: q);
-      }
-    });
-
-    test('talk: feelings, family, thanks, the assistant, the profile', () {
-      for (final q in [
-        'Co bys zrobil na moim miejscu?',
-        'Poklocilem sie dzisiaj z mama i jest mi smutno',
-        'Jak myslisz, co powinienem jej powiedziec?',
-        'Dzieki, ze mnie wysluchales',
-        'Moj tata jest chory i boje sie, ze umrze',
-        'Boje sie wojny, nie moge spac',
-        'Kim jestes?',
-        'Co o mnie wiesz?',
-        'Ile osob mieszka ze mna?',
-        'Jakie leki biore?',
-      ]) {
-        expect(isTalk(q), isTrue, reason: q);
-      }
-    });
-
-    test('not talk: questions for the guides, also with a greeting or a feeling', () {
-      for (final q in [
-        'Jak przygotowac sie na brak pradu?',
-        'Cześć, jak zatamować krwawienie?',
-        'Boję się burzy, co robić?',
-        'Co mam spakowac do plecaka dla mojej rodziny?',
-        'Co zrobic gdy wyja syreny?',
-      ]) {
-        expect(isTalk(q), isFalse, reason: q);
       }
     });
 
@@ -82,9 +54,9 @@ void main() {
 
     AssistantAnswer ready(List<AnswerEvent> ev) => (ev.last as AnswerReady).answer;
 
-    test('crisis: no search, call panel first, reply ends with 116 123 / 112', () async {
+    test('crisis: no search, call panel first, crisis note in the turn, 116 123 added', () async {
       final e = FakeEngine([
-        ['Bardzo mi przykro, że tak się czujesz. Czy jesteś teraz bezpieczny?'],
+        ['Bardzo mi przykro, że tak się czujesz. Czy jesteś teraz w bezpiecznym miejscu?'],
       ]);
       final a = ready(await svc(e).answer('Nie chce mi sie zyc', const ChatContext(chatId: 'c')).toList());
       expect(searched, isEmpty);
@@ -92,7 +64,17 @@ void main() {
       final text = (a.panels.last as ChatTextPanel).text;
       expect(text, contains('116 123'));
       expect(text, contains('112'));
-      expect(e.requests.single.systemPrompt, contains(kCrisisPromptNote.trim()));
+      expect(e.requests.single.messages.last.content, contains(kCrisisPromptNote));
+      expect(a.panels.whereType<FormPanel>(), isEmpty);
+    });
+
+    test('crisis: 116 123 is not repeated when the model already gave it', () async {
+      final e = FakeEngine([
+        ['Dobrze, że piszesz. Zadzwoń pod 116 123. Czy jesteś bezpieczny?'],
+      ]);
+      final a = ready(await svc(e).answer('Mam atak paniki', const ChatContext(chatId: 'c')).toList());
+      final all = [for (final p in a.panels) if (p is ChatTextPanel) p.text].join(' ');
+      expect('116 123'.allMatches(all).length, 1);
     });
 
     test('crisis with the model down: fixed caring text, 116 123, call panel', () async {
@@ -103,9 +85,21 @@ void main() {
       expect((a.panels.last as ChatTextPanel).text, contains('116 123'));
     });
 
-    test('talk sees the history and the profile, and skips the guides', () async {
+    test('talk is answered by the model, never the canned "Nie wiem"', () async {
       final e = FakeEngine([
-        ['Rozumiem, że kłótnia z mamą boli.'],
+        ['Cieszę się, że mogłem pomóc. Jak się teraz czujesz?'],
+      ]);
+      final a = ready(await svc(e).answer('Dzięki, że mnie wysłuchałeś', const ChatContext(chatId: 'c')).toList());
+      expect(searched, ['Dzięki, że mnie wysłuchałeś']);
+      expect(e.requests, hasLength(1));
+      expect(e.requests.single.messages.last.content, startsWith(kNoSnippets));
+      expect(a.panels.single, isA<ChatTextPanel>());
+      expect(a.panels.whereType<NoSourcePanel>(), isEmpty);
+    });
+
+    test('rebuilt transcript from the history (restart) and the profile', () async {
+      final e = FakeEngine([
+        ['Powiedz jej, co czujesz. Kiedy możecie porozmawiać?'],
       ]);
       const ctx = ChatContext(
         chatId: 'c',
@@ -118,35 +112,25 @@ void main() {
       final a = ready(await svc(e, profile: 'Domownicy: 1 dziecko.')
           .answer('Jak myslisz, co powinienem jej powiedziec?', ctx)
           .toList());
-      expect(searched, isEmpty);
       expect(a.panels.single, isA<ChatTextPanel>());
       final req = e.requests.single;
       expect(req.messages.length, 3);
-      expect(req.messages.first.content, 'Poklocilem sie z mama');
+      expect(req.messages.first.content, 'Pytanie: Poklocilem sie z mama');
       expect(req.messages[1].role, LlmRole.assistant);
+      expect(req.conversationId, 'c');
       expect(req.systemPrompt, contains('Profil domu: Domownicy: 1 dziecko.'));
     });
 
-    test('no source in the middle of a conversation: talk instead of "Nie wiem"', () async {
-      final e = FakeEngine([
-        ['Słyszę, że czujesz się niedoceniony.'],
-      ]);
-      const ctx = ChatContext(
-        chatId: 'c',
-        history: [
-          (user: true, text: 'Jest mi smutno', chat: false),
-          (user: false, text: 'Przykro mi. Co się stało?', chat: true),
-        ],
-      );
-      final a = ready(await svc(e).answer('Ona uwaza ze za malo pomagam w domu', ctx).toList());
-      expect(a.panels.single, isA<ChatTextPanel>());
+    test('empty profile is said in the prompt', () async {
+      final e = FakeEngine([['Ok.']]);
+      await svc(e).answer('Co o mnie wiesz?', const ChatContext(chatId: 'c')).toList();
+      expect(e.requests.single.systemPrompt, endsWith('Profil domu: pusty.'));
     });
 
-    test('no source outside a conversation: still the refusal, no model', () async {
-      final e = FakeEngine([]);
+    test('no source and the model down: the calm refusal', () async {
+      final e = FakeEngine([const LlmUnavailable('down')]);
       final a = ready(await svc(e).answer('ugryzienie weza', const ChatContext(chatId: 'c')).toList());
       expect(a.panels.single, isA<NoSourcePanel>());
-      expect(e.requests, isEmpty);
     });
 
     test('follow-up is searched with the previous question', () async {
