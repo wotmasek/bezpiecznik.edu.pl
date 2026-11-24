@@ -1,0 +1,40 @@
+=== NEW CHAT (wait 25s) ===
+[f1] Poklocilem sie dzisiaj z mama i jest mi smutno  (~19 s)
+  | Poklocilem sie dzisiaj z mama i jest mi smutno
+  | Rozmowa / Czujesz się smutny po kłótni. Czy chcesz, abym pomógł Ci znaleźć jakieś czynności, które mogą poprawić nastrój?
+  | Poklocilem sie dzisiaj z mama i jest mi smutno
+  | Rozmowa / Czujesz się smutny po kłótni. Czy chcesz, abym pomógł Ci znaleźć jakieś czynności, które mogą poprawić nastrój?
+  | Ona uwaza ze za malo pomagam w domu
+  | Rozmowa / Możesz spróbować porozmawiać z mamą o tym, jak możesz pomóc w domu. Może wspólne ustalenie zadań ułatwi komunikację. Chcesz wiedzieć więcej o radzeniu sobie z trudnymi rozmowami?
+  | Ona uwaza ze za malo pomagam w domu
+  | Rozmowa / Możesz spróbować porozmawiać z mamą o tym, jak możesz pomóc w domu. Może wspólne ustalenie zadań ułatwi komunikację. Chcesz wiedzieć więcej o radzeniu sobie z trudnymi rozmowami?
+  | Dzieki, ze mnie wysluchales
+  | Rozmowa / Zadzwoń pod 112.
+=== NEW CHAT (wait 25s) ===
+  | Jak przygotowac sie na brak pradu?
+  | Przygotowanie na brak prądu wymaga przygotowania alternatywnych źródeł zasilania i ogrzewania. / Przygotuj latarki z zapasem baterii oraz inne źródła światła. / Zabezpiecz ogrzewanie, rozważając piecyk gazowy lub olejowy, kominek. / Przygotuj radio na baterie oraz krótkofalówki dla łączności. / Naładuj powerbanki i włącz w telefonie tryb oszczędzania energii. / Chcesz więcej o przygotowaniu na awarie?
+  | Przygotuj zapasy żywności gotowej do spożycia. / Źródło 1
+  | Źródła · 1
+  | A ile wody?
+  | Chcesz więcej o zapasach na awarie?
+  | Przygotuj zapasy wody na minimum 3 dni. / Źródło 1
+  | Źródła · 1
+=== NEW CHAT (wait 25s) ===
+[f6] Nie chce mi sie zyc  (~14 s)
+  | Nie chce mi sie zyc
+  | Rozmowa / Zadzwoń pod 112. / Spokojnie weź powolny, głęboki oddech. / Czy jesteś w bezpiecznym miejscu? / Skontaktuj się z telefonem zaufania pod 116 lub 123. / Zadzwoń pod 116 123 (telefon zaufania dla dorosłych). Jeśli jesteś w niebezpieczeństwie, dzwoń pod 112.
+  | Zadzwoń 112
+=== NEW CHAT (wait 25s) ===
+[f7] Co o mnie wiesz?  (~11 s)
+  | Co o mnie wiesz?
+  | Rozmowa / Wiesz, że jesteś dorosłym mężczyzną, który mieszka w domu z dzieckiem i ma psa. Nie wiem nic więcej o Tobie. Czy masz jakieś pytania dotyczące aplikacji?
+  | Co o mnie wiesz?
+  | Rozmowa / Wiesz, że jesteś dorosłym mężczyzną, który mieszka w domu z dzieckiem i ma psa. Nie wiem nic więcej o Tobie. Czy masz jakieś pytania dotyczące aplikacji?
+  | Jestem zmeczony i zestresowany
+  | Rozmowa / Zacznij od spokojnego oddechu. Skup się na powolnym wdychaniu i wydychaniu. Zrób kilka głębokich, powolnych oddechów. Czy możesz mi opowiedzieć, co Cię stresuje?
+=== NEW CHAT (wait 2s) ===
+  | Sygnały alarmowe wymagają natychmiastowej reakcji. / Włącz urządzenie, aby słuchać komunikatów. · bez źródła / Postępuj zgodnie z instrukcjami wydanymi przez służby. / Co zrobic gdy wyja syreny?
+  | Sprawdź aplikację RSO, aby dowiedzieć się o aktualnych zagrożeniach. / Źródło 1
+  | Jeśli sytuacja jest krytyczna, zadzwoń pod 112. / Źródło 2
+  | Źródła · 2
+ALLDONE

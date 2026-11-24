@@ -56,6 +56,18 @@ class MdListItem extends StatelessWidget {
   }
 }
 
+/// Caption after an item whose number is not in its cited fragment.
+const String checkSourceCaption = 'sprawdź w źródle';
+
+/// Caption after a list item with no citation (decision D2).
+const String unsourcedCaption = 'bez źródła';
+
+/// The quiet caption span ([checkSourceCaption] by default).
+TextSpan checkSourceSpan(BuildContext context, [String caption = checkSourceCaption]) {
+  final t = context.bz;
+  return TextSpan(text: ' · $caption', style: t.caption.copyWith(color: t.ink300));
+}
+
 /// Item text with an optional footnote pill at its end.
 class MdItemText extends StatelessWidget {
   const MdItemText({
@@ -64,12 +76,20 @@ class MdItemText extends StatelessWidget {
     this.footnote,
     this.onFootnote,
     this.style,
+    this.check = false,
+    this.unsourced = false,
   });
 
   final String text;
   final int? footnote;
   final VoidCallback? onFootnote;
   final TextStyle? style;
+
+  /// Adds the [checkSourceCaption] after the text.
+  final bool check;
+
+  /// Adds the [unsourcedCaption] after the text, unless [check] is set.
+  final bool unsourced;
 
   @override
   Widget build(BuildContext context) {
@@ -87,6 +107,7 @@ class MdItemText extends StatelessWidget {
                 child: FootnoteMark(number: n, onTap: onFootnote),
               ),
             ),
+          if (check) checkSourceSpan(context) else if (unsourced) checkSourceSpan(context, unsourcedCaption),
         ],
       ),
       style: style ?? t.chat.copyWith(color: t.ink100),
@@ -164,6 +185,7 @@ class Footnotes {
         StepsPanel() => p.itemsFor(variant),
         BulletsPanel() => p.items,
         TodoPanel() => p.items,
+        ChatTextPanel() => p.items,
         _ => const <PanelItem>[],
       };
       for (final it in items) {

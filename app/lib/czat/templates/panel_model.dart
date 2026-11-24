@@ -86,10 +86,18 @@ class SourceRecord {
 
 /// One element of `steps` / `bullets`.
 class PanelItem {
-  const PanelItem({required this.text, this.sourceId, this.kitId, this.cardLinkLabel, this.cardLinkId});
+  const PanelItem({required this.text, this.sourceId, this.kitId, this.cardLinkLabel, this.cardLinkId, this.check = false, this.unsourced = false});
 
   final String text;
   final String? sourceId;
+
+  /// A number in [text] is not in the cited fragment: shown with a quiet
+  /// "sprawdź w źródle" caption (JSON `"check": true`).
+  final bool check;
+
+  /// A list item of a model answer with no citation (decision D2): shown with
+  /// a quiet "bez źródła" caption (JSON `"unsourced": true`).
+  final bool unsourced;
 
   /// `bullets` + `checkable`: id of the thing in the profile (`supplies.kit[].id`).
   final String? kitId;
@@ -164,7 +172,7 @@ sealed class ChatPanel {
         case 'chat_text':
           final text = _str(map['text']);
           if (text == null || text.trim().isEmpty) return UnknownPanel(type, map);
-          return ChatTextPanel(text, map);
+          return ChatTextPanel(text, map, _items(map['items']));
         case 'cpr':
           return CprPanel._parse(map);
         case 'map':
@@ -379,12 +387,15 @@ class NoSourcePanel extends ChatPanel {
   String get type => 'no_source';
 }
 
-/// `chat_text`: small talk / calming reply, not from the guides.
-/// JSON: `{"type":"chat_text","text":"..."}`.
+/// `chat_text`: chat text (talk, or a paragraph citing the guides).
+/// JSON: `{"type":"chat_text","text":"...","items":[{"text","source_id"}]?}`.
+/// [items], when present, are the paragraph's sentences with their sources
+/// (footnotes); [text] is then their plain join.
 class ChatTextPanel extends ChatPanel {
-  const ChatTextPanel(this.text, [Map<String, Object?> raw = const {}]) : super(raw);
+  const ChatTextPanel(this.text, [Map<String, Object?> raw = const {}, this.items = const []]) : super(raw);
 
   final String text;
+  final List<PanelItem> items;
 
   @override
   String get type => 'chat_text';
@@ -531,6 +542,7 @@ class AssistantAnswer {
     this.done = const {},
     this.intent,
     this.note,
+    this.truncated = false,
   });
 
   final List<ChatPanel> panels;
@@ -560,6 +572,9 @@ class AssistantAnswer {
   /// Short note shown under the panels (e.g. the LLM timeout note).
   final String? note;
 
+  /// The model hit the token limit: show "Pokaż więcej" (sends "Kontynuuj.").
+  final bool truncated;
+
   static String doneKey(int panelIndex, String? variantId) =>
       '$panelIndex:${variantId ?? ''}';
 
@@ -581,6 +596,7 @@ class AssistantAnswer {
     Map<String, Set<int>>? done,
     String? intent,
     String? note,
+    bool? truncated,
   }) {
     return AssistantAnswer(
       panels: panels ?? this.panels,
@@ -592,6 +608,7 @@ class AssistantAnswer {
       done: done ?? this.done,
       intent: intent ?? this.intent,
       note: note ?? this.note,
+      truncated: truncated ?? this.truncated,
     );
   }
 
@@ -659,6 +676,7 @@ class AssistantAnswer {
       done: done,
       intent: _str(json['intent']),
       note: _str(json['note']),
+      truncated: json['truncated'] == true,
     );
   }
 
@@ -669,6 +687,7 @@ class AssistantAnswer {
     if (selectedVariant != null) 'selected_variant': selectedVariant,
     if (intent != null) 'intent': intent,
     if (note != null) 'note': note,
+    if (truncated) 'truncated': true,
     'panels': [for (final p in panels) p.raw],
     'sources': {for (final e in sources.entries) e.key: e.value.toJson()},
     if (done.isNotEmpty)
@@ -720,6 +739,8 @@ List<PanelItem> _items(Object? v) {
       kitId: _str(e['kit_id']),
       cardLinkLabel: link is Map ? _str(link['label']) : null,
       cardLinkId: link is Map ? _str(link['card_id']) : null,
+      check: e['check'] == true,
+      unsourced: e['unsourced'] == true,
     ));
   }
   return out;

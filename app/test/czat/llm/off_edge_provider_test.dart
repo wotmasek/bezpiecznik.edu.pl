@@ -29,10 +29,24 @@ class FakeRuntime implements EdgeRuntime {
 
   @override
   Stream<String> run(LlmRequest req) async* {
+    if (prepareGate != null && !prepareGate!.isCompleted) runStartedDuringPrepare = true;
     if (hang) await Completer<void>().future;
     for (final t in tokens) {
       yield t;
     }
+  }
+
+  @override
+  bool? lastReused;
+
+  final List<LlmRequest> prepared = [];
+  Completer<void>? prepareGate;
+  bool runStartedDuringPrepare = false;
+
+  @override
+  Future<void> prepare(LlmRequest req) async {
+    prepared.add(req);
+    await prepareGate?.future;
   }
 
   @override
@@ -56,6 +70,29 @@ void main() {
     late Directory dir;
     setUp(() => dir = Directory.systemTemp.createTempSync('llm_edge_test_'));
     tearDown(() => dir.deleteSync(recursive: true));
+
+    test('a question during prepare waits for it, then is answered', () async {
+      final rt = FakeRuntime(['a', 'b'])..prepareGate = Completer<void>();
+      File('${dir.path}/$edgeModelFileName').writeAsStringSync('x');
+      final e = EdgeAiEngine(runtime: rt, modelDirs: () async => [dir.path]);
+      final prep = e.prepare(req);
+      final answer = e.generate(req).join();
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      rt.prepareGate!.complete();
+      await prep;
+      expect(await answer, 'ab');
+      expect(rt.prepared, hasLength(1));
+      expect(rt.runStartedDuringPrepare, false);
+      expect(rt.loads, 1);
+    });
+
+    test('prepare without a model throws; generate still reports it', () async {
+      final rt = FakeRuntime(['a']);
+      final e = EdgeAiEngine(runtime: rt, modelDirs: () async => [dir.path]);
+      final prep = e.prepare(req);
+      await expectLater(prep, throwsA(isA<LlmUnavailable>()));
+      await expectLater(e.generate(req).toList(), throwsA(isA<LlmUnavailable>()));
+    });
 
     test('missing model -> LlmUnavailable with Polish message, nothing native', () async {
       final rt = FakeRuntime(['a']);
@@ -86,6 +123,11 @@ void main() {
       expect(rt.loads, 1);
       expect(rt.loadedPath, '${second.path}/$edgeModelFileName');
       expect(e.lastTiming!.tokenCount, 2);
+      expect(e.lastTiming!.reused, isNull);
+      rt.lastReused = true;
+      expect(await e.generate(req).toList(), ['Cze', 'ść']);
+      expect(e.lastTiming!.reused, true);
+      expect(e.lastTiming.toString(), contains('reused=true'));
       await e.dispose();
       expect(rt.closed, true);
     });

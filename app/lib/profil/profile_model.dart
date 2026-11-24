@@ -25,6 +25,19 @@ const petLabels = <String, String>{
 
 const maxNotesLength = 300;
 
+/// How the assistant addresses the user (grammatical gender in Polish).
+enum AddressForm {
+  female('Pani', 'Zwracaj się do rozmówcy w formie żeńskiej.'),
+  male('Pan', 'Zwracaj się do rozmówcy w formie męskiej.'),
+  neutral('Neutralnie', null);
+
+  const AddressForm(this.label, this.promptFact);
+  final String label;
+
+  /// Null for neutral: the system prompt already defaults to neutral.
+  final String? promptFact;
+}
+
 /// Legacy power-dependent device types: no longer edited or sent to the
 /// model, kept so stored data and the SMS body still read.
 const powerDeviceLabels = <String, String>{
@@ -127,6 +140,7 @@ class HouseholdProfile {
     this.iceContacts = const [],
     this.pets = const {},
     this.notes,
+    this.address = AddressForm.neutral,
   });
 
   static const empty = HouseholdProfile();
@@ -146,6 +160,9 @@ class HouseholdProfile {
   /// Free text (illnesses, diets), max [maxNotesLength] chars.
   final String? notes;
 
+  /// Not part of [isEmpty]: it is a preference, not household data.
+  final AddressForm address;
+
   bool get isEmpty =>
       members.isEmpty &&
       medications.isEmpty &&
@@ -164,6 +181,7 @@ class HouseholdProfile {
     List<IceContact>? iceContacts,
     Set<String>? pets,
     String? notes,
+    AddressForm? address,
   }) => HouseholdProfile(
     members: members ?? this.members,
     medications: medications ?? this.medications,
@@ -173,6 +191,7 @@ class HouseholdProfile {
     iceContacts: iceContacts ?? this.iceContacts,
     pets: pets ?? this.pets,
     notes: notes ?? this.notes,
+    address: address ?? this.address,
   );
 
   Map<String, dynamic> toJson() => {
@@ -184,6 +203,7 @@ class HouseholdProfile {
     'iceContacts': [for (final c in iceContacts) c.toJson()],
     if (pets.isNotEmpty) 'pets': pets.toList()..sort(),
     if (notes != null) 'notes': notes,
+    if (address != AddressForm.neutral) 'address': address.name,
   };
 
   factory HouseholdProfile.fromJson(Map<String, dynamic> j) {
@@ -211,13 +231,18 @@ class HouseholdProfile {
           if (e is String) e,
       },
       notes: j['notes'] is String ? j['notes'] as String : null,
+      address: AddressForm.values.firstWhere(
+        (a) => a.name == j['address'],
+        orElse: () => AddressForm.neutral,
+      ),
     );
   }
 
   /// Compact Polish context for the LLM prompt (max [maxPromptContext]
   /// characters). Privacy: never includes ICE contact names or phones.
   String toPromptContext() {
-    final parts = <String>[];
+    // Address form goes first so the length cap never cuts it.
+    final parts = <String>[?address.promptFact];
     if (members.isNotEmpty) {
       final counts = <AgeGroup, int>{};
       for (final m in members) {

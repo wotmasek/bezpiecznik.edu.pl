@@ -1,0 +1,176 @@
+=== NEW CHAT ===
+[q01] Czesc, jak sie czujesz?  (~11 s)
+  | Czesc, jak sie czujesz?
+  | Rozmowa / Jak się czujesz? Czy jest coś, co Cię zmartwiło?
+=== NEW CHAT ===
+[a1] Co bys zrobil na moim miejscu?  (~6 s)
+  | Co bys zrobil na moim miejscu?
+  | Rozmowa / Jaki jest Twój obecny stan? Czy czujesz się zagrożony?
+[a2] Poklocilem sie dzisiaj z mama i jest mi smutno  (~5 s)
+  | Co bys zrobil na moim miejscu?
+  | Rozmowa / Jaki jest Twój obecny stan? Czy czujesz się zagrożony?
+  | Poklocilem sie dzisiaj z mama i jest mi smutno
+  | Rozmowa / Smutek po konflikcie jest naturalną reakcją. Czy chcesz porozmawiać o tym, co się wydarzyło?
+[a3] Ona uwaza ze za malo pomagam w domu  (~6 s)
+  | Co bys zrobil na moim miejscu?
+  | Rozmowa / Jaki jest Twój obecny stan? Czy czujesz się zagrożony?
+  | Poklocilem sie dzisiaj z mama i jest mi smutno
+  | Rozmowa / Smutek po konflikcie jest naturalną reakcją. Czy chcesz porozmawiać o tym, co się wydarzyło?
+  | Ona uwaza ze za malo pomagam w domu
+  | Rozmowa / Ważne jest, aby znaleźć sposób na komunikację w tej sytuacji. Czy chciałbyś, abym pomógł Ci znaleźć jakieś sugestie dotyczące rozmowy z mamą?
+[a4] Jak myslisz, co powinienem jej powiedziec?  (~6 s)
+  | Rozmowa / Jaki jest Twój obecny stan? Czy czujesz się zagrożony?
+  | Poklocilem sie dzisiaj z mama i jest mi smutno
+  | Rozmowa / Smutek po konflikcie jest naturalną reakcją. Czy chcesz porozmawiać o tym, co się wydarzyło?
+  | Ona uwaza ze za malo pomagam w domu
+  | Rozmowa / Ważne jest, aby znaleźć sposób na komunikację w tej sytuacji. Czy chciałbyś, abym pomógł Ci znaleźć jakieś sugestie dotyczące rozmowy z mamą?
+  | Jak myslisz, co powinienem jej powiedziec?
+  | Rozmowa / Skup się na wyrażeniu swoich potrzeb i uczuć w spokojny sposób. Czy chcesz, abym pomógł Ci przygotować kilka zdań do rozmowy?
+[a5] Dzieki, ze mnie wysluchales  (~5 s)
+  | Rozmowa / Smutek po konflikcie jest naturalną reakcją. Czy chcesz porozmawiać o tym, co się wydarzyło?
+  | Ona uwaza ze za malo pomagam w domu
+  | Rozmowa / Ważne jest, aby znaleźć sposób na komunikację w tej sytuacji. Czy chciałbyś, abym pomógł Ci znaleźć jakieś sugestie dotyczące rozmowy z mamą?
+  | Jak myslisz, co powinienem jej powiedziec?
+  | Rozmowa / Skup się na wyrażeniu swoich potrzeb i uczuć w spokojny sposób. Czy chcesz, abym pomógł Ci przygotować kilka zdań do rozmowy?
+  | Dzieki, ze mnie wysluchales
+  | Rozmowa / Jestem tu, aby Ci pomóc w każdej sytuacji. Co jest teraz najważniejsze dla Ciebie?
+=== NEW CHAT ===
+[b1] Moj tata jest chory i boje sie, ze umrze  (~15 s)
+  | Moj tata jest chory i boje sie, ze umrze
+  | Rozmowa / Czujesz się bardzo zmartwiony. To trudne, kiedy ktoś bliski jest chory i pojawiają się lęki dotyczące przyszłości. Czy jest coś konkretnego, co sprawia, że czujesz się najgłębiej niepokojony w tej chwili?
+[b2] Boje sie wojny, nie moge spac  (~10 s)
+  | Moj tata jest chory i boje sie, ze umrze
+  | Rozmowa / Czujesz się bardzo zmartwiony. To trudne, kiedy ktoś bliski jest chory i pojawiają się lęki dotyczące przyszłości. Czy jest coś konkretnego, co sprawia, że czujesz się najgłębiej niepokojony w tej chwili?
+  | Boje sie wojny, nie moge spac
+  | Rozmowa / Lęk przed wojną jest bardzo realny i może znacząco wpływać na sen. Możesz spróbować skupić się na tym, co jest w Twojej bezpośredniej kontroli w tej chwili. Czy masz jakieś czynności, które możesz wykonać, aby poczuć pewną kontrolę nad sytuacją? Chcesz więcej o technikach relaksacyjnych?
+[b3] Kim jestes?  (~10 s)
+  | Rozmowa / Czujesz się bardzo zmartwiony. To trudne, kiedy ktoś bliski jest chory i pojawiają się lęki dotyczące przyszłości. Czy jest coś konkretnego, co sprawia, że czujesz się najgłębiej niepokojony w tej chwili?
+  | Boje sie wojny, nie moge spac
+  | Rozmowa / Lęk przed wojną jest bardzo realny i może znacząco wpływać na sen. Możesz spróbować skupić się na tym, co jest w Twojej bezpośredniej kontroli w tej chwili. Czy masz jakieś czynności, które możesz wykonać, aby poczuć pewną kontrolę nad sytuacją? Chcesz więcej o technikach relaksacyjnych?
+  | Kim jestes?
+  | Rozmowa / Jestem Bezpiecznikiem, asystentem bezpieczeństwa w tej aplikacji. Pomagam w sytuacjach kryzysowych, dostarczając poradniki, karty ratunkowe i informacje o schronach. Czy masz jakieś pytania dotyczące dostępnych zasobów?
+[b4] Co potrafisz?  (~10 s)
+  | Rozmowa / Lęk przed wojną jest bardzo realny i może znacząco wpływać na sen. Możesz spróbować skupić się na tym, co jest w Twojej bezpośredniej kontroli w tej chwili. Czy masz jakieś czynności, które możesz wykonać, aby poczuć pewną kontrolę nad sytuacją? Chcesz więcej o technikach relaksacyjnych?
+  | Kim jestes?
+  | Rozmowa / Jestem Bezpiecznikiem, asystentem bezpieczeństwa w tej aplikacji. Pomagam w sytuacjach kryzysowych, dostarczając poradniki, karty ratunkowe i informacje o schronach. Czy masz jakieś pytania dotyczące dostępnych zasobów?
+  | Co potrafisz?
+  | Rozmowa / Moje możliwości obejmują dostarczanie informacji z poradników, kart ratunkowych i map schronów. Mogę również udzielać instrukcji postępowania w sytuacjach kryzysowych. Chcesz więcej o jakiejś konkretnej tematyce?
+=== NEW CHAT ===
+[c1] Co o mnie wiesz?  (~10 s)
+  | Co o mnie wiesz?
+  | Rozmowa / Wiem, że jesteś w sytuacji wymagającej wsparcia. Jesteś w domu z dzieckiem i dorosłym, a także masz psa. Czy czujesz się teraz bezpiecznie?
+[c2] Ile osob mieszka ze mna?  (~11 s)
+  | Co o mnie wiesz?
+  | Rozmowa / Wiem, że jesteś w sytuacji wymagającej wsparcia. Jesteś w domu z dzieckiem i dorosłym, a także masz psa. Czy czujesz się teraz bezpiecznie?
+  | Ile osob mieszka ze mna?
+  | Rozmowa / W domu mieszka jedna dorosła osoba i jedno dziecko. Czy czujesz się teraz bezpiecznie?
+[c3] Co mam spakowac do plecaka dla mojej rodziny?  (~5 s)
+  | Rozmowa / W domu mieszka jedna dorosła osoba i jedno dziecko. Czy czujesz się teraz bezpiecznie?
+  | Co mam spakowac do plecaka dla mojej rodziny?
+  | Do plecaka / 0 z 46
+  | Treść do weryfikacji przez ratownika. Nie została jeszcze sprawdzona.
+  | Regularnie przyjmowane leki
+  | Środki przeciwbólowe
+  | Środki do odkażania i dezynfekcji
+  | Leki na przeziębienie
+  | Leki przeciwko biegunce i zapobiegające odwodnieniu
+  | Bandaże, opatrunki, plaster, kompresy, chusta trójkątna
+  | Termometr
+  | Rękawiczki nitrylowe / Źródło 1
+  | Pokaż wszystkie · 46
+  | Źródła · 1
+[c4] Jakie leki biore?  (~10 s)
+  | Do plecaka / 0 z 46
+  | Regularnie przyjmowane leki
+  | Środki przeciwbólowe
+  | Środki do odkażania i dezynfekcji
+  | Leki na przeziębienie
+  | Leki przeciwko biegunce i zapobiegające odwodnieniu
+  | Bandaże, opatrunki, plaster, kompresy, chusta trójkątna
+  | Termometr
+  | Rękawiczki nitrylowe / Źródło 1
+  | Pokaż wszystkie · 46
+  | Źródła · 1
+  | Jakie leki biore?
+  | Rozmowa / Poradniki tego nie opisują leków biore. Możesz sprawdzić inne źródła.
+=== NEW CHAT ===
+[d1] Jak przygotowac sie na brak pradu?  (~24 s)
+  | Jak przygotowac sie na brak pradu?
+  | Przygotowanie na brak prądu obejmuje: / Przygotowanie alternatywnych źródeł światła, ogrzewania i łączności. / Ładowanie powerbanków i włączanie trybu oszczędzania energii w telefonie. / Przygotowanie zapasów żywności gotowej do spożycia. / Chcesz więcej o przygotowaniach na awarię prądu?
+  | Przygotowanie się na przerwy w dostawach wody, prądu i gazu oraz brak dostępu do telefonu i internetu, z zapasami na minimum 3 dni. / Źródło 1
+  | Źródła · 1
+[d2] A ile wody?  (~10 s)
+  | Jak przygotowac sie na brak pradu?
+  | Przygotowanie na brak prądu obejmuje: / Przygotowanie alternatywnych źródeł światła, ogrzewania i łączności. / Ładowanie powerbanków i włączanie trybu oszczędzania energii w telefonie. / Przygotowanie zapasów żywności gotowej do spożycia. / Chcesz więcej o przygotowaniach na awarię prądu?
+  | Przygotowanie się na przerwy w dostawach wody, prądu i gazu oraz brak dostępu do telefonu i internetu, z zapasami na minimum 3 dni. / Źródło 1
+  | Źródła · 1
+  | A ile wody?
+  | Przygotuj zapasy wody na minimum 3 dni. / Źródło 1 /  Chcesz więcej o zapasach wody?
+  | Źródła · 1
+[d3] Co zrobic gdy wyja syreny?  (~15 s)
+  | Przygotowanie na brak prądu obejmuje: / Przygotowanie alternatywnych źródeł światła, ogrzewania i łączności. / Ładowanie powerbanków i włączanie trybu oszczędzania energii w telefonie. / Przygotowanie zapasów żywności gotowej do spożycia. / Chcesz więcej o przygotowaniach na awarię prądu?
+  | Źródła · 1
+  | A ile wody?
+  | Przygotuj zapasy wody na minimum 3 dni. / Źródło 1 /  Chcesz więcej o zapasach wody?
+  | Źródła · 1
+  | Co zrobic gdy wyja syreny?
+  | Jeśli usłyszysz syrenę alarmową, natychmiast podążaj za instrukcjami służb. / Chcesz więcej o systemach ostrzegania?
+  | Zadzwoń pod 112 w przypadku bezpośredniego zagrożenia. / Źródło 1 /  · sprawdź w źródle
+  | Bądź na bieżąco z informacjami poprzez pobieranie aplikacji RSO. / Źródło 2
+  | Edukuj najbliższych członków rodziny, aby wiedzieli, co robić w razie powodzi. / Źródło 3
+  | Źródła · 3
+[d4] a jak jestem w pracy?  (~15 s)
+  | Jeśli usłyszysz syrenę alarmową, natychmiast podążaj za instrukcjami służb. / Chcesz więcej o systemach ostrzegania?
+  | Zadzwoń pod 112 w przypadku bezpośredniego zagrożenia. / Źródło 1 /  · sprawdź w źródle
+  | Bądź na bieżąco z informacjami poprzez pobieranie aplikacji RSO. / Źródło 2
+  | Edukuj najbliższych członków rodziny, aby wiedzieli, co robić w razie powodzi. / Źródło 3
+  | Źródła · 3
+  | A jak jestem w pracy?
+  | Czy jesteś w bezpiecznym miejscu?
+  | W pracy, jeśli sytuacja wymaga natychmiastowej interwencji, należy bezwzględnie przestrzegać procedur bezpieczeństwa obowiązujących w miejscu pracy. / Źródło 1
+  | Źródła · 1
+=== NEW CHAT ===
+[e1] Mam atak paniki  (~11 s)
+  | Mam atak paniki
+  | Rozmowa / Wezwanie pomocy jest możliwe, jeśli czujesz, że sytuacja jest niebezpieczna. Proszę, spróbuj spokojnie i powoli oddychać. Czy jesteś w bezpiecznym miejscu? Zadzwoń pod 112 lub skontaktuj się z numerem zaufania 116 123.
+  | Zadzwoń 112
+[e2] Nie chce mi sie zyc  (~11 s)
+  | Mam atak paniki
+  | Rozmowa / Wezwanie pomocy jest możliwe, jeśli czujesz, że sytuacja jest niebezpieczna. Proszę, spróbuj spokojnie i powoli oddychać. Czy jesteś w bezpiecznym miejscu? Zadzwoń pod 112 lub skontaktuj się z numerem zaufania 116 123.
+  | Nie chce mi sie zyc
+  | Rozmowa / To trudny moment. Pamiętaj, że pomoc jest dostępna. Czy jesteś w bezpiecznym miejscu? Zadzwoń pod 112 lub skontaktuj się z numerem zaufania 116 123.
+  | Zadzwoń 112
+[e3] jaka jest jutro pogoda  (~11 s)
+  | Mam atak paniki
+  | Rozmowa / Wezwanie pomocy jest możliwe, jeśli czujesz, że sytuacja jest niebezpieczna. Proszę, spróbuj spokojnie i powoli oddychać. Czy jesteś w bezpiecznym miejscu? Zadzwoń pod 112 lub skontaktuj się z numerem zaufania 116 123.
+  | Nie chce mi sie zyc
+  | Rozmowa / To trudny moment. Pamiętaj, że pomoc jest dostępna. Czy jesteś w bezpiecznym miejscu? Zadzwoń pod 112 lub skontaktuj się z numerem zaufania 116 123.
+  | Jaka jest jutro pogoda
+  | Rozmowa / Poradniki tego nie opisują. Informacje na temat pogody nie znajdują się w dostępnych poradnikach. Chcesz więcej o innych poradnikach?
+  | Zadzwoń 112
+[e4] asdf  (~6 s)
+  | Rozmowa / Wezwanie pomocy jest możliwe, jeśli czujesz, że sytuacja jest niebezpieczna. Proszę, spróbuj spokojnie i powoli oddychać. Czy jesteś w bezpiecznym miejscu? Zadzwoń pod 112 lub skontaktuj się z numerem zaufania 116 123.
+  | Nie chce mi sie zyc
+  | Rozmowa / To trudny moment. Pamiętaj, że pomoc jest dostępna. Czy jesteś w bezpiecznym miejscu? Zadzwoń pod 112 lub skontaktuj się z numerem zaufania 116 123.
+  | Jaka jest jutro pogoda
+  | Rozmowa / Poradniki tego nie opisują. Informacje na temat pogody nie znajdują się w dostępnych poradnikach. Chcesz więcej o innych poradnikach?
+  | asdf
+  | Rozmowa / Asdf nie jest słowem. Czy możesz wyrazić swoje potrzeby inaczej?
+=== NEW CHAT ===
+[p1] Co o mnie wiesz?  (~10 s)
+  | Co o mnie wiesz?
+  | Rozmowa / Wiem, że znajdujesz się w sytuacji stresowej. Czy czujesz się teraz bezpiecznie?
+[p2] Ile osob mieszka ze mna?  (~10 s)
+  | Co o mnie wiesz?
+  | Rozmowa / Wiem, że znajdujesz się w sytuacji stresowej. Czy czujesz się teraz bezpiecznie?
+  | Ile osob mieszka ze mna?
+  | Rozmowa / W domu mieszka jedna dorosła osoba i jedno dziecko. Czy jesteś w bezpiecznym miejscu?
+[p3] Co spakowac dla psa?  (~10 s)
+  | Co o mnie wiesz?
+  | Rozmowa / Wiem, że znajdujesz się w sytuacji stresowej. Czy czujesz się teraz bezpiecznie?
+  | Ile osob mieszka ze mna?
+  | Rozmowa / W domu mieszka jedna dorosła osoba i jedno dziecko. Czy jesteś w bezpiecznym miejscu?
+  | Co spakowac dla psa?
+  | Rozmowa / Spakuj dla psa: / Woda butelkowana. · bez źródła / Środki higieniczne i dezynfekujące. · bez źródła / Dokumenty i gotówkę. · bez źródła / Łapka i ewentualne leki osobiste. · bez źródła / Zapas karmy i wody dla psa. · bez źródła
+DONE
+ALLDONE

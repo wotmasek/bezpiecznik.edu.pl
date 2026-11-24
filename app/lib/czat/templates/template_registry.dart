@@ -80,7 +80,7 @@ class TemplateRegistry {
       'form': (c, s) => FormPanelView(scope: s),
       'quote': (c, s) => QuotePanelView(scope: s),
       'no_source': (c, s) => NoSourceView(kind: (s.panel as NoSourcePanel).kind),
-      'chat_text': (c, s) => ChatTextView(text: (s.panel as ChatTextPanel).text),
+      'chat_text': (c, s) => ChatTextView(scope: s),
       for (final t in const ['call', 'cpr', 'map', 'signal', 'animation'])
         t: (c, s) => PlaceholderPanelView(type: t),
     });

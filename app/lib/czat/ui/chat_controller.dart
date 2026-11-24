@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../ratunek/cpr/cpr_session.dart';
 import '../data/chat_store.dart';
 import '../templates/panel_model.dart';
+import '../answer/pipeline_answer_service.dart';
 import 'answer_service.dart';
 
 /// Note appended to a message stopped by the user (spec "Przerwanie").
@@ -126,6 +127,7 @@ class ChatController extends Notifier<ChatState> {
   @override
   ChatState build() {
     ref.onDispose(() => _sub?.cancel());
+    _warmUpNext();
     return const ChatState();
   }
 
@@ -139,7 +141,8 @@ class ChatController extends Notifier<ChatState> {
     if (question.isEmpty) return;
     if (state.generating) stop();
 
-    final chatId = state.chatId ?? newChatId();
+    final chatId = state.chatId ?? _nextChatId ?? newChatId();
+    _nextChatId = null;
     final previous = [
       for (final m in state.messages)
         if (m.isUser) m.text,
@@ -229,6 +232,21 @@ class ChatController extends Notifier<ChatState> {
     stop();
     ref.read(cprSessionProvider).dismissSummary();
     state = const ChatState();
+    _warmUpNext();
+  }
+
+  /// Id the next new chat will get, already prepared in the model.
+  String? _nextChatId;
+
+  /// Prefills the system prompt for the next new chat (fire-and-forget).
+  void _warmUpNext() {
+    final id = _nextChatId ??= newChatId();
+    Future.microtask(() {
+      try {
+        final s = ref.read(pipelineAnswerServiceProvider);
+        if (s is PipelineAnswerService) unawaited(s.warmUp(id));
+      } catch (_) {}
+    });
   }
 
   /// Opens a saved chat from the list.

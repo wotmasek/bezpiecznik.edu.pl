@@ -97,4 +97,35 @@ void main() {
     expect(isEmergencyNumber('997'), isTrue);
     expect(isEmergencyNumber('600100200'), isFalse);
   });
+
+  test('address form: round trip, old JSON loads as neutral, fact first', () {
+    final old = HouseholdProfile.fromJson(full.toJson());
+    expect(old.address, AddressForm.neutral);
+    expect(full.toJson().containsKey('address'), isFalse);
+    expect(old.toPromptContext(), isNot(contains('Zwracaj')));
+
+    final female = full.copyWith(address: AddressForm.female);
+    expect(female.toJson()['address'], 'female');
+    expect(
+      HouseholdProfile.fromJson(female.toJson()).address,
+      AddressForm.female,
+    );
+    expect(
+      female.toPromptContext(),
+      startsWith('Zwracaj się do rozmówcy w formie żeńskiej. Domownicy:'),
+    );
+    expect(
+      const HouseholdProfile(address: AddressForm.male).toPromptContext(),
+      'Zwracaj się do rozmówcy w formie męskiej.',
+    );
+    expect(
+      HouseholdProfile.fromJson({'address': 'bogus'}).address,
+      AddressForm.neutral,
+    );
+
+    final long = female.copyWith(notes: 'x' * maxNotesLength);
+    final ctx = long.toPromptContext();
+    expect(ctx.length, lessThanOrEqualTo(maxPromptContext));
+    expect(ctx, startsWith('Zwracaj się'));
+  });
 }

@@ -1,6 +1,7 @@
-/// The real answer pipeline: retrieval -> prompt -> LLM -> tolerant parse
-/// (1 retry) -> validation -> panels. AI is always on; the model only
-/// rephrases retrieved chunks, never answers from its own knowledge.
+/// The answer pipeline, one pass (docs/03-architecture/overview.md):
+/// safety -> retrieval (never a gate) -> one Polish prompt on the live
+/// conversation of the chat -> free markdown -> panels. The model always
+/// answers; source quotes only when it is off, failing or timing out.
 library;
 
 import 'dart:async';
@@ -22,9 +23,7 @@ import '../retrieval/retriever.dart';
 import '../templates/panel_model.dart';
 import '../ui/answer_service.dart';
 import 'answer_builder.dart';
-import 'answer_parser.dart';
 import 'answer_prompt.dart';
-import 'answer_validator.dart';
 import 'conversation.dart';
 
 typedef SearchFn = Future<RetrievalResult> Function(String question);
@@ -52,9 +51,8 @@ class PipelineAnswerService implements AnswerService {
     this.profileContext,
     this.noAi,
     this.modelNote,
-    AnswerValidator? validator,
     this.onLog,
-  }) : validator = validator ?? AnswerValidator();
+  });
 
   final SearchFn search;
   final LlmEngine engine;
@@ -64,7 +62,6 @@ class PipelineAnswerService implements AnswerService {
 
   /// Compact profile context for the prompt; empty / null when unavailable.
   final Future<String> Function()? profileContext;
-  final AnswerValidator validator;
 
   /// "Tryb bez AI", asked once per request (the setting may still be loading
   /// at a cold start). When true the model is never called: source quotes only.
@@ -74,8 +71,35 @@ class PipelineAnswerService implements AnswerService {
   /// under the source quotes; null when there is nothing to explain.
   final String? Function()? modelNote;
 
-  /// Diagnostics (rejected items, retries); no user data beyond the question.
+  /// Diagnostics; no user data beyond the question and the model output.
   final void Function(String message)? onLog;
+
+  /// The exact messages fed to the model per chat (live conversation): user
+  /// turns are snippet block + question, assistant turns the raw model text.
+  /// ponytail: in memory only, rebuilt from the chat history after a restart.
+  final Map<String, List<LlmMessage>> _transcripts = {};
+
+  /// The system prompt each live chat started with: kept for the whole chat
+  /// (a profile edit applies from the next chat), so the prefix stays exact.
+  final Map<String, String> _systems = {};
+
+  /// Transcript of [chatId] as the next request will see it (tests).
+  List<LlmMessage> transcriptOf(String chatId) => List.unmodifiable(_transcripts[chatId] ?? const []);
+
+  /// Reads [chatId]'s system prompt into the model before its first question
+  /// (fire-and-forget; never throws). The prompt is stored, so the first
+  /// turn sends the identical one and continues the prepared chat.
+  Future<void> warmUp(String chatId) async {
+    try {
+      if (_transcripts.containsKey(chatId) || await _noAiMode()) return;
+      final system = _systems[chatId] ??= answerSystemPrompt(profile: await _profile());
+      final sw = Stopwatch()..start();
+      await engine.prepare(buildAnswerRequest(system: system, messages: const [], chatId: chatId));
+      onLog?.call('prepare_ms=${sw.elapsedMilliseconds}');
+    } catch (e) {
+      onLog?.call('prepare failed: $e');
+    }
+  }
 
   @override
   Stream<AnswerEvent> answer(String question, ChatContext ctx) {
@@ -99,98 +123,43 @@ class PipelineAnswerService implements AnswerService {
     }
 
     var risk = false;
+    var crisis = false;
     try {
       if (await _noAiMode()) run.engine = OffEngine();
       if (run.cancelled) return;
       emit(const AnswerThinking(ThinkingPhase.searching));
       // "Alarm / schron" quick action: ask for the alarm signals and add the
-      // nearest-shelter map card to whatever the sources give.
+      // nearest-shelter map card to whatever the answer gives.
       final alarm = isAlarmQuickAction(question);
       if (alarm) question = kAlarmQuery;
-      // A personal crisis (suicidal thoughts, self-harm, panic) never goes to
-      // the guides: a caring reply with 116 123 and the pinned 112.
-      if (!alarm && isCrisis(question)) {
-        risk = true;
-        emit(const AnswerThinking(ThinkingPhase.composing, true));
-        final talk = await _chat(question, ctx, run, crisis: true);
-        if (run.cancelled) return;
-        emit(AnswerReady(talk ?? buildChatReply(kCrisisFallback, crisis: true)));
-        return;
-      }
+      // A personal crisis (suicidal thoughts, self-harm, panic) is a risk turn
+      // that never goes to the guides: the keyword search turned "atak
+      // paniki" into an air-raid evacuation.
+      crisis = !alarm && isCrisis(question);
       // Risk first: a pipeline error below must still be able to show 112.
-      risk = await isRisk(question);
+      risk = crisis || await isRisk(question);
       if (run.cancelled) return;
-      // Show 112 now, not after the model (owner rule): the final answer
-      // starts with the same `call` panel.
+      // Show 112 now, not after the model (owner rule).
       if (risk) emit(const AnswerThinking(ThinkingPhase.searching, true));
-      // Feelings, thanks, questions about the assistant or the profile: talk,
-      // even when the sentence shares words with the guides ("mama", "dom").
-      final talkFirst = !risk && !alarm && isTalk(question);
-      if (talkFirst) {
-        emit(const AnswerThinking(ThinkingPhase.composing));
-        final talk = await _chat(question, ctx, run);
-        if (run.cancelled) return;
-        if (talk != null) {
-          emit(AnswerReady(talk));
-          return;
-        }
-      }
-      // A follow-up ("a ile wody?") is searched together with the previous
-      // question; so is a short question that finds nothing on its own.
-      final previous = ctx.previousQuestion?.trim() ?? '';
-      final withPrevious = previous.isEmpty ? null : '$previous $question';
-      var result = await search(
-        withPrevious != null && isFollowUp(question) ? withPrevious : question,
-      );
+
+      final result = crisis ? null : await _retrieve(question, ctx);
       if (run.cancelled) return;
-      if (withPrevious != null &&
-          result.decision != RetrievalDecision.found &&
-          question.trim().split(RegExp(r'\s+')).length <= 5) {
-        final retry = await search(withPrevious);
-        if (run.cancelled) return;
-        if (retry.decision == RetrievalDecision.found) result = retry;
-      }
+      final chunks = result != null && result.decision == RetrievalDecision.found
+          ? result.chunks.take(kMaxPromptChunks).toList()
+          : const <KbChunk>[];
 
-      if (result.decision != RetrievalDecision.found || result.chunks.isEmpty) {
-        // A risk phrase is never "off topic" (the risk detector tolerates
-        // typos the domain gate does not, e.g. "pazar"): refuse as noSource,
-        // which carries the 112 call panel.
-        final kind = result.decision == RetrievalDecision.offTopic && !risk
-            ? NoSourceKind.offTopic
-            : NoSourceKind.noSource;
-        // Owner 08:33: off-topic small talk gets a short warm reply (no facts),
-        // labelled as not from the guides. So does a sentence with no source
-        // in the middle of a conversation ("ona uważa, że za mało pomagam").
-        // Any failure: the refusal.
-        final talkInstead = !risk &&
-            !alarm &&
-            !talkFirst &&
-            (kind == NoSourceKind.offTopic || ctx.inConversation);
-        if (talkInstead) {
-          emit(const AnswerThinking(ThinkingPhase.composing));
-          final talk = await _chat(question, ctx, run);
-          if (run.cancelled) return;
-          if (talk != null) {
-            emit(AnswerReady(talk));
-            return;
-          }
-        }
-        final refusal = buildRefusal(kind, risk: risk);
-        emit(AnswerReady(alarm ? _withShelterMap(refusal) : refusal));
-        return;
-      }
-
-      final chunks = result.chunks;
       emit(AnswerThinking(ThinkingPhase.composing, risk));
-      final ctxText = await _profile();
+      final profile = await _profile();
       if (run.cancelled) return;
 
       final answer = await _compose(
         question: question,
-        previous: ctx.previousQuestion,
-        profile: ctxText,
+        ctx: ctx,
+        profile: profile,
         chunks: chunks,
+        offTopic: result?.decision == RetrievalDecision.offTopic,
         risk: risk,
+        crisis: crisis,
         run: run,
       );
       if (answer != null) emit(AnswerReady(alarm ? _withShelterMap(answer) : answer));
@@ -198,7 +167,9 @@ class PipelineAnswerService implements AnswerService {
       // Retrieval or an unexpected bug: never crash the chat.
       onLog?.call('pipeline error: $e');
       // Never lose the 112 block for a risk phrase because of an error.
-      if (risk) {
+      if (crisis) {
+        emit(AnswerReady(buildChatReply(kCrisisFallback, crisis: true)));
+      } else if (risk) {
         emit(AnswerReady(buildRefusal(NoSourceKind.noSource, risk: true)));
       } else {
         emit(const AnswerFailed('Nie udało się przygotować odpowiedzi. Spróbuj ponownie.'));
@@ -206,6 +177,24 @@ class PipelineAnswerService implements AnswerService {
     } finally {
       if (!out.isClosed) await out.close();
     }
+  }
+
+  /// Search on every turn. A follow-up ("a ile wody?") is searched together
+  /// with the previous question; so is a short question that finds nothing
+  /// on its own.
+  Future<RetrievalResult> _retrieve(String question, ChatContext ctx) async {
+    final previous = ctx.previousQuestion?.trim() ?? '';
+    final withPrevious = previous.isEmpty ? null : '$previous $question';
+    var result = await search(
+      withPrevious != null && isFollowUp(question) ? withPrevious : question,
+    );
+    if (withPrevious != null &&
+        result.decision != RetrievalDecision.found &&
+        question.trim().split(RegExp(r'\s+')).length <= 5) {
+      final retry = await search(withPrevious);
+      if (retry.decision == RetrievalDecision.found) result = retry;
+    }
+    return result;
   }
 
   Future<bool> _noAiMode() async {
@@ -224,105 +213,80 @@ class PipelineAnswerService implements AnswerService {
     }
   }
 
-  /// Conversational reply (small talk, feelings, the profile, a crisis), or
-  /// null (model error, timeout, empty output, cancelled). It sees the last
-  /// turns of the chat and the profile. A crisis reply always carries the
-  /// 116 123 / 112 line and the call panel.
-  Future<AssistantAnswer?> _chat(
-    String question,
-    ChatContext ctx,
-    _Run run, {
-    bool crisis = false,
-  }) async {
-    try {
-      final profile = await _profile();
-      if (run.cancelled) return null;
-      final text = (await run
-              .collect(LlmRequest(
-                systemPrompt: chatSystemPrompt(profile: profile, crisis: crisis),
-                messages: [
-                  for (final t in ctx.history)
-                    t.user ? LlmMessage.user(clipTurn(t.text)) : LlmMessage.assistant(clipTurn(t.text)),
-                  LlmMessage.user(question),
-                ],
-                maxTokens: 280,
-                temperature: 0.7,
-              ))
-              .timeout(const Duration(seconds: 40)))
-          .trim();
-      if (text.isEmpty || run.cancelled) return null;
-      return buildChatReply(text, crisis: crisis);
-    } catch (e) {
-      onLog?.call('chat reply unavailable: $e');
-      if (e is TimeoutException) unawaited(run.engine.cancel());
-      return null;
+  /// The transcript of [ctx.chatId], or one rebuilt from the chat history
+  /// (app restart): not byte-identical, so the engine reopens once.
+  List<LlmMessage> _transcript(ChatContext ctx) =>
+      _transcripts[ctx.chatId] ??
+      [
+        for (final t in ctx.history)
+          t.user ? LlmMessage.user('Pytanie: ${t.text.trim()}') : LlmMessage.assistant(t.text.trim()),
+      ];
+
+  /// What the user sees without the model: quotes when there are sources,
+  /// the caring crisis text, else the calm refusal.
+  AssistantAnswer _fallback(
+    List<KbChunk> chunks, {
+    required bool risk,
+    required bool crisis,
+    required bool offTopic,
+    required bool modelOff,
+    String? note,
+  }) {
+    if (crisis) return buildChatReply(kCrisisFallback, crisis: true);
+    if (chunks.isEmpty) {
+      return buildRefusal(offTopic && !risk ? NoSourceKind.offTopic : NoSourceKind.noSource, risk: risk);
     }
+    return buildQuoteFallback(chunks, risk: risk, modelOff: modelOff, note: note);
   }
 
-  /// Null when cancelled.
+  /// One model pass on the live conversation. Null when cancelled.
   Future<AssistantAnswer?> _compose({
     required String question,
-    required String? previous,
+    required ChatContext ctx,
     required String profile,
     required List<KbChunk> chunks,
+    required bool offTopic,
     required bool risk,
+    required bool crisis,
     required _Run run,
   }) async {
-    final prompted = chunks.take(kMaxPromptChunks).toList();
-    for (var attempt = 0; attempt < 2; attempt++) {
-      final req = buildAnswerRequest(
-        question: question,
-        previousQuestion: previous,
-        profileContext: profile,
-        chunks: prompted,
-        retry: attempt > 0,
-      );
-      final String text;
-      try {
-        text = await run.collect(req);
-      } catch (e) {
-        if (run.cancelled) return null;
-        onLog?.call('llm unavailable: $e');
-        return buildQuoteFallback(
-          prompted,
-          risk: risk,
-          modelOff: true,
-          note: e is LlmTimeout ? kLlmTimeoutNote : modelNote?.call(),
-        );
-      }
+    final system = _systems[ctx.chatId] ?? answerSystemPrompt(profile: profile);
+    // The crisis note goes with the turn, not the system prompt, so the
+    // conversation prefix stays the same.
+    final user = LlmMessage.user(
+      '${snippetMessage(question, chunks)}${crisis ? '\n$kCrisisPromptNote' : ''}',
+    );
+    final past = trimTranscript(system, _transcript(ctx), user);
+    final req = buildAnswerRequest(
+      system: system,
+      messages: [...past, user],
+      chatId: ctx.chatId,
+    );
+    final String text;
+    try {
+      text = await run.collect(req);
+    } catch (e) {
       if (run.cancelled) return null;
-
-      final json = parseModelJson(text);
-      if (json == null) {
-        onLog?.call('unparseable model output (attempt ${attempt + 1}): ${text.length > 400 ? text.substring(0, 400) : text}');
-        continue;
-      }
-      final raw = json['panels'];
-      if (raw is List && raw.isEmpty) {
-        // The model itself says the fragments do not answer the question.
-        return buildRefusal(NoSourceKind.noSource, risk: risk);
-      }
-      final v = validator.validate(json, prompted);
-      for (final r in v.rejected) {
-        onLog?.call('rejected $r');
-      }
-      if (!v.hasContent) {
-        // Parsed but no item was even checked (garbled structure): one retry.
-        // Items rejected by the validator are a real verdict: no retry.
-        if (attempt == 0 && v.rejected.isEmpty) {
-          onLog?.call('no usable panels (attempt 1), retrying');
-          continue;
-        }
-        return buildQuoteFallback(prompted, risk: risk, modelOff: false);
-      }
-      final answer = buildModelAnswer(v.panels, prompted, risk: risk);
-      // Risk + only a `form`: nothing left to show but the sources.
-      if (answer.panels.every((p) => p is CallPanel)) {
-        return buildQuoteFallback(prompted, risk: risk, modelOff: false);
-      }
-      return answer;
+      onLog?.call('llm unavailable: $e');
+      return _fallback(
+        chunks,
+        risk: risk,
+        crisis: crisis,
+        offTopic: offTopic,
+        modelOff: true,
+        note: e is LlmTimeout ? kLlmTimeoutNote : modelNote?.call(),
+      );
     }
-    return buildQuoteFallback(prompted, risk: risk, modelOff: false);
+    if (run.cancelled) return null;
+    final answer = text.trim().isEmpty ? null : buildMarkdownAnswer(text, chunks, risk: risk, crisis: crisis).copyWith(truncated: looksTruncated(text));
+    if (answer == null || answer.panels.every((p) => p is CallPanel)) {
+      onLog?.call('empty model output');
+      return _fallback(chunks, risk: risk, crisis: crisis, offTopic: offTopic, modelOff: false);
+    }
+    // Byte-for-byte the streamed text: anything else reopens the conversation.
+    _transcripts[ctx.chatId] = [...past, user, LlmMessage.assistant(text)];
+    _systems[ctx.chatId] = system;
+    return answer;
   }
 }
 

@@ -32,6 +32,8 @@ class BulletsPanelView extends StatelessWidget {
                 text: items[i].text,
                 footnote: footnoteAfter(scope.footnotes, scope.answer, items, i),
                 onFootnote: scope.onShowSources,
+                check: items[i].check,
+                unsourced: items[i].unsourced,
               ),
             ),
           ),

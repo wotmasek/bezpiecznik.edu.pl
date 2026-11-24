@@ -21,7 +21,15 @@ class LlmRequest {
     this.jsonSchema,
     this.maxTokens = 512,
     this.temperature = 0.2,
+    this.conversationId,
   });
+
+  /// Live conversation key (docs/03-architecture, D7). When set, an engine
+  /// that can keep a conversation open (edge) reuses it: if [messages] start
+  /// with exactly the messages it already read in this conversation (same
+  /// system prompt and temperature), it reads only the new ones. Anything
+  /// else reopens the conversation. Null (and JSON requests): one-shot.
+  final String? conversationId;
 
   final String systemPrompt;
   final List<LlmMessage> messages;
@@ -57,6 +65,7 @@ class LlmTiming {
     required this.done,
     required this.tokenCount,
     this.cancelled = false,
+    this.reused,
   });
 
   final DateTime requestStart;
@@ -65,6 +74,10 @@ class LlmTiming {
   final int tokenCount;
   final bool cancelled;
 
+  /// Edge only: whether the live conversation was continued (true) or
+  /// (re)opened (false). Null for one-shot requests and other engines.
+  final bool? reused;
+
   Duration? get timeToFirstToken => firstToken?.difference(requestStart);
   Duration get total => done.difference(requestStart);
 
@@ -72,6 +85,7 @@ class LlmTiming {
   String toString() =>
       'ttft=${timeToFirstToken?.inMilliseconds ?? '-'}ms '
       'total=${total.inMilliseconds}ms tokens=$tokenCount'
+      '${reused == null ? '' : ' reused=$reused'}'
       '${cancelled ? ' cancelled' : ''}';
 }
 
@@ -97,13 +111,14 @@ class LlmTimer {
     _tokens++;
   }
 
-  LlmTiming finish({bool cancelled = false}) {
+  LlmTiming finish({bool cancelled = false, bool? reused}) {
     final timing = LlmTiming(
       requestStart: _start,
       firstToken: _first,
       done: _clock(),
       tokenCount: _tokens,
       cancelled: cancelled,
+      reused: reused,
     );
     if (!_finished) {
       _finished = true;
@@ -143,6 +158,11 @@ class LlmError extends LlmException {
 abstract class LlmEngine {
   /// Prepares the engine (loads the model). Safe to call repeatedly.
   Future<void> warmUp();
+
+  /// Gets ready for [req]'s conversation before its first turn (edge: loads
+  /// the model and opens the live chat for its system prompt). No-op for
+  /// engines without a live conversation. May throw; callers swallow.
+  Future<void> prepare(LlmRequest req);
 
   /// Streams text chunks as they are generated. Cancelling via [cancel] or the
   /// subscription ends the stream without an error. Errors are [LlmException]s.

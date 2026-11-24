@@ -9,7 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {
-  testWidgets('chat_text: plain text with the "not from the guides" label', (tester) async {
+  testWidgets('chat_text: plain text with the "Rozmowa" label', (tester) async {
     final a = AssistantAnswer.fromJson({
       'origin': 'ai',
       'panels': [
@@ -47,5 +47,68 @@ void main() {
     expect(find.text('1.'), findsOneWidget);
     expect(find.text('Wyjdź'), findsOneWidget);
     expect(find.textContaining('**'), findsNothing);
+  });
+
+  testWidgets('chat_text: cited sentences get footnote pills and the sources pill, no label', (tester) async {
+    Map<String, Object?> src(String id, String page) => {
+      'source_id': id,
+      'doc_id': 'doc',
+      'doc_short': 'Poradnik',
+      'page_label': page,
+      'pdf_page': 1,
+      'text': 'Tekst $id.',
+    };
+    final a = AssistantAnswer.fromJson({
+      'origin': 'ai',
+      'panels': [
+        {
+          'type': 'chat_text',
+          'text': 'Trzy litry wody. Nie wchodź do windy.',
+          'items': [
+            {'text': 'Trzy litry wody.', 'source_id': 'a'},
+            {'text': ' Nie wchodź do windy.', 'source_id': 'b', 'check': true},
+          ],
+        },
+      ],
+      'sources': {'a': src('a', '6'), 'b': src('b', '14')},
+    });
+    expect((a.panels.single as ChatTextPanel).items, hasLength(2));
+    await tester.pumpWidget(ProviderScope(
+      overrides: [templateRegistryProvider.overrideWithValue(TemplateRegistry.withDefaults())],
+      child: MaterialApp(theme: buildBzTheme(), home: Scaffold(body: TemplateRenderer(answer: a))),
+    ));
+    expect(find.byType(FootnoteMark), findsNWidgets(2));
+    expect(find.text(sourcesPillLabel(2)), findsOneWidget);
+    expect(find.text(chatTextLabel), findsNothing);
+    expect(find.textContaining(checkSourceCaption, findRichText: true), findsOneWidget);
+  });
+
+  testWidgets('D2: an unsourced list item gets "bez źródła"; check wins over it', (tester) async {
+    final a = AssistantAnswer.fromJson({
+      'origin': 'ai',
+      'panels': [
+        {
+          'type': 'bullets',
+          'title': '',
+          'items': [
+            {'text': 'Weź latarkę', 'unsourced': true},
+            {'text': 'Wypij 3 litry', 'unsourced': true, 'check': true},
+          ],
+        },
+        {
+          'type': 'steps',
+          'title': '',
+          'items': [
+            {'text': 'Wyjdź z budynku', 'unsourced': true},
+          ],
+        },
+      ],
+    });
+    await tester.pumpWidget(ProviderScope(
+      overrides: [templateRegistryProvider.overrideWithValue(TemplateRegistry.withDefaults())],
+      child: MaterialApp(theme: buildBzTheme(), home: Scaffold(body: TemplateRenderer(answer: a))),
+    ));
+    expect(find.textContaining(unsourcedCaption, findRichText: true), findsNWidgets(2));
+    expect(find.textContaining(checkSourceCaption, findRichText: true), findsOneWidget);
   });
 }
