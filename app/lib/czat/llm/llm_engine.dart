@@ -21,7 +21,15 @@ class LlmRequest {
     this.jsonSchema,
     this.maxTokens = 512,
     this.temperature = 0.2,
+    this.conversationId,
   });
+
+  /// Live conversation key (docs/03-architecture, D7). When set, an engine
+  /// that can keep a conversation open (edge) reuses it: if [messages] start
+  /// with exactly the messages it already read in this conversation (same
+  /// system prompt and temperature), it reads only the new ones. Anything
+  /// else reopens the conversation. Null (and JSON requests): one-shot.
+  final String? conversationId;
 
   final String systemPrompt;
   final List<LlmMessage> messages;
