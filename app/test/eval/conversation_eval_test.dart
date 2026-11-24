@@ -2,7 +2,7 @@
 // public AnswerService (pipelineAnswerServiceProvider) with the host llama-server.
 //   BZ_CONV_EVAL=1 BZ_CONV_LABEL=baseline flutter test test/eval/conversation_eval_test.dart
 // Env: BZ_CONV_LABEL (default "run"), BZ_EVAL_URL, BZ_CONV_ONLY (comma ids),
-// BZ_CONV_PAR (parallel cases, default 2), BZ_CONV_OUT (default ../research/eval).
+// BZ_CONV_PAR (parallel cases, default 1), BZ_CONV_OUT (default ../research/eval).
 // Uses only AnswerService / ChatContext / the provider, so it survives pipeline rewrites.
 import 'dart:async';
 import 'dart:convert';
@@ -163,7 +163,7 @@ void main() {
   test('conversation eval', () async {
     final label = Platform.environment['BZ_CONV_LABEL'] ?? 'run';
     final only = (Platform.environment['BZ_CONV_ONLY'] ?? '').split(',').where((s) => s.isNotEmpty).toSet();
-    final par = int.tryParse(Platform.environment['BZ_CONV_PAR'] ?? '') ?? 2;
+    final par = int.tryParse(Platform.environment['BZ_CONV_PAR'] ?? '') ?? 1; // the app engine serves one request at a time; 2 made turns fail into silent refusals
     final url = Platform.environment['BZ_EVAL_URL'] ?? 'http://127.0.0.1:8080';
     final cases = [
       for (final l in File('../content/tests/conversation_eval.jsonl').readAsLinesSync())
