@@ -124,4 +124,17 @@ void main() {
       expect((a.panels.single as ChatTextPanel).text, 'Masz psa. Tak.');
     });
   });
+
+  group('cleanAnswerText', () {
+    test('drops a leading "Rozumiem, że" and keeps the rest', () {
+      expect(cleanAnswerText('Rozumiem, że czujesz lęk. Co się stało?'), 'Czujesz lęk. Co się stało?');
+      expect(cleanAnswerText('Oczywiście. Weź wodę [1].'), 'Weź wodę [1].');
+    });
+    test('removes invented word citations, keeps numeric ones', () {
+      expect(cleanAnswerText('Zostań w domu [Poradnik]. Woda [2].'), 'Zostań w domu. Woda [2].');
+    });
+    test('leaves "Rozumiem" inside a sentence alone', () {
+      expect(cleanAnswerText('Nie rozumiem pytania.'), 'Nie rozumiem pytania.');
+    });
+  });
 }

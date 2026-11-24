@@ -158,8 +158,7 @@ AssistantAnswer buildMarkdownAnswer(
     return {'text': text, 'source_id': ?id, if (check(text, id)) 'check': true};
   }
 
-  // Placeholders the model copies from the prompt ("[n]", "[Profil domu]").
-  text = text.replaceAll(RegExp(r'\s*\[(?:n|profil domu)\]', caseSensitive: false), '');
+  text = cleanAnswerText(text);
   for (final b in parseMd(text)) {
     switch (b.kind) {
       case MdKind.heading:
@@ -259,4 +258,20 @@ AssistantAnswer buildRefusal(NoSourceKind kind, {bool risk = false}) {
       {'type': 'no_source', 'kind': kind.jsonValue},
     ], callAllowed),
   });
+}
+
+/// Model text before parsing (docs/06-answers/style.md):
+/// - placeholders and word "citations" the model invents ("[n]", "[Profil
+///   domu]", "[Poradnik]") are removed; numeric [n] stay for the sources;
+/// - a leading "Rozumiem, że …" / "Oczywiście, …" opener is dropped and the
+///   rest of the sentence kept ("Rozumiem, że czujesz lęk" -> "Czujesz lęk").
+String cleanAnswerText(String text) {
+  var t = text.replaceAll(RegExp(r'\s*\[(?:n|[^\]\d]{2,40})\]'), '');
+  final opener = RegExp(r'^\s*(?:Rozumiem|Oczywiście|Jasne|Świetne pytanie|Dobre pytanie)[,!.]?\s*(?:że\s+)?', caseSensitive: false);
+  final m = opener.firstMatch(t);
+  if (m != null && m.end < t.length) {
+    final rest = t.substring(m.end);
+    t = rest[0].toUpperCase() + rest.substring(1);
+  }
+  return t;
 }
