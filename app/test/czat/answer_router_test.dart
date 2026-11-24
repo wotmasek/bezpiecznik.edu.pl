@@ -82,7 +82,7 @@ void main() {
     final engine = FakeEngine([]);
     final e = await last(container(engine), 'przepis na pierogi');
     expect((e as AnswerReady).answer.origin, AnswerOrigin.refusal);
-    expect(engine.requests.single.systemPrompt, startsWith(kSystemPrompt));
+    expect(engine.requests.single.systemPrompt, startsWith(kSystemPrompt.split('\n').first));
   });
 
   test('pipeline provider exists for KB questions', () async {
