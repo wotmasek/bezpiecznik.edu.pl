@@ -86,7 +86,7 @@ class SourceRecord {
 
 /// One element of `steps` / `bullets`.
 class PanelItem {
-  const PanelItem({required this.text, this.sourceId, this.kitId, this.cardLinkLabel, this.cardLinkId, this.check = false});
+  const PanelItem({required this.text, this.sourceId, this.kitId, this.cardLinkLabel, this.cardLinkId, this.check = false, this.unsourced = false});
 
   final String text;
   final String? sourceId;
@@ -94,6 +94,10 @@ class PanelItem {
   /// A number in [text] is not in the cited fragment: shown with a quiet
   /// "sprawdź w źródle" caption (JSON `"check": true`).
   final bool check;
+
+  /// A list item of a model answer with no citation (decision D2): shown with
+  /// a quiet "bez źródła" caption (JSON `"unsourced": true`).
+  final bool unsourced;
 
   /// `bullets` + `checkable`: id of the thing in the profile (`supplies.kit[].id`).
   final String? kitId;
@@ -728,6 +732,7 @@ List<PanelItem> _items(Object? v) {
       cardLinkLabel: link is Map ? _str(link['label']) : null,
       cardLinkId: link is Map ? _str(link['card_id']) : null,
       check: e['check'] == true,
+      unsourced: e['unsourced'] == true,
     ));
   }
   return out;

@@ -82,4 +82,33 @@ void main() {
     expect(find.text(chatTextLabel), findsNothing);
     expect(find.textContaining(checkSourceCaption, findRichText: true), findsOneWidget);
   });
+
+  testWidgets('D2: an unsourced list item gets "bez źródła"; check wins over it', (tester) async {
+    final a = AssistantAnswer.fromJson({
+      'origin': 'ai',
+      'panels': [
+        {
+          'type': 'bullets',
+          'title': '',
+          'items': [
+            {'text': 'Weź latarkę', 'unsourced': true},
+            {'text': 'Wypij 3 litry', 'unsourced': true, 'check': true},
+          ],
+        },
+        {
+          'type': 'steps',
+          'title': '',
+          'items': [
+            {'text': 'Wyjdź z budynku', 'unsourced': true},
+          ],
+        },
+      ],
+    });
+    await tester.pumpWidget(ProviderScope(
+      overrides: [templateRegistryProvider.overrideWithValue(TemplateRegistry.withDefaults())],
+      child: MaterialApp(theme: buildBzTheme(), home: Scaffold(body: TemplateRenderer(answer: a))),
+    ));
+    expect(find.textContaining(unsourcedCaption, findRichText: true), findsNWidgets(2));
+    expect(find.textContaining(checkSourceCaption, findRichText: true), findsOneWidget);
+  });
 }

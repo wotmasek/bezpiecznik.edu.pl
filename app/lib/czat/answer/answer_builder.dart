@@ -155,7 +155,8 @@ AssistantAnswer buildMarkdownAnswer(
     final id = segs.map((s) => s.id).whereType<String>().firstOrNull;
     if (id != null) used.add(id);
     final text = segs.map((s) => s.text).join().trim();
-    return {'text': text, 'source_id': ?id, if (check(text, id)) 'check': true};
+    // D2: an uncited list item is shown with "bez źródła", not deleted.
+    return {'text': text, 'source_id': ?id, if (check(text, id)) 'check': true, if (id == null) 'unsourced': true};
   }
 
   text = cleanAnswerText(text);

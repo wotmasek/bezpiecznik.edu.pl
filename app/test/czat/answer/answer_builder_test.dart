@@ -119,6 +119,21 @@ void main() {
       expect((c.panels.last as ChatTextPanel).text, contains('116 123'));
     });
 
+    test('D2: an uncited list item is unsourced; cited items and paragraphs are not', () {
+      final a = buildMarkdownAnswer(
+        'Zrób zapas [1].\n\n- Spakuj wodę [1]\n- Weź latarkę\n\n1. Wyjdź z budynku\n\nNie martw się.',
+        [c2],
+        risk: false,
+      );
+      final bullets = a.panels.whereType<BulletsPanel>().single.items;
+      expect([for (final i in bullets) i.unsourced], [false, true]);
+      expect(a.panels.whereType<StepsPanel>().single.items.single.unsourced, isTrue);
+      final texts = a.panels.whereType<ChatTextPanel>().toList();
+      expect(texts, hasLength(2));
+      expect(texts.expand((p) => p.items).any((i) => i.unsourced), isFalse);
+      expect(a.toJson().toString(), contains('unsourced: true'));
+    });
+
     test('placeholders copied from the prompt are removed', () {
       final a = buildMarkdownAnswer('Masz psa [Profil domu]. Tak [n].', const [], risk: false);
       expect((a.panels.single as ChatTextPanel).text, 'Masz psa. Tak.');
