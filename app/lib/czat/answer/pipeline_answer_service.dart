@@ -263,7 +263,7 @@ class PipelineAnswerService implements AnswerService {
       );
     }
     if (run.cancelled) return null;
-    final answer = text.trim().isEmpty ? null : buildMarkdownAnswer(text, chunks, risk: risk, crisis: crisis);
+    final answer = text.trim().isEmpty ? null : buildMarkdownAnswer(text, chunks, risk: risk, crisis: crisis).copyWith(truncated: looksTruncated(text));
     if (answer == null || answer.panels.every((p) => p is CallPanel)) {
       onLog?.call('empty model output');
       return _fallback(chunks, risk: risk, crisis: crisis, offTopic: offTopic, modelOff: false);

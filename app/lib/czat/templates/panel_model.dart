@@ -542,6 +542,7 @@ class AssistantAnswer {
     this.done = const {},
     this.intent,
     this.note,
+    this.truncated = false,
   });
 
   final List<ChatPanel> panels;
@@ -571,6 +572,9 @@ class AssistantAnswer {
   /// Short note shown under the panels (e.g. the LLM timeout note).
   final String? note;
 
+  /// The model hit the token limit: show "Pokaż więcej" (sends "Kontynuuj.").
+  final bool truncated;
+
   static String doneKey(int panelIndex, String? variantId) =>
       '$panelIndex:${variantId ?? ''}';
 
@@ -592,6 +596,7 @@ class AssistantAnswer {
     Map<String, Set<int>>? done,
     String? intent,
     String? note,
+    bool? truncated,
   }) {
     return AssistantAnswer(
       panels: panels ?? this.panels,
@@ -603,6 +608,7 @@ class AssistantAnswer {
       done: done ?? this.done,
       intent: intent ?? this.intent,
       note: note ?? this.note,
+      truncated: truncated ?? this.truncated,
     );
   }
 
@@ -670,6 +676,7 @@ class AssistantAnswer {
       done: done,
       intent: _str(json['intent']),
       note: _str(json['note']),
+      truncated: json['truncated'] == true,
     );
   }
 
@@ -680,6 +687,7 @@ class AssistantAnswer {
     if (selectedVariant != null) 'selected_variant': selectedVariant,
     if (intent != null) 'intent': intent,
     if (note != null) 'note': note,
+    if (truncated) 'truncated': true,
     'panels': [for (final p in panels) p.raw],
     'sources': {for (final e in sources.entries) e.key: e.value.toJson()},
     if (done.isNotEmpty)
