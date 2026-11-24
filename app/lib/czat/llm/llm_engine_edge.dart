@@ -279,7 +279,7 @@ class EdgeAiEngine implements LlmEngine {
     final preparing = _preparing;
     if (preparing != null) {
       try {
-        await preparing;
+        await preparing.timeout(noTokenTimeout); // a stuck prepare must not block forever
       } catch (_) {}
     }
     _cancelled = false;
