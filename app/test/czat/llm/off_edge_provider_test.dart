@@ -36,6 +36,9 @@ class FakeRuntime implements EdgeRuntime {
   }
 
   @override
+  bool? lastReused;
+
+  @override
   Future<void> stop() async => stops++;
 
   @override
@@ -86,6 +89,11 @@ void main() {
       expect(rt.loads, 1);
       expect(rt.loadedPath, '${second.path}/$edgeModelFileName');
       expect(e.lastTiming!.tokenCount, 2);
+      expect(e.lastTiming!.reused, isNull);
+      rt.lastReused = true;
+      expect(await e.generate(req).toList(), ['Cze', 'ść']);
+      expect(e.lastTiming!.reused, true);
+      expect(e.lastTiming.toString(), contains('reused=true'));
       await e.dispose();
       expect(rt.closed, true);
     });

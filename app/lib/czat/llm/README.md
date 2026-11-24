@@ -62,3 +62,15 @@ Without it the first `warmUp()` fails with `LlmUnavailable`.
 `ResponseFormat.jsonSchema`, falling back to no format when refused
 (`ResponseFormatUnsupportedException`); host sends `json_object` unless
 `useJsonSchemaFormat: true`. In the fallback the schema must be in the prompt.
+
+## Live conversation (edge mode, D7)
+
+A request with `conversationId` (and no JSON mode/schema) goes to the one
+live chat (`LiveConversation`, `live_conversation.dart`). It is continued when
+id, system prompt, temperature and `maxTokens` match and the messages it read
+(including its own replies, verbatim) are an exact prefix of the request: only
+the new messages are sent. Anything else, and any stop, cancel or error,
+closes it; the next request reopens it with the full history flattened into
+one user message (the `.litertlm` session cannot be given assistant turns).
+JSON and id-less requests use a one-shot chat and leave the live one open.
+`lastTiming` shows `reused=true|false` for live requests.
