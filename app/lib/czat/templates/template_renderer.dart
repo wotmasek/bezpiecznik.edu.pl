@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:material_ui/material_ui.dart';
 
+import 'form_panel.dart' show formSenderProvider;
 import '../../ratunek/cards/verify_badge.dart';
 import '../../wspolne/theme/bz_buttons.dart';
 import '../../wspolne/theme/bz_theme.dart';
@@ -157,6 +158,25 @@ class _TemplateRendererState extends ConsumerState<TemplateRenderer> {
           ),
         );
       }
+    }
+
+    if (answer.truncated) {
+      children.add(
+        Align(
+          alignment: Alignment.centerLeft,
+          child: BzButton(
+            key: const Key('show-more'),
+            label: 'Pokaż więcej',
+            icon: LucideIcons.chevronDown,
+            variant: BzButtonVariant.secondary,
+            size: BzButtonSize.md,
+            onPressed: () {
+              widget.onChanged?.call(answer.copyWith(truncated: false));
+              ref.read(formSenderProvider)('Kontynuuj.');
+            },
+          ),
+        ),
+      );
     }
 
     final note = answer.note;

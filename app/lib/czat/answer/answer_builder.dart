@@ -1,6 +1,7 @@
 /// Builds [AssistantAnswer]s (panels + source records) for the pipeline.
 library;
 
+import 'answer_prompt.dart' show kAnswerMaxTokens;
 import 'conversation.dart';
 import '../retrieval/retriever.dart';
 import '../templates/md_text.dart' show MdKind, parseMd;
@@ -29,64 +30,6 @@ List<Map<String, Object?>> _withCall(
   List<Map<String, Object?>> panels,
   bool risk,
 ) => [if (risk) _callPanel, ...panels];
-
-/// Joins neighbouring `steps` / `bullets` panels that share a title into one.
-/// The on-device model tends to open a new panel for every step, which would
-/// show three cards each numbered "1" instead of one list 1-2-3.
-List<Map<String, Object?>> _mergeNeighbours(List<Map<String, Object?>> panels) {
-  final out = <Map<String, Object?>>[];
-  for (final p in panels) {
-    final last = out.isEmpty ? null : out.last;
-    final list = p['type'] == 'steps' || p['type'] == 'bullets' || p['type'] == 'todo';
-    final a = last?['items'], b = p['items'];
-    if (list && last != null && last['type'] == p['type'] && last['title'] == p['title'] && a is List && b is List) {
-      out[out.length - 1] = {...last, 'items': [...a, ...b]};
-    } else {
-      out.add(p);
-    }
-  }
-  return out;
-}
-
-/// On a risk question `todo` becomes `bullets` and `form` is dropped (never
-/// ask questions in an emergency). Otherwise a `form` is kept only when it is
-/// the only panel: mixed with content, the content wins.
-List<Map<String, Object?>> _shape(List<Map<String, Object?>> panels, bool risk) {
-  final content = [
-    for (final p in panels)
-      if (p['type'] != 'form') risk && p['type'] == 'todo' ? {...p, 'type': 'bullets'} : p,
-  ];
-  return risk || content.isNotEmpty ? content : panels.take(1).toList();
-}
-
-/// Answer from validated model panels. `call` goes first when [risk]; the
-/// result may hold no content panel (risk + only a `form`).
-AssistantAnswer buildModelAnswer(
-  List<Map<String, Object?>> panels,
-  List<KbChunk> chunks, {
-  required bool risk,
-}) {
-  panels = _mergeNeighbours(_shape(panels, risk));
-  final used = <String>{};
-  for (final p in panels) {
-    final id = p['source_id'];
-    if (id is String) used.add(id);
-    final items = p['items'];
-    if (items is List) {
-      for (final e in items) {
-        if (e is Map && e['source_id'] is String) used.add(e['source_id'] as String);
-      }
-    }
-  }
-  return AssistantAnswer.fromJson({
-    'origin': 'ai',
-    'panels': _withCall(panels, risk),
-    'sources': {
-      for (final c in chunks)
-        if (used.contains(c.id)) c.id: _sourceJson(c),
-    },
-  });
-}
 
 /// `[1]`, `[1, 2]`, `[1][2]` with the punctuation right after it.
 final _cite = RegExp(r'\s*((?:\[\s*\d+(?:\s*,\s*\d+)*\s*\]\s*)+)([.,;:!?]*)');
@@ -280,4 +223,14 @@ String cleanAnswerText(String text) {
     t = rest[0].toUpperCase() + rest.substring(1);
   }
   return t;
+}
+
+/// Whether the model most likely stopped at the token limit (estimate: ~0.31
+/// tokens per char). Near the limit, text without a final punctuation mark
+/// counts as cut mid-sentence. Drives the "Pokaż więcej" button.
+bool looksTruncated(String text) {
+  final t = text.trim();
+  final tokens = t.length * 0.31;
+  if (tokens >= kAnswerMaxTokens - 15) return true;
+  return tokens >= kAnswerMaxTokens * 0.8 && !RegExp(r'[.!?:;)"”»*]$').hasMatch(t);
 }
